@@ -2,7 +2,6 @@ package com.lincsoft.config;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.lincsoft.constant.CommonConstants;
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
@@ -20,9 +19,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 @Slf4j
 @Component
 public class MyBatisPlusMetaObjectHandler implements MetaObjectHandler {
-
-  @Resource private AppProperties appProperties;
-
   /**
    * Automatic field setting during INSERT operation.
    *
@@ -42,17 +38,13 @@ public class MyBatisPlusMetaObjectHandler implements MetaObjectHandler {
     log.debug(
         "Execute automatic field configuration for INSERT operations.: {}",
         metaObject.getOriginalObject().getClass().getSimpleName());
-
     // current username
     String currentUser = getCurrentUser();
-
     // current timestamp
     LocalDateTime currentTimestamp = getCurrentTimestamp();
-
     // create user and create time
     this.strictInsertFill(metaObject, "createBy", String.class, currentUser);
     this.strictInsertFill(metaObject, "createAt", LocalDateTime.class, currentTimestamp);
-
     // update user and update time
     this.strictInsertFill(metaObject, "updateBy", String.class, currentUser);
     this.strictInsertFill(metaObject, "updateAt", LocalDateTime.class, currentTimestamp);
@@ -75,13 +67,10 @@ public class MyBatisPlusMetaObjectHandler implements MetaObjectHandler {
     log.debug(
         "Execute automatic field configuration for UPDATE operations.: {}",
         metaObject.getOriginalObject().getClass().getSimpleName());
-
     // current username
     String currentUser = getCurrentUser();
-
     // current timestamp
     LocalDateTime currentTimestamp = getCurrentTimestamp();
-
     // update user and update time
     this.strictUpdateFill(metaObject, "updateBy", String.class, currentUser);
     this.strictUpdateFill(metaObject, "updateAt", LocalDateTime.class, currentTimestamp);
