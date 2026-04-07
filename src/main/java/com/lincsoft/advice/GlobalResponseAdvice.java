@@ -35,24 +35,23 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
   @Override
   public boolean supports(
       MethodParameter returnType, @NonNull Class<? extends HttpMessageConverter<?>> converterType) {
-    boolean supports = true;
     // If @IgnoreResultWrapper is applied at the class level, the result will not be wrapped.
     if (returnType.getDeclaringClass().isAnnotationPresent(IgnoreResultWrapper.class)) {
-      supports = false;
+      return false;
     }
     // If @IgnoreResultWrapper is applied at the method level, the result will not be wrapped.
     if (returnType.hasMethodAnnotation(IgnoreResultWrapper.class)) {
-      supports = false;
+      return false;
     }
     // If the return value is already of type Result, it will not be wrapped.
     if (Result.class.isAssignableFrom(returnType.getParameterType())) {
-      supports = false;
+      return false;
     }
     // If the return type is HttpEntity used by Spring WebFlux, it will not be wrapped.
     if (org.springframework.http.HttpEntity.class.isAssignableFrom(returnType.getParameterType())) {
-      supports = false;
+      return false;
     }
-    return supports;
+    return true;
   }
 
   @Override
