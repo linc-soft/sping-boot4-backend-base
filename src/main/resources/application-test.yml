@@ -1,0 +1,6 @@
+# ========================================
+# Test environment configuration file
+# ========================================
+spring:
+  main:
+    banner-mode: log

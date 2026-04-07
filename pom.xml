@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Spring Boot 4.0.5 Parent Project -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.5</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.lincsoft</groupId>
+  <artifactId>spring-boot-backend-base</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>backend-base</name>
+  <description>Spring Boot enterprise-level backend framework</description>
+
+  <properties>
+    <!-- Java Version -->
+    <java.version>25</java.version>
+    <!-- Compiler Version -->
+    <maven.compiler.source>25</maven.compiler.source>
+    <maven.compiler.target>25</maven.compiler.target>
+    <!-- Encoding -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Resource Encoding -->
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- FMT Maven Plugin Version -->
+    <fmt-maven-plugin.version>2.29</fmt-maven-plugin.version>
+    <!-- Active Profile -->
+    <active.profile>dev</active.profile>
+  </properties>
+
+  <dependencies>
+    <!-- ========== Spring Boot Core Starter ========== -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <resources>
+      <!-- Filtered resource -->
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>application.yml</include>
+        </includes>
+      </resource>
+      <!-- Non-filtered resource -->
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>application-*.yml</include>
+        </includes>
+      </resource>
+    </resources>
+    <plugins>
+      <!-- Java code formatter plugin for Maven -->
+      <plugin>
+        <groupId>com.spotify.fmt</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+        <version>${fmt-maven-plugin.version}</version>
+        <configuration>
+          <style>GOOGLE</style>  <!-- Format style: GOOGLE -->
+          <!-- Target src/main/java and src/test/java -->
+          <sourceDirectory>src/main/java</sourceDirectory>
+          <testSourceDirectory>src/test/java</testSourceDirectory>
+        </configuration>
+      </plugin>
+
+      <!-- Automatically set .githooks as Git's hooksPath when running mvn validate. -->
+      <!-- Works on all environments: macOS / Linux / Windows -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>setup-git-hooks</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <!-- Set git core.hooksPath to .git/hooks -->
+                <exec executable="git" failonerror="false">
+                  <arg value="config"/>
+                  <arg value="core.hooksPath"/>
+                  <arg value=".githooks"/>
+                </exec>
+                <!-- macOS / Linux: Grant execution permissions to pre-commit -->
+                <chmod file="${project.basedir}/.githooks/pre-commit" perm="755"
+                       failonerror="false"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- Target environment (dev/test/prod) -->
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <properties>
+        <active.profile>dev</active.profile>
+      </properties>
+    </profile>
+    <profile>
+      <id>test</id>
+      <properties>
+        <active.profile>test</active.profile>
+      </properties>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <active.profile>prod</active.profile>
+      </properties>
+    </profile>
+  </profiles>
+</project>

@@ -1,0 +1,7 @@
+# ========================================
+# Development environment configuration file
+# ========================================
+spring:
+  main:
+    banner-mode: console
+

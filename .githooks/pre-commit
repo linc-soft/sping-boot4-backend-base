@@ -1,0 +1,16 @@
+#!/bin/sh
+# Automatically format all Java files with google-java-format before committing.
+
+echo "🔍 Formatting Java code..."
+
+mvn fmt:format -q
+
+if [ $? -ne 0 ]; then
+  echo "❌ Format failed. Aborting the commit."
+  exit 1
+fi
+
+# Restage Java files modified by formatting.
+git diff --name-only | grep '\.java$' | xargs -r git add
+
+echo "✅ Format completed. Continuing the commit."

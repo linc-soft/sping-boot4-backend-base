@@ -1,0 +1,6 @@
+# ========================================
+# Production environment configuration file
+# ========================================
+spring:
+  main:
+    banner-mode: off
