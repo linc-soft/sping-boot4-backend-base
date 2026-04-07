@@ -120,6 +120,11 @@
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
             </path>
+            <!-- Spring Boot configuration processor -->
+            <path>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-configuration-processor</artifactId>
+            </path>
           </annotationProcessorPaths>
         </configuration>
       </plugin>
