@@ -1,0 +1,6 @@
+# ========================================
+# Test environment configuration file
+# ========================================
+spring:
+  profiles:
+    active: test
