@@ -93,9 +93,9 @@ public class MyBatisPlusMetaObjectHandler implements MetaObjectHandler {
    * @return current operator username
    */
   private String getCurrentUser() {
-    String username = MDC.get(appProperties.getMdc().getCurrentUserKey());
+    String username = MDC.get(CommonConstants.MDC_CURRENT_USER_KEY);
     if (username == null || username.isBlank()) {
-      return CommonConstants.DEFAULT_USERNAME;
+      return CommonConstants.MDC_DEFAULT_USERNAME;
     }
     return username;
   }
@@ -114,13 +114,11 @@ public class MyBatisPlusMetaObjectHandler implements MetaObjectHandler {
     if (attributes != null) {
       Object timestamp =
           attributes.getAttribute(
-              appProperties.getMdc().getRequestTimestampKey(), RequestAttributes.SCOPE_REQUEST);
+              CommonConstants.MDC_REQUEST_TIMESTAMP_KEY, RequestAttributes.SCOPE_REQUEST);
       if (timestamp == null) {
         timestamp = LocalDateTime.now();
         attributes.setAttribute(
-            appProperties.getMdc().getRequestTimestampKey(),
-            timestamp,
-            RequestAttributes.SCOPE_REQUEST);
+            CommonConstants.MDC_REQUEST_TIMESTAMP_KEY, timestamp, RequestAttributes.SCOPE_REQUEST);
       }
       return (LocalDateTime) timestamp;
     }

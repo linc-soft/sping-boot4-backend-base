@@ -10,8 +10,4 @@ spring:
   profiles:
     active: @active.profile@
 
-app:
-  mdc:
-    current-user-key: currentUser
-    request-timestamp-key: requestTimestamp
 
