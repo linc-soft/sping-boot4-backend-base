@@ -1,0 +1,21 @@
+### Java template
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+### Maven template
+target/
+# https://github.com/takari/maven-wrapper#usage-without-binary-jar
+.mvn/wrapper/maven-wrapper.jar
+
+### VisualStudioCode template
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### JetBrains
+.idea
