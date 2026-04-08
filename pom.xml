@@ -85,6 +85,13 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- Spring Boot WebMvc Test Starter (Spring Boot 4 で @WebMvcTest が分離されたため必要) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -194,4 +201,4 @@
       </properties>
     </profile>
   </profiles>
-</project>
+</project> 
