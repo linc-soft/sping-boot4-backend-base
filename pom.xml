@@ -41,9 +41,17 @@
 
   <dependencies>
     <!-- ========== Spring Boot Core Starter ========== -->
+
+    <!-- Web Starter (Spring MVC, embedded Tomcat) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Security Starter -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
     <!-- ========== Database ========== -->

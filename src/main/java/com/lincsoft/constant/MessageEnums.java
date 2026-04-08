@@ -20,6 +20,8 @@ import lombok.Getter;
 public enum MessageEnums {
   SUCCESS(200, null),
   FAIL(500, null),
+  BAD_REQUEST(400, "Bad Request"),
+  UNAUTHORIZED(401, "Unauthorized"),
   INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
   @Getter private final int code;

@@ -15,4 +15,13 @@ public interface CommonConstants {
 
   /** MDC key for request timestamp */
   String MDC_REQUEST_TIMESTAMP_KEY = "RequestTimestamp";
+
+  /** MDC key for trace ID */
+  String MDC_TRACE_ID_KEY = "traceId";
+
+  /** Maximum text length to store in the error log */
+  int MAX_TEXT_LENGTH = 4000;
+
+  /** Suffix to truncate the text */
+  String TRUNCATE_SUFFIX = "...[truncated]";
 }

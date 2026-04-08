@@ -51,8 +51,8 @@ public class Result<T> implements Serializable {
     return new Result<>(code, null, null);
   }
 
-  public static <T> Result<T> error(String message) {
-    return new Result<>(MessageEnums.FAIL.getCode(), message, null);
+  public static <T> Result<T> error(int code, String message) {
+    return new Result<>(code, message, null);
   }
 
   /* Error with code and message */

@@ -213,15 +213,15 @@ class ResultTest {
   }
 
   @Nested
-  @DisplayName("error(String message) Method Tests")
-  class ErrorWithMessageTest {
+  @DisplayName("error(int code, String message) Method Tests")
+  class ErrorWithCodeAndMessageTest {
 
     @Test
     @DisplayName("JSON serialization should exclude data field")
-    void errorWithMessage_jsonSerialization_shouldExcludeDataField()
+    void errorWithCodeAndMessage_jsonSerialization_shouldExcludeDataField()
         throws JsonProcessingException {
       // Given
-      Result<Void> result = Result.error("Internal server error");
+      Result<Void> result = Result.error(500, "Internal server error");
 
       // When
       String json = objectMapper.writeValueAsString(result);
