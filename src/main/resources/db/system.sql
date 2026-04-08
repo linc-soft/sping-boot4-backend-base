@@ -7,7 +7,6 @@
 -- Engine: InnoDB
 -- Character Set: utf8mb4
 -- ============================================================
-
 -- ============================================================
 -- sys_access_log table
 -- Records access logs for all HTTP requests
@@ -28,13 +27,13 @@ CREATE TABLE IF NOT EXISTS sys_access_log
   response_body    TEXT         DEFAULT NULL COMMENT 'Response body (JSON format)',
   client_ip        VARCHAR(64)  DEFAULT NULL COMMENT 'Client IP address',
   user_agent       VARCHAR(255) DEFAULT NULL COMMENT 'User-Agent',
-  username         VARCHAR(64) DEFAULT NULL COMMENT 'Operating username',
+  username         VARCHAR(64)  DEFAULT NULL COMMENT 'Operating username',
   duration         BIGINT       DEFAULT NULL COMMENT 'Processing time (milliseconds)',
   create_time      DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
   PRIMARY KEY (id),
-  KEY idx_access_trace_id (trace_id),
-  KEY idx_access_create_at (create_time),
-  KEY idx_access_username (username)
+  KEY idx_access_log_trace_id (trace_id),
+  KEY idx_access_log_create_time (create_time),
+  KEY idx_access_log_username (username)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Access log';
@@ -48,18 +47,18 @@ DROP TABLE IF EXISTS sys_error_log;
 CREATE TABLE IF NOT EXISTS sys_error_log
 (
   id                 BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
-  trace_id           VARCHAR(64)  DEFAULT NULL COMMENT 'Trace ID',
+  trace_id           VARCHAR(64) DEFAULT NULL COMMENT 'Trace ID',
   exception_file     VARCHAR(64) DEFAULT NULL COMMENT 'Exception file name',
   exception_class    VARCHAR(64) DEFAULT NULL COMMENT 'Exception class name',
   exception_method   VARCHAR(64) DEFAULT NULL COMMENT 'Exception method name',
-  exception_line     INT          DEFAULT NULL COMMENT 'Exception line number',
-  exception_message  TEXT         DEFAULT NULL COMMENT 'Exception message',
-  root_cause_message TEXT         DEFAULT NULL COMMENT 'Root cause message',
-  stack_trace        TEXT         DEFAULT NULL COMMENT 'Stack trace',
-  create_time        DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+  exception_line     INT         DEFAULT NULL COMMENT 'Exception line number',
+  exception_message  TEXT        DEFAULT NULL COMMENT 'Exception message',
+  root_cause_message TEXT        DEFAULT NULL COMMENT 'Root cause message',
+  stack_trace        TEXT        DEFAULT NULL COMMENT 'Stack trace',
+  create_time        DATETIME    DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
   PRIMARY KEY (id),
-  KEY idx_error_trace_id (trace_id),
-  KEY idx_error_create_at (create_time)
+  KEY idx_error_log_trace_id (trace_id),
+  KEY idx_error_log_create_time (create_time)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Error log';
@@ -73,17 +72,17 @@ DROP TABLE IF EXISTS sys_operation_log;
 
 CREATE TABLE IF NOT EXISTS sys_operation_log
 (
-  id              BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
-  trace_id        VARCHAR(64)  DEFAULT NULL COMMENT 'Trace ID',
-  module          VARCHAR(64) DEFAULT NULL COMMENT 'Primary module',
-  sub_module      VARCHAR(64) DEFAULT NULL COMMENT 'Secondary module',
-  operation_type  VARCHAR(10)  DEFAULT NULL COMMENT 'Operation type (CREATE/UPDATE/DELETE/QUERY)',
-  description     VARCHAR(255) DEFAULT NULL COMMENT 'Operation description',
-  duration        BIGINT       DEFAULT NULL COMMENT 'Operation processing time (milliseconds)',
-  create_time     DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+  id             BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  trace_id       VARCHAR(64)  DEFAULT NULL COMMENT 'Trace ID',
+  module         VARCHAR(64)  DEFAULT NULL COMMENT 'Primary module',
+  sub_module     VARCHAR(64)  DEFAULT NULL COMMENT 'Secondary module',
+  operation_type VARCHAR(10)  DEFAULT NULL COMMENT 'Operation type (CREATE/UPDATE/DELETE/QUERY)',
+  description    VARCHAR(255) DEFAULT NULL COMMENT 'Operation description',
+  duration       BIGINT       DEFAULT NULL COMMENT 'Operation processing time (milliseconds)',
+  create_time    DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
   PRIMARY KEY (id),
-  KEY idx_operation_trace_id (trace_id),
-  KEY idx_operation_create_at (create_time)
+  KEY idx_operation_log_trace_id (trace_id),
+  KEY idx_operation_log_create_time (create_time)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Operation log';
