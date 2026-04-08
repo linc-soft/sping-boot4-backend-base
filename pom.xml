@@ -80,6 +80,15 @@
     </dependency>
 
     <!-- ========== JWT ========== -->
+
+    <!-- JJWT API -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>${jjwt.version}</version>
+    </dependency>
+
+    <!-- JJWT Jackson シリアライザー -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>
