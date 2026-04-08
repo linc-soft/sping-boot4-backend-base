@@ -6,7 +6,6 @@ import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.entity.system.SysErrorLog;
 import com.lincsoft.services.system.ErrorLogAsyncService;
 import com.lincsoft.util.LogUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.stream.Collectors;
@@ -38,16 +37,15 @@ public class GlobalExceptionHandler {
    * Handle business exceptions.
    *
    * @param e The business exception to handle.
-   * @param request The current HTTP request.
    * @return A result indicating the error.
    */
   @ExceptionHandler(BusinessException.class)
-  public Result<Void> handleBusinessException(BusinessException e, HttpServletRequest request) {
+  public Result<Void> handleBusinessException(BusinessException e) {
     // Log the stack trace of the business exception.
     log.error(
         "A business exception has occurred: code={}, message={}", e.getCode(), e.getMessage(), e);
     // Save error logs asynchronously.
-    saveErrorLog(e, request);
+    saveErrorLog(e);
     // Return a custom error code and message.
     return Result.error(e.getCode(), e.getMessage());
   }
@@ -56,12 +54,10 @@ public class GlobalExceptionHandler {
    * Handle validation exceptions.
    *
    * @param e The validation exception to handle.
-   * @param request The current HTTP request.
    * @return A result indicating the error.
    */
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public Result<Void> handleValidationException(
-      MethodArgumentNotValidException e, HttpServletRequest request) {
+  public Result<Void> handleValidationException(MethodArgumentNotValidException e) {
     // Combine validation error messages
     String errorMessage =
         e.getBindingResult().getFieldErrors().stream()
@@ -70,7 +66,7 @@ public class GlobalExceptionHandler {
     // Log the stack trace of the validation exception.
     log.error("Validation exception occurred: {}", errorMessage, e);
     // Save error logs asynchronously.
-    saveErrorLog(e, request);
+    saveErrorLog(e);
     // Return a bad request error code and message.
     return Result.error(MessageEnums.BAD_REQUEST);
   }
@@ -79,16 +75,14 @@ public class GlobalExceptionHandler {
    * Handle authentication exceptions.
    *
    * @param e The authentication exception to handle.
-   * @param request The current HTTP request.
    * @return A result indicating the error.
    */
   @ExceptionHandler(AuthenticationException.class)
-  public Result<Void> handleAuthenticationException(
-      AuthenticationException e, HttpServletRequest request) {
+  public Result<Void> handleAuthenticationException(AuthenticationException e) {
     // Log the stack trace of the authentication exception.
     log.error("An authentication exception has occurred: {}", e.getMessage(), e);
     // Save error logs asynchronously.
-    saveErrorLog(e, request);
+    saveErrorLog(e);
     // Return a forbidden error code and message.
     return Result.error(MessageEnums.UNAUTHORIZED);
   }
@@ -97,15 +91,14 @@ public class GlobalExceptionHandler {
    * Handle unexpected exceptions.
    *
    * @param e The exception to handle.
-   * @param request The current HTTP request.
    * @return A result indicating the error.
    */
   @ExceptionHandler(Exception.class)
-  public Result<Void> handleException(Exception e, HttpServletRequest request) {
+  public Result<Void> handleException(Exception e) {
     // Log the stack trace of the exception.
     log.error("An unexpected exception occurred: {}", e.getMessage(), e);
     // Save error logs asynchronously.
-    saveErrorLog(e, request);
+    saveErrorLog(e);
     // Return a generic error code and message.
     return Result.error(MessageEnums.INTERNAL_SERVER_ERROR);
   }
@@ -114,9 +107,8 @@ public class GlobalExceptionHandler {
    * Save error logs asynchronously.
    *
    * @param e The exception to save.
-   * @param request The current HTTP request.
    */
-  private void saveErrorLog(Exception e, HttpServletRequest request) {
+  private void saveErrorLog(Exception e) {
     try {
       SysErrorLog errorLog = new SysErrorLog();
 
