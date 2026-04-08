@@ -4,3 +4,22 @@
 spring:
   main:
     banner-mode: log
+
+  # Data source settings
+  datasource:
+    # HikariCP connection pool settings
+    hikari:
+      # Maximum connection pool size
+      maximum-pool-size: 20
+      # Minimum idle connection pool size
+      minimum-idle: 10
+      # Connection timeout (milliseconds)
+      connection-timeout: 20000
+      # Idle timeout (milliseconds)
+      idle-timeout: 600000
+      # Maximum connection lifetime (milliseconds)
+      max-lifetime: 1800000
+      # Connection validity verification timeout (milliseconds)
+      validation-timeout: 3000
+      # Leak detection threshold (milliseconds)
+      leak-detection-threshold: 30000
