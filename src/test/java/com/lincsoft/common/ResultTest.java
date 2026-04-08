@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lincsoft.constant.MessageEnums;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -212,27 +213,15 @@ class ResultTest {
   }
 
   @Nested
-  @DisplayName("error(int code, String message) Method Tests")
-  class ErrorWithCodeAndMessageTest {
-
-    @Test
-    @DisplayName("Should return specified code and message with null data")
-    void errorWithCodeAndMessage_shouldReturnCodeAndMessageWithNullData() {
-      // When
-      Result<Void> result = Result.error(400, "Bad request");
-
-      // Then
-      assertThat(result.getCode()).isEqualTo(400);
-      assertThat(result.getMessage()).isEqualTo("Bad request");
-      assertThat(result.getData()).isNull();
-    }
+  @DisplayName("error(String message) Method Tests")
+  class ErrorWithMessageTest {
 
     @Test
     @DisplayName("JSON serialization should exclude data field")
-    void errorWithCodeAndMessage_jsonSerialization_shouldExcludeDataField()
+    void errorWithMessage_jsonSerialization_shouldExcludeDataField()
         throws JsonProcessingException {
       // Given
-      Result<Void> result = Result.error(500, "Internal server error");
+      Result<Void> result = Result.error("Internal server error");
 
       // When
       String json = objectMapper.writeValueAsString(result);
@@ -240,6 +229,27 @@ class ResultTest {
       // Then
       assertThat(json).contains("\"code\":500");
       assertThat(json).contains("\"message\":\"Internal server error\"");
+      assertThat(json).doesNotContain("data");
+    }
+  }
+
+  @Nested
+  @DisplayName("error(MessageEnums message) Method Tests")
+  class ErrorWithMessageEnumsTest {
+
+    @Test
+    @DisplayName("JSON serialization should exclude data field")
+    void errorWithMessageEnums_jsonSerialization_shouldExcludeDataField()
+        throws JsonProcessingException {
+      // Given
+      Result<Void> result = Result.error(MessageEnums.INTERNAL_SERVER_ERROR);
+
+      // When
+      String json = objectMapper.writeValueAsString(result);
+
+      // Then
+      assertThat(json).contains("\"code\":500");
+      assertThat(json).contains("\"message\":\"Internal Server Error\"");
       assertThat(json).doesNotContain("data");
     }
   }
