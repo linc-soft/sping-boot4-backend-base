@@ -33,4 +33,7 @@ public interface CommonConstants {
 
   /** JWT claim for the authenticated user */
   String JWT_CLAIM_USER_KEY = "AuthenticatedUser";
+
+  /** User status inactive */
+  String USER_STATUS_INACTIVE = "0";
 }
