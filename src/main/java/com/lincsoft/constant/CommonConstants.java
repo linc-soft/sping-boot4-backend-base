@@ -24,4 +24,13 @@ public interface CommonConstants {
 
   /** Suffix to truncate the text */
   String TRUNCATE_SUFFIX = "...[truncated]";
+
+  /** Authorization header name */
+  String AUTHORIZATION_HEADER = "Authorization";
+
+  /** Bearer token prefix */
+  String BEARER_PREFIX = "Bearer ";
+
+  /** JWT claim for the authenticated user */
+  String JWT_CLAIM_USER_KEY = "AuthenticatedUser";
 }
