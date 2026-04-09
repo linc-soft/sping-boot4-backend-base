@@ -81,26 +81,6 @@ public class SecurityConfig {
   private final TokenBlacklistService tokenBlacklistService;
 
   /**
-   * Public endpoints that are exempt from CSRF protection and authentication.
-   *
-   * <p>These endpoints can be accessed without authentication and do not require CSRF tokens.
-   * Typically, includes login endpoints and API documentation.
-   */
-  private static final String[] PUBLIC_ENDPOINTS = {
-    "/api/auth/login", "/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-  };
-
-  /**
-   * Additional endpoints that do not require authentication but still have CSRF protection enabled.
-   *
-   * <p>These endpoints are accessible without authentication but still require valid CSRF tokens
-   * for state-changing operations.
-   */
-  private static final String[] AUTH_ONLY_WHITELIST = {
-    "/api/auth/refresh", "/error",
-  };
-
-  /**
    * Configures the security filter chain.
    *
    * <p>Configuration includes:
@@ -137,7 +117,7 @@ public class SecurityConfig {
                     // Custom CsrfTokenRequestAttributeHandler
                     .csrfTokenRequestHandler(requestHandler)
                     // CSRF Protection: Whitelist (public endpoints)
-                    .ignoringRequestMatchers(PUBLIC_ENDPOINTS))
+                    .ignoringRequestMatchers(appProperties.getSecurity().getPublicEndpoints()))
         // CORS Protection: withCredentials policy
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         // Session Management: STATELESS mode (server-side session management disabled)
@@ -155,9 +135,13 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize -> {
               // Public endpoints (CSRF exempt + auth exempt)
-              authorize.requestMatchers(PUBLIC_ENDPOINTS).permitAll();
+              authorize
+                  .requestMatchers(appProperties.getSecurity().getPublicEndpoints())
+                  .permitAll();
               // Auth-only whitelist (CSRF protected, auth exempt)
-              authorize.requestMatchers(AUTH_ONLY_WHITELIST).permitAll();
+              authorize
+                  .requestMatchers(appProperties.getSecurity().getAuthOnlyWhitelist())
+                  .permitAll();
               // All other requests require authentication
               authorize.anyRequest().authenticated();
             })

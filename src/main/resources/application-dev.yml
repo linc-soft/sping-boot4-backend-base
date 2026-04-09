@@ -31,3 +31,11 @@ app:
     user-details-ttl-minutes: 2
     # Default cache TTL in hours
     default-ttl-hours: 1
+  security:
+    # Development environment includes API documentation endpoints
+    public-endpoints:
+      - /api/auth/login
+      - /v3/api-docs
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html

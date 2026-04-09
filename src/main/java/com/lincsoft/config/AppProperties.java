@@ -56,6 +56,13 @@ public class AppProperties {
   private Cache cache = new Cache();
 
   /**
+   * Security configuration settings.
+   *
+   * <p>Defines endpoint whitelist patterns for authentication and CSRF protection.
+   */
+  private Security security = new Security();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -204,5 +211,34 @@ public class AppProperties {
      * <p>Default: 60 seconds (1 minute)
      */
     private long refillPeriodSeconds = 60;
+  }
+
+  /**
+   * Security configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.security} prefix. Defines endpoint whitelist patterns
+   * that control which paths bypass authentication or CSRF protection.
+   */
+  @Data
+  public static class Security {
+
+    /**
+     * Public endpoints that bypass both authentication and CSRF protection.
+     *
+     * <p>These endpoints can be accessed without authentication and do not require CSRF tokens.
+     *
+     * <p>Default: login endpoint and API documentation
+     */
+    private String[] publicEndpoints = {"/api/auth/login"};
+
+    /**
+     * Endpoints that require CSRF protection but bypass authentication.
+     *
+     * <p>These endpoints are accessible without authentication but still require valid CSRF tokens
+     * for state-changing operations.
+     *
+     * <p>Default: token refresh endpoint
+     */
+    private String[] authOnlyWhitelist = {"/api/auth/refresh"};
   }
 }

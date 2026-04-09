@@ -36,3 +36,13 @@ spring:
           min-idle: 2
           # Maximum wait time for connection (-1 = no limit)
           max-wait: 3000ms
+
+# Application settings
+app:
+  security:
+    # Public endpoints bypass authentication and CSRF protection
+    public-endpoints:
+      - /api/auth/login
+    # Auth-only whitelist requires CSRF but bypasses authentication
+    auth-only-whitelist:
+      - /api/auth/refresh
