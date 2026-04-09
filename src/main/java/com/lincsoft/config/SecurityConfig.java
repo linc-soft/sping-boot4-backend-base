@@ -275,10 +275,9 @@ public class SecurityConfig {
    *   <li>Max Age: 3600 seconds
    * </ul>
    *
-   * @return the configured CorsConfigurationSource bean
+   * @return the configured CorsConfigurationSource
    */
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
+  private CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     // Allowed Origins (loaded from application properties)
     configuration.setAllowedOrigins(appProperties.getCors().getAllowedOrigins());
