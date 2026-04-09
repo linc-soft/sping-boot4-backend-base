@@ -3,7 +3,9 @@ package com.lincsoft.config;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import lombok.Data;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -94,24 +96,12 @@ public class AppProperties {
    * @throws IllegalStateException if any origin is blank, contains wildcards, or is not a valid URL
    */
   private void validateCorsOrigins() {
-    String raw = cors.getAllowedOrigins();
-    if (raw == null || raw.isBlank()) {
-      throw new IllegalStateException("app.cors.allowed-origins must not be blank.");
+    List<String> origins = cors.getAllowedOrigins();
+    if (origins == null || origins.isEmpty()) {
+      throw new IllegalStateException("app.cors.allowed-origins must not be empty.");
     }
-    String[] origins = raw.split(",");
     for (String origin : origins) {
-      String trimmed = origin.trim();
-      if (trimmed.isEmpty()) {
-        continue;
-      }
-      if (trimmed.contains("*")) {
-        throw new IllegalStateException(
-            "app.cors.allowed-origins must not contain wildcards ('*'). "
-                + "Wildcard origins are incompatible with AllowCredentials=true. "
-                + "Found: '"
-                + trimmed
-                + "'");
-      }
+      String trimmed = getTrimmedOrigin(origin);
       try {
         URI uri = new URI(trimmed);
         if (uri.getScheme() == null || uri.getHost() == null) {
@@ -123,6 +113,30 @@ public class AppProperties {
             "app.cors.allowed-origins contains an invalid URL: '" + trimmed + "'", e);
       }
     }
+  }
+
+  /**
+   * Trims and validates a CORS origin entry.
+   *
+   * @param origin the raw origin string from configuration
+   * @return the trimmed origin string
+   * @throws IllegalStateException if the origin is blank or contains wildcards
+   */
+  private static @NonNull String getTrimmedOrigin(String origin) {
+    String trimmedOrigin = origin.trim();
+    if (trimmedOrigin.isBlank()) {
+      throw new IllegalStateException("app.cors.allowed-origins must not contain blank entries.");
+    }
+    // Reject wildcard origins as they are incompatible with AllowCredentials=true
+    if (trimmedOrigin.contains("*")) {
+      throw new IllegalStateException(
+          "app.cors.allowed-origins must not contain wildcards ('*'). "
+              + "Wildcard origins are incompatible with AllowCredentials=true. "
+              + "Found: '"
+              + trimmedOrigin
+              + "'");
+    }
+    return trimmedOrigin;
   }
 
   /**
@@ -165,12 +179,12 @@ public class AppProperties {
   @Data
   public static class Cors {
     /**
-     * Allowed CORS origins (comma-separated for multiple origins).
+     * Allowed CORS origins (list of origin URLs).
      *
-     * <p>Example: {@code http://localhost:5173,https://www.example.com} These origins will be
-     * permitted to make cross-origin requests to the API.
+     * <p>Example: {@code ["http://localhost:5173", "https://www.example.com"]} These origins will
+     * be permitted to make cross-origin requests to the API.
      */
-    private String allowedOrigins = "http://localhost:5173";
+    private List<String> allowedOrigins = List.of("http://localhost:5173");
   }
 
   /**

@@ -9,7 +9,6 @@ import com.lincsoft.services.system.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
@@ -281,13 +280,8 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    // Allowed Origins (trim whitespace for robustness)
-    List<String> origins =
-        Arrays.stream(appProperties.getCors().getAllowedOrigins().split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .toList();
-    configuration.setAllowedOrigins(origins);
+    // Allowed Origins (loaded from application properties)
+    configuration.setAllowedOrigins(appProperties.getCors().getAllowedOrigins());
     // Allowed Methods
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     // Allowed Headers (explicitly specified to reduce attack surface)
