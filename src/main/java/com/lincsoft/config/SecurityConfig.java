@@ -229,6 +229,13 @@ public class SecurityConfig {
    * <p>This filter applies per-IP rate limiting using the Bucket4j token-bucket algorithm. It is
    * placed before JwtAuthorizationFilter in the filter chain to reject excessive requests early.
    *
+   * <p><b>Design Note:</b> This method intentionally does NOT use the {@code @Bean} annotation.
+   * Spring Boot automatically registers all {@code @Bean} Filters into the Servlet container, which
+   * would cause this filter to be executed twice: once by the Servlet container and once by the
+   * SecurityFilterChain. By using {@code new} directly and manually adding it via {@code
+   * addFilterBefore()}, we ensure the filter is only executed once at the correct position in the
+   * security filter chain.
+   *
    * @return the configured RateLimitFilter instance
    */
   private RateLimitFilter rateLimitFilter() {
@@ -236,12 +243,19 @@ public class SecurityConfig {
   }
 
   /**
-   * Creates the JwtAuthorizationFilter bean.
+   * Creates the JwtAuthorizationFilter instance.
    *
    * <p>This filter intercepts incoming requests to validate JWT tokens and set the authentication
    * context for authorized users.
    *
-   * @return the configured JwtAuthorizationFilter bean
+   * <p><b>Design Note:</b> This method intentionally does NOT use the {@code @Bean} annotation.
+   * Spring Boot automatically registers all {@code @Bean} Filters into the Servlet container, which
+   * would cause this filter to be executed twice: once by the Servlet container and once by the
+   * SecurityFilterChain. By using {@code new} directly and manually adding it via {@code
+   * addFilterBefore()}, we ensure the filter is only executed once at the correct position in the
+   * security filter chain.
+   *
+   * @return the configured JwtAuthorizationFilter instance
    */
   private JwtAuthorizationFilter jwtAuthorizationFilter() {
     return new JwtAuthorizationFilter(
