@@ -39,3 +39,6 @@ app:
   csrf:
     # Enable Secure flag for CSRF cookie (HTTPS only in production)
     secure: true
+  security:
+    # Enable HSTS preload directive for production (requires 100% HTTPS coverage)
+    hsts-preload: true

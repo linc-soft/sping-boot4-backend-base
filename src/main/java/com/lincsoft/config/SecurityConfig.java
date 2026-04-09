@@ -59,7 +59,6 @@ import tools.jackson.databind.ObjectMapper;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
   /**
    * User details service used for Spring Security authentication.
    *
@@ -103,12 +102,10 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) {
     // CSRF Protection: CookieCsrfTokenRepository using double cookie validation mode
     CookieCsrfTokenRepository csrfTokenRepository = getCsrfTokenRepository();
-
     // CSRF Protection: CsrfTokenRequestAttributeHandler using header only
     CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
     // Disable CSRF token resolution via _csrf parameter (header only)
     requestHandler.setCsrfRequestAttributeName(null);
-
     http.csrf(
             csrf ->
                 csrf
@@ -129,7 +126,10 @@ public class SecurityConfig {
                 headers
                     .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                     .httpStrictTransportSecurity(
-                        hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+                        hsts ->
+                            hsts.includeSubDomains(true)
+                                .maxAgeInSeconds(31536000)
+                                .preload(appProperties.getSecurity().isHstsPreload()))
                     .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")))
         // URL Access Rules
         .authorizeHttpRequests(
@@ -161,7 +161,6 @@ public class SecurityConfig {
                         (_, response, _) ->
                             writeSecurityErrorResponse(
                                 response, HttpStatus.FORBIDDEN, MessageEnums.FORBIDDEN)));
-
     return http.build();
   }
 
@@ -268,7 +267,6 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-
     // Allowed Origins (trim whitespace for robustness)
     List<String> origins =
         Arrays.stream(appProperties.getCors().getAllowedOrigins().split(","))
@@ -276,27 +274,20 @@ public class SecurityConfig {
             .filter(s -> !s.isEmpty())
             .toList();
     configuration.setAllowedOrigins(origins);
-
     // Allowed Methods
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
     // Allowed Headers (explicitly specified to reduce attack surface)
     configuration.setAllowedHeaders(
         Arrays.asList("Authorization", "Content-Type", "X-CSRF-TOKEN", "X-Trace-Id"));
-
     // Exposed Headers
     configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Trace-Id"));
-
     // withCredentials policy: Access-Control-Allow-Credentials: true
     configuration.setAllowCredentials(true);
-
     // Preflight Cache Time: 3600 seconds
     configuration.setMaxAge(3600L);
-
     // Apply CORS Configuration to All URL Paths
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
-
     return source;
   }
 

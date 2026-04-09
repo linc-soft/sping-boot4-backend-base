@@ -279,5 +279,19 @@ public class AppProperties {
      * <p>Default: token refresh endpoint
      */
     private String[] authOnlyWhitelist = {"/api/auth/refresh"};
+
+    /**
+     * Whether to include the HSTS preload directive.
+     *
+     * <p>When {@code true}, the Strict-Transport-Security header includes the {@code preload}
+     * directive, allowing the domain to be submitted to browser HSTS preload lists. This eliminates
+     * the vulnerability window on first visit but requires the domain to always use HTTPS.
+     *
+     * <p>Should be {@code false} in development and {@code true} in production only after
+     * confirming 100% HTTPS coverage.
+     *
+     * <p>Default: false (development-safe)
+     */
+    private boolean hstsPreload = false;
   }
 }
