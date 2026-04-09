@@ -87,7 +87,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     // Resolve client IP address
-    String clientIp = resolveClientIp(request);
+    String clientIp = request.getRemoteAddr();
     Bucket bucket = bucketCache.computeIfAbsent(clientIp, _ -> createBucket());
 
     // Try to consume one token
@@ -124,23 +124,5 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 config.getRefillTokens(), Duration.ofSeconds(config.getRefillPeriodSeconds()))
             .build();
     return Bucket.builder().addLimit(limit).build();
-  }
-
-  /**
-   * Resolves the real client IP address from the request.
-   *
-   * <p>Checks the {@code X-Forwarded-For} header first (for reverse proxy scenarios), then falls
-   * back to {@link HttpServletRequest#getRemoteAddr()}.
-   *
-   * @param request the HTTP servlet request
-   * @return the resolved client IP address
-   */
-  private static String resolveClientIp(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-      // X-Forwarded-For may contain multiple IPs; take the first (original client)
-      return xForwardedFor.split(",")[0].trim();
-    }
-    return request.getRemoteAddr();
   }
 }
