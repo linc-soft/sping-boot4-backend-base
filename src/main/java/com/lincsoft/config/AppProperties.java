@@ -1,6 +1,8 @@
 package com.lincsoft.config;
 
 import jakarta.annotation.PostConstruct;
+import java.net.URI;
+import java.net.URISyntaxException;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
-
   /**
    * JWT configuration settings.
    *
@@ -73,10 +74,54 @@ public class AppProperties {
    */
   @PostConstruct
   void validate() {
+    // Validate JWT secret key length
     if (jwt.secret == null || jwt.secret.length() < 32) {
       throw new IllegalStateException(
           "app.jwt.secret must be at least 32 characters long. Current length: "
               + (jwt.secret == null ? 0 : jwt.secret.length()));
+    }
+    // Validate CORS allowed origins
+    validateCorsOrigins();
+  }
+
+  /**
+   * Validates CORS allowed origins configuration.
+   *
+   * <p>Ensures that each origin value is a valid URL without wildcards. Wildcard origins ({@code
+   * *}) are not allowed when {@code AllowCredentials=true}, and pattern-based origins (e.g., {@code
+   * *.example.com}) must use {@code allowedOriginPatterns} instead of {@code allowedOrigins}.
+   *
+   * @throws IllegalStateException if any origin is blank, contains wildcards, or is not a valid URL
+   */
+  private void validateCorsOrigins() {
+    String raw = cors.getAllowedOrigins();
+    if (raw == null || raw.isBlank()) {
+      throw new IllegalStateException("app.cors.allowed-origins must not be blank.");
+    }
+    String[] origins = raw.split(",");
+    for (String origin : origins) {
+      String trimmed = origin.trim();
+      if (trimmed.isEmpty()) {
+        continue;
+      }
+      if (trimmed.contains("*")) {
+        throw new IllegalStateException(
+            "app.cors.allowed-origins must not contain wildcards ('*'). "
+                + "Wildcard origins are incompatible with AllowCredentials=true. "
+                + "Found: '"
+                + trimmed
+                + "'");
+      }
+      try {
+        URI uri = new URI(trimmed);
+        if (uri.getScheme() == null || uri.getHost() == null) {
+          throw new IllegalStateException(
+              "app.cors.allowed-origins must include scheme and host. Invalid: '" + trimmed + "'");
+        }
+      } catch (URISyntaxException e) {
+        throw new IllegalStateException(
+            "app.cors.allowed-origins contains an invalid URL: '" + trimmed + "'", e);
+      }
     }
   }
 
@@ -88,7 +133,6 @@ public class AppProperties {
    */
   @Data
   public static class Jwt {
-
     /**
      * Secret key for HMAC-SHA256 signing.
      *
@@ -120,7 +164,6 @@ public class AppProperties {
    */
   @Data
   public static class Cors {
-
     /**
      * Allowed CORS origins (comma-separated for multiple origins).
      *
@@ -138,7 +181,6 @@ public class AppProperties {
    */
   @Data
   public static class Csrf {
-
     /**
      * Whether the CSRF cookie should have the Secure flag.
      *
@@ -158,7 +200,6 @@ public class AppProperties {
    */
   @Data
   public static class Cache {
-
     /**
      * Default cache entry TTL in hours.
      *
@@ -183,7 +224,6 @@ public class AppProperties {
    */
   @Data
   public static class RateLimit {
-
     /**
      * Whether rate limiting is enabled.
      *
@@ -221,7 +261,6 @@ public class AppProperties {
    */
   @Data
   public static class Security {
-
     /**
      * Public endpoints that bypass both authentication and CSRF protection.
      *
