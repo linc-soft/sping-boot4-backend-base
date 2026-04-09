@@ -36,4 +36,16 @@ public interface CommonConstants {
 
   /** User status inactive */
   String USER_STATUS_INACTIVE = "0";
+
+  /** CSRF cookie name */
+  String CSRF_COOKIE_NAME = "csrfToken";
+
+  /** CSRF header name */
+  String CSRF_HEADER_NAME = "X-CSRF-TOKEN";
+
+  /** Redis key prefix for JWT token blacklist */
+  String REDIS_TOKEN_BLACKLIST_PREFIX = "token:blacklist:";
+
+  /** Cache name for UserDetails entries, used by {@code @Cacheable} in UserService. */
+  String REDIS_USER_DETAILS_PREFIX = "user:details";
 }

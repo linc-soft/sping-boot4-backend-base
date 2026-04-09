@@ -22,9 +22,12 @@ public enum MessageEnums {
   FAIL(500, null),
   BAD_REQUEST(400, "Bad Request"),
   UNAUTHORIZED(401, "Unauthorized"),
+  FORBIDDEN(403, "Forbidden"),
   INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
   USER_NOT_FOUND(100001, "User Not Found"),
-  USER_INACTIVE(100002, "User Inactive");
+  USER_INACTIVE(100002, "User Inactive"),
+  TOKEN_REVOKED(100003, "Token Revoked"),
+  RATE_LIMITED(429, "Too Many Requests");
 
   @Getter private final int code;
   @Getter private final String message;

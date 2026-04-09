@@ -4,3 +4,8 @@
 spring:
   profiles:
     active: test
+
+# Application properties for test environment
+app:
+  jwt:
+    secret: test-secret-key-for-unit-tests-minimum-32-chars

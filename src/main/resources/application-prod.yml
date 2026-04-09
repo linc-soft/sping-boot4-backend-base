@@ -23,3 +23,19 @@ spring:
       validation-timeout: 3000
       # Leak detection threshold (milliseconds)
       leak-detection-threshold: 0
+
+  # Redis settings (production overrides)
+  data:
+    redis:
+      lettuce:
+        pool:
+          # Higher pool size for production
+          max-active: 16
+          max-idle: 16
+          min-idle: 4
+
+# Application settings
+app:
+  csrf:
+    # Enable Secure flag for CSRF cookie (HTTPS only in production)
+    secure: true

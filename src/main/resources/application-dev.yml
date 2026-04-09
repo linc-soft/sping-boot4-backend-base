@@ -23,3 +23,11 @@ spring:
       validation-timeout: 5000
       # Leak detection threshold (milliseconds)
       leak-detection-threshold: 60000
+
+# Application settings
+app:
+  cache:
+    # UserDetails cache TTL in minutes (short TTL for quick state change reflection)
+    user-details-ttl-minutes: 2
+    # Default cache TTL in hours
+    default-ttl-hours: 1

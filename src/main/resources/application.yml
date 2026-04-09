@@ -17,3 +17,22 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Redis settings
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          # Maximum active connections
+          max-active: 8
+          # Maximum idle connections
+          max-idle: 8
+          # Minimum idle connections
+          min-idle: 2
+          # Maximum wait time for connection (-1 = no limit)
+          max-wait: 3000ms
