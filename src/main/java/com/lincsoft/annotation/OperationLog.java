@@ -42,6 +42,21 @@ public @interface OperationLog {
   /**
    * Gets the operation description.
    *
+   * <p>Supports SpEL expressions using {@code #{#variableName}} syntax for dynamic content.
+   * Expressions are evaluated in a read-only property access context (no method invocation
+   * allowed).
+   *
+   * <p>Supported expression patterns:
+   *
+   * <ul>
+   *   <li>{@code #{#paramName}} — method parameter value
+   *   <li>{@code #{#paramName.property}} — nested property of a method parameter
+   *   <li>{@code #{#result}} — method return value (null if method threw an exception)
+   *   <li>{@code #{#result.property}} — nested property of the return value
+   * </ul>
+   *
+   * <p>Example: {@code @OperationLog(description = "Created user #{#dto.username}")}
+   *
    * @return a human-readable description of the operation, default is empty string
    */
   String description() default "";

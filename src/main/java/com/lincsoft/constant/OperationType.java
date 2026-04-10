@@ -12,15 +12,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum OperationType {
-  QUERY("QUERY"),
-  CREATE("CREATE"),
-  UPDATE("UPDATE"),
-  DELETE("DELETE"),
-  LOGIN("LOGIN"),
-  LOGOUT("LOGOUT"),
-  IMPORT("IMPORT"),
-  EXPORT("EXPORT"),
-  OTHER("OTHER");
-
-  private final String value;
+  QUERY(),
+  CREATE(),
+  UPDATE(),
+  DELETE(),
+  LOGIN(),
+  LOGOUT(),
+  IMPORT(),
+  EXPORT(),
+  OTHER();
 }
