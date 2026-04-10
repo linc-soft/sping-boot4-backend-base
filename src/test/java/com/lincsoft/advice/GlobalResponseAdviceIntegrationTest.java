@@ -12,6 +12,8 @@ import com.lincsoft.controller_outside.OutsideAdviceTestController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,12 +26,17 @@ import org.springframework.test.web.servlet.MockMvc;
  * @author 林创科技
  * @since 2026-04-08
  */
-@WebMvcTest({
-  AdviceTestController.class,
-  OutsideAdviceTestController.class,
-  IgnoredClassAdviceTestController.class,
-  HttpEntityAdviceTestController.class
-})
+@WebMvcTest(
+    controllers = {
+      AdviceTestController.class,
+      OutsideAdviceTestController.class,
+      IgnoredClassAdviceTestController.class,
+      HttpEntityAdviceTestController.class
+    },
+    excludeFilters =
+        @ComponentScan.Filter(
+            type = FilterType.REGEX,
+            pattern = "com\\.lincsoft\\.(config|interceptor|filter|exception|services)\\..*"))
 @Import(GlobalResponseAdvice.class)
 class GlobalResponseAdviceIntegrationTest {
 
