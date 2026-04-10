@@ -37,6 +37,10 @@
     <jjwt.version>0.13.0</jjwt.version>
     <!-- Bucket4j Version -->
     <bucket4j.version>8.17.0</bucket4j.version>
+    <!-- SpringDoc OpenAPI Version -->
+    <springdoc.version>3.0.2</springdoc.version>
+    <!-- Knife4j UI Version -->
+    <knife4j.version>4.5.0</knife4j.version>
     <!-- FMT Maven Plugin Version -->
     <fmt-maven-plugin.version>2.29</fmt-maven-plugin.version>
     <!-- Active Profile -->
@@ -125,6 +129,22 @@
     <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
+    </dependency>
+
+    <!-- ========== API Documentation ========== -->
+
+    <!-- SpringDoc OpenAPI Starter (OpenAPI 3 + Swagger UI for Spring Boot 4) -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
+    </dependency>
+
+    <!-- Knife4j Enhanced UI (replaces default Swagger UI with Knife4j UI) -->
+    <dependency>
+      <groupId>com.github.xiaoymin</groupId>
+      <artifactId>knife4j-openapi3-ui</artifactId>
+      <version>${knife4j.version}</version>
     </dependency>
 
     <!-- ========== Utility ========== -->

@@ -132,7 +132,14 @@ public class SecurityConfig {
                             hsts.includeSubDomains(true)
                                 .maxAgeInSeconds(31536000)
                                 .preload(appProperties.getSecurity().isHstsPreload()))
-                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")))
+                    .contentSecurityPolicy(
+                        csp ->
+                            csp.policyDirectives(
+                                "default-src 'self'; "
+                                    + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                                    + "style-src 'self' 'unsafe-inline'; "
+                                    + "img-src 'self' data:; "
+                                    + "font-src 'self' data:")))
         // URL Access Rules
         .authorizeHttpRequests(
             authorize -> {

@@ -53,3 +53,10 @@ app:
     max-pool-size: 16
     queue-capacity: 2000
     await-termination-seconds: 60
+
+# Disable API documentation in production
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

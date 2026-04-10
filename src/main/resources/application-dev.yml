@@ -39,6 +39,8 @@ app:
       - /v3/api-docs/**
       - /swagger-ui/**
       - /swagger-ui.html
+      - /doc.html
+      - /webjars/**
   # Rate limiting: disabled in development to avoid interfering with debugging
   rate-limit:
     enabled: false
@@ -52,3 +54,5 @@ app:
       - /v3/api-docs/**
       - /swagger-ui/**
       - /swagger-ui.html
+      - /doc.html
+      - /webjars/**
