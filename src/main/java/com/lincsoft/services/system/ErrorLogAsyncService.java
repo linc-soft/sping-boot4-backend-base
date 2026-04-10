@@ -2,7 +2,7 @@ package com.lincsoft.services.system;
 
 import com.lincsoft.entity.system.SysErrorLog;
 import com.lincsoft.mapper.system.SysErrorLogMapper;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ErrorLogAsyncService {
   private final SysErrorLogMapper sysErrorLogMapper;
 
