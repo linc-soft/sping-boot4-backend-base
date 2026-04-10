@@ -11,7 +11,7 @@ spring:
   main:
     banner-mode: off
   profiles:
-    active: @active.profile@
+    active: "@active.profile@"
 
   # Data source settings
   datasource:
@@ -42,6 +42,14 @@ spring:
 
 # Application settings
 app:
+  # Async thread pool settings
+  async:
+    core-pool-size: 4
+    max-pool-size: 8
+    queue-capacity: 500
+    thread-name-prefix: "async-log-"
+    wait-for-tasks-to-complete-on-shutdown: true
+    await-termination-seconds: 30
   security:
     # Public endpoints bypass authentication and CSRF protection
     public-endpoints:

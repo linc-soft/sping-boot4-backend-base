@@ -42,3 +42,8 @@ app:
   security:
     # Enable HSTS preload directive for production (requires 100% HTTPS coverage)
     hsts-preload: true
+  async:
+    core-pool-size: 8
+    max-pool-size: 16
+    queue-capacity: 2000
+    await-termination-seconds: 60

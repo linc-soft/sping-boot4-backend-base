@@ -23,3 +23,10 @@ spring:
       validation-timeout: 3000
       # Leak detection threshold (milliseconds)
       leak-detection-threshold: 30000
+
+# Application settings
+app:
+  async:
+    core-pool-size: 4
+    max-pool-size: 12
+    queue-capacity: 800

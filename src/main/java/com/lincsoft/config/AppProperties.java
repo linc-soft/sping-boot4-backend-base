@@ -66,6 +66,13 @@ public class AppProperties {
   private Security security = new Security();
 
   /**
+   * Async thread pool configuration settings.
+   *
+   * <p>Defines thread pool parameters for asynchronous log saving operations.
+   */
+  private Async async = new Async();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -307,5 +314,59 @@ public class AppProperties {
      * <p>Default: false (development-safe)
      */
     private boolean hstsPreload = false;
+  }
+
+  /**
+   * Async thread pool configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.async} prefix from configuration files. Controls the
+   * thread pool parameters for asynchronous log saving operations.
+   */
+  @Data
+  public static class Async {
+    /**
+     * Core pool size: number of threads always kept alive.
+     *
+     * <p>Default: 4
+     */
+    private int corePoolSize = 4;
+
+    /**
+     * Maximum pool size: upper limit of threads under high load.
+     *
+     * <p>Default: 8
+     */
+    private int maxPoolSize = 8;
+
+    /**
+     * Queue capacity: maximum number of pending tasks.
+     *
+     * <p>Default: 500
+     */
+    private int queueCapacity = 500;
+
+    /**
+     * Thread name prefix for log output identification.
+     *
+     * <p>Default: "async-log-"
+     */
+    private String threadNamePrefix = "async-log-";
+
+    /**
+     * Whether to wait for tasks to complete on shutdown.
+     *
+     * <p>When {@code true}, the executor will wait for queued tasks to finish before shutting down,
+     * preventing task loss during application shutdown.
+     *
+     * <p>Default: true
+     */
+    private boolean waitForTasksToCompleteOnShutdown = true;
+
+    /**
+     * Maximum time (in seconds) to wait for tasks to complete on shutdown.
+     *
+     * <p>Default: 30 seconds
+     */
+    private int awaitTerminationSeconds = 30;
   }
 }
