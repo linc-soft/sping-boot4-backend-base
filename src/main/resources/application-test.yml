@@ -26,6 +26,12 @@ spring:
 
 # Application settings
 app:
+  # Rate limiting: relaxed settings for test environment
+  rate-limit:
+    capacity: 100
+    refill-tokens: 100
+    refill-period-seconds: 60
+    expire-after-access-minutes: 10
   async:
     core-pool-size: 4
     max-pool-size: 12

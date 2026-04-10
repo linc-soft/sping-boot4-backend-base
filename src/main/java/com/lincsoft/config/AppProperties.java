@@ -279,6 +279,16 @@ public class AppProperties {
      * <p>Default: 60 seconds (1 minute)
      */
     private long refillPeriodSeconds = 60;
+
+    /**
+     * Expiration time in minutes for inactive bucket entries.
+     *
+     * <p>Buckets that have not been accessed within this duration will be automatically evicted
+     * from the cache to prevent memory leaks.
+     *
+     * <p>Default: 10 minutes
+     */
+    private long expireAfterAccessMinutes = 10;
   }
 
   /**

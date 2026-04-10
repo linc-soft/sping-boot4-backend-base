@@ -42,6 +42,12 @@ app:
   security:
     # Enable HSTS preload directive for production (requires 100% HTTPS coverage)
     hsts-preload: true
+  # Rate limiting: strict settings for production
+  rate-limit:
+    capacity: 50
+    refill-tokens: 50
+    refill-period-seconds: 60
+    expire-after-access-minutes: 30
   async:
     core-pool-size: 8
     max-pool-size: 16

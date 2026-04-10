@@ -121,6 +121,12 @@
       <version>${bucket4j.version}</version>
     </dependency>
 
+    <!-- Caffeine Cache (high-performance local cache with expiration support) -->
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+    </dependency>
+
     <!-- ========== Utility ========== -->
     <dependency>
       <groupId>org.projectlombok</groupId>

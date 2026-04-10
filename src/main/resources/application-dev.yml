@@ -39,6 +39,9 @@ app:
       - /v3/api-docs/**
       - /swagger-ui/**
       - /swagger-ui.html
+  # Rate limiting: disabled in development to avoid interfering with debugging
+  rate-limit:
+    enabled: false
   # Access log: exclude Swagger/API docs paths in development
   access-log:
     exclude-path-patterns:

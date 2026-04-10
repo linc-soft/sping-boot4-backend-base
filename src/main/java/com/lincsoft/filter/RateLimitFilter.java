@@ -1,5 +1,7 @@
 package com.lincsoft.filter;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.lincsoft.common.Result;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.MessageEnums;
@@ -13,9 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
@@ -48,7 +47,6 @@ import tools.jackson.databind.ObjectMapper;
  * @since 2026-04-09
  */
 @Slf4j
-@RequiredArgsConstructor
 public class RateLimitFilter extends OncePerRequestFilter {
 
   /** Application configuration properties for rate limit settings. */
@@ -57,8 +55,27 @@ public class RateLimitFilter extends OncePerRequestFilter {
   /** Object Mapper for JSON response serialization. */
   private final ObjectMapper objectMapper;
 
-  /** Per-IP token bucket cache. Uses ConcurrentHashMap for thread-safe access. */
-  private final Map<String, Bucket> bucketCache = new ConcurrentHashMap<>();
+  /**
+   * Per-IP token bucket cache. Uses Caffeine cache with expireAfterAccess to automatically evict
+   * inactive entries and prevent memory leaks from accumulating buckets for stale IPs.
+   */
+  private final Cache<String, Bucket> bucketCache;
+
+  /**
+   * Creates a new RateLimitFilter with the given configuration and object mapper.
+   *
+   * @param appProperties application configuration properties
+   * @param objectMapper object mapper for JSON serialization
+   */
+  public RateLimitFilter(AppProperties appProperties, ObjectMapper objectMapper) {
+    this.appProperties = appProperties;
+    this.objectMapper = objectMapper;
+    this.bucketCache =
+        Caffeine.newBuilder()
+            .expireAfterAccess(
+                Duration.ofMinutes(appProperties.getRateLimit().getExpireAfterAccessMinutes()))
+            .build();
+  }
 
   /**
    * Applies rate limiting to the incoming request based on the client IP address.
@@ -89,7 +106,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     // Resolve client IP address (proxy-aware, uses X-Forwarded-For etc.)
     String clientIp = LogUtil.getClientIp(request);
-    Bucket bucket = bucketCache.computeIfAbsent(clientIp, _ -> createBucket());
+    Bucket bucket = bucketCache.get(clientIp, _ -> createBucket());
 
     // Try to consume one token
     ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
