@@ -98,8 +98,9 @@ public class AsyncConfig implements AsyncConfigurer {
   public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
     return (ex, method, params) ->
         log.error(
-            "Uncaught exception occurred in async method. Method: {}, Error: {}",
+            "Uncaught exception occurred in async method. Method: {}, Args: {}, Error: {}",
             method.getName(),
+            params,
             ex.getMessage(),
             ex);
   }
