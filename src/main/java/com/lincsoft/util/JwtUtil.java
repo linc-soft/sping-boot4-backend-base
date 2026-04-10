@@ -20,6 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class JwtUtil {
 
+  private JwtUtil() {
+    throw new AssertionError("Utility class: instantiation not allowed");
+  }
+
   /**
    * Generate a JWT token with a unique JTI (JWT ID) for revocation support.
    *

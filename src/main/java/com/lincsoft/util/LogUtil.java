@@ -4,51 +4,160 @@ import com.lincsoft.constant.CommonConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
 /**
- * ログ処理用共通ユーティリティクラス。
+ * Common log processing utility class.
  *
- * <p>提供する機能:
+ * <p>Aggregates utility methods shared across log processing modules ({@code AccessLogInterceptor},
+ * {@code GlobalExceptionHandler}, {@code OperationLogAspect}).
+ *
+ * <p>Provided features:
  *
  * <ul>
- *   <li>{@link #truncate}: 指定された最大長で文字列を切り捨てる
- *   <li>{@link #getClientIp}: プロキシ対応のクライアントIP取得
- *   <li>{@link #buildRequestHeaders}: リクエストヘッダーをJSON文字列として構築（機密データマスク済み）
- *   <li>{@link #extractRequestBody}: リクエストボディを抽出（機密データマスク済み）
- *   <li>{@link #escapeJson}: JSON文字列のエスケープ処理
+ *   <li>{@link #getClientIp(HttpServletRequest)}: Retrieves client IP with proxy support
+ *   <li>{@link #getClientIp()}: Retrieves client IP via {@link RequestContextHolder}
+ *   <li>{@link #isValidIp(String)}: Validates IP address
+ *   <li>{@link #truncate(String, int)}: Truncates string to specified maximum length
+ *   <li>{@link #sanitizeBody(String)}: Masks sensitive information in JSON body
+ *   <li>{@link #escapeJson(String)}: Escapes JSON special characters
+ *   <li>{@link #buildRequestHeaders(HttpServletRequest)}: Builds request headers as JSON string
+ *       (with sensitive header masking)
+ *   <li>{@link #extractRequestBody(HttpServletRequest)}: Extracts request body
  * </ul>
  *
- * @author 林創科技
+ * @author 林创科技
  * @since 2026-04-08
  */
 @Slf4j
 public final class LogUtil {
 
-  /** リクエストボディの最大記録文字数 */
-  private static final int MAX_REQUEST_BODY_LENGTH = 2000;
+  /** Set of sensitive header names (case-insensitive lookup via TreeSet) */
+  private static final Set<String> SENSITIVE_HEADERS;
 
-  /** マスク置換文字列 */
-  private static final String MASKED_VALUE = "******";
+  static {
+    TreeSet<String> headers = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    headers.add(CommonConstants.HEADER_AUTHORIZATION);
+    headers.add(CommonConstants.HEADER_COOKIE);
+    headers.add(CommonConstants.HEADER_SET_COOKIE);
+    SENSITIVE_HEADERS = headers;
+  }
 
-  /** マスク対象のヘッダー名（小文字） */
-  private static final String HEADER_AUTHORIZATION_LOWER = "authorization";
-
-  /** マスク対象のボディフィールドパターン（パスワード関連） */
-  private static final String PASSWORD_PATTERN = "password";
+  /** Regular expression pattern to detect sensitive fields (built from CommonConstants) */
+  private static final Pattern SENSITIVE_FIELD_PATTERN =
+      Pattern.compile(
+          "(\"(?:" + CommonConstants.SENSITIVE_FIELD_NAMES + ")\"\\s*:\\s*\")([^\"]*)(\")",
+          Pattern.CASE_INSENSITIVE);
 
   private LogUtil() {
-    // ユーティリティクラスのためインスタンス化を禁止
+    throw new AssertionError("Utility class: instantiation not allowed");
   }
 
   /**
-   * 指定された最大長で文字列を切り捨てる。
+   * Retrieves the client IP address from the HTTP request.
    *
-   * @param str 切り捨て対象の文字列
-   * @param maxLen 最大長
-   * @return 切り捨て後の文字列
+   * <p>Supports requests via proxy/load balancer by retrieving the IP address in the following
+   * priority order:
+   *
+   * <ol>
+   *   <li>X-Forwarded-For header (first IP in comma-separated list)
+   *   <li>X-Real-IP header
+   *   <li>Proxy-Client-IP header
+   *   <li>WL-Proxy-Client-IP header (for WebLogic)
+   *   <li>Fallback: {@code request.getRemoteAddr()}
+   * </ol>
+   *
+   * @param request the HTTP request
+   * @return the client IP address
+   */
+  public static String getClientIp(HttpServletRequest request) {
+    // Check X-Forwarded-For header (for proxy requests, the first IP is the original client IP)
+    String ip = request.getHeader("X-Forwarded-For");
+    if (isValidIp(ip)) {
+      return ip.split(",")[0].trim();
+    }
+
+    // Check X-Real-IP header
+    ip = request.getHeader("X-Real-IP");
+    if (isValidIp(ip)) {
+      return ip.trim();
+    }
+
+    // Check Proxy-Client-IP header
+    ip = request.getHeader("Proxy-Client-IP");
+    if (isValidIp(ip)) {
+      return ip.trim();
+    }
+
+    // Check WL-Proxy-Client-IP header (for WebLogic)
+    ip = request.getHeader("WL-Proxy-Client-IP");
+    if (isValidIp(ip)) {
+      return ip.trim();
+    }
+
+    // Fallback: use remote address
+    return request.getRemoteAddr();
+  }
+
+  /**
+   * Retrieves the HTTP request from {@link RequestContextHolder} and returns the client IP address.
+   *
+   * <p>Used when {@link HttpServletRequest} cannot be obtained directly in AOP aspects or request
+   * contexts. Returns {@code null} if the request context does not exist (e.g., scheduled tasks).
+   *
+   * @return the client IP address, or {@code null} if no request context is available
+   */
+  public static String getClientIp() {
+    try {
+      ServletRequestAttributes attributes =
+          (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+      if (attributes == null) {
+        // No request context (e.g., scheduled tasks)
+        return null;
+      }
+      return getClientIp(attributes.getRequest());
+    } catch (Exception e) {
+      // Return null on IP retrieval failure to avoid affecting the main flow
+      log.warn("Failed to retrieve client IP address: {}", e.getMessage());
+      return null;
+    }
+  }
+
+  /**
+   * Determines whether an IP address string is valid.
+   *
+   * <p>Returns {@code true} if all of the following conditions are met:
+   *
+   * <ul>
+   *   <li>Not {@code null}
+   *   <li>Not empty
+   *   <li>Not "unknown" (case-insensitive)
+   * </ul>
+   *
+   * @param ip the IP address string
+   * @return {@code true} if valid, {@code false} if invalid
+   */
+  public static boolean isValidIp(String ip) {
+    return ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip);
+  }
+
+  /**
+   * Truncates a string to the specified maximum length.
+   *
+   * <p>Returns {@code null} if the input is {@code null}. Returns the string as-is if its length is
+   * less than or equal to {@code maxLen}. If it exceeds, truncates to {@code maxLen} characters and
+   * appends a truncation suffix.
+   *
+   * @param str the target string
+   * @param maxLen the maximum length
+   * @return the truncated string, or {@code null} if the input is {@code null}
    */
   public static String truncate(String str, int maxLen) {
     if (str == null) {
@@ -61,42 +170,93 @@ public final class LogUtil {
   }
 
   /**
-   * プロキシ対応のクライアントIPアドレスを取得する。
+   * Masks sensitive fields in a JSON body.
    *
-   * <p>以下のヘッダーを順に確認し、最初に有効な値を返す:
+   * <p>Replaces JSON values matching the following field names with "{@value
+   * CommonConstants#MASK_VALUE}": password, passwd, pwd, secret, token, credential
+   * (case-insensitive).
    *
-   * <ol>
-   *   <li>X-Forwarded-For（カンマ区切りの場合は最初のIPを使用）
-   *   <li>X-Real-IP
-   *   <li>{@code request.getRemoteAddr()}
-   * </ol>
-   *
-   * @param request HTTPリクエスト
-   * @return クライアントIPアドレス
+   * @param body the JSON body string
+   * @return the masked body string, or the input as-is if it is {@code null} or empty
    */
-  public static String getClientIp(HttpServletRequest request) {
-    // X-Forwarded-Forヘッダーを確認（リバースプロキシ経由の場合）
-    String ip = request.getHeader("X-Forwarded-For");
-    if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-      // カンマ区切りの場合、最初のIPが実際のクライアントIP
-      return ip.split(",")[0].trim();
+  public static String sanitizeBody(String body) {
+    if (body == null || body.isEmpty()) {
+      return body;
     }
-    // X-Real-IPヘッダーを確認（Nginx等のプロキシ）
-    ip = request.getHeader("X-Real-IP");
-    if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-      return ip.trim();
-    }
-    // フォールバック: サーブレットコンテナから直接取得
-    return request.getRemoteAddr();
+    return SENSITIVE_FIELD_PATTERN
+        .matcher(body)
+        .replaceAll("$1" + CommonConstants.MASK_VALUE + "$3");
   }
 
   /**
-   * リクエストヘッダーをJSON文字列として構築する。
+   * Escapes special characters in a JSON string.
    *
-   * <p>Authorizationヘッダーの値はマスク処理される。
+   * <p>Characters to escape:
    *
-   * @param request HTTPリクエスト
-   * @return リクエストヘッダーのJSON文字列
+   * <ul>
+   *   <li>{@code "} → {@code \"}
+   *   <li>{@code \} → {@code \\}
+   *   <li>newline → {@code \n}
+   *   <li>carriage return → {@code \r}
+   *   <li>tab → {@code \t}
+   * </ul>
+   *
+   * @param value the string to escape
+   * @return the escaped string, or an empty string if the input is {@code null}
+   */
+  public static String escapeJson(String value) {
+    if (value == null) {
+      return "";
+    }
+    StringBuilder sb = new StringBuilder(value.length());
+    for (int i = 0; i < value.length(); i++) {
+      char ch = value.charAt(i);
+      switch (ch) {
+        case '"' -> sb.append("\\\"");
+        case '\\' -> sb.append("\\\\");
+        case '\n' -> sb.append("\\n");
+        case '\r' -> sb.append("\\r");
+        case '\t' -> sb.append("\\t");
+        default -> sb.append(ch);
+      }
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Extracts the request body from {@link ContentCachingRequestWrapper} and masks sensitive
+   * information.
+   *
+   * <p>The body can only be read if the request is wrapped with {@link
+   * ContentCachingRequestWrapper}. The extracted body is masked for sensitive fields via {@link
+   * #sanitizeBody(String)}, truncated to {@value CommonConstants#MAX_TEXT_LENGTH} characters, and
+   * returned. Returns {@code null} otherwise.
+   *
+   * @param request the HTTP request
+   * @return the request body string with sensitive information masked and truncated (UTF-8
+   *     decoded), or {@code null} if it cannot be retrieved
+   */
+  public static String extractRequestBody(HttpServletRequest request) {
+    if (request instanceof ContentCachingRequestWrapper wrapper) {
+      byte[] content = wrapper.getContentAsByteArray();
+      if (content.length > 0) {
+        // UTF-8 decode, mask sensitive fields, and truncate to maximum length
+        return truncate(
+            sanitizeBody(new String(content, StandardCharsets.UTF_8)),
+            CommonConstants.MAX_TEXT_LENGTH);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Builds request headers as a JSON string.
+   *
+   * <p>Sensitive headers (Authorization, Cookie, Set-Cookie) are masked with "{@value
+   * CommonConstants#MASK_VALUE}". Header names and values are JSON-escaped.
+   *
+   * @param request the HTTP request
+   * @return the JSON string of request headers, or {@code null} if building fails
    */
   public static String buildRequestHeaders(HttpServletRequest request) {
     try {
@@ -105,78 +265,20 @@ public final class LogUtil {
       if (headerNames != null) {
         while (headerNames.hasMoreElements()) {
           String name = headerNames.nextElement();
-          String value = request.getHeader(name);
-          // Authorizationヘッダーをマスク処理
-          if (HEADER_AUTHORIZATION_LOWER.equalsIgnoreCase(name)) {
-            value = MASKED_VALUE;
+          String value;
+          if (SENSITIVE_HEADERS.contains(name)) {
+            // Mask sensitive header values
+            value = CommonConstants.MASK_VALUE;
+          } else {
+            value = request.getHeader(name);
           }
           joiner.add("\"" + escapeJson(name) + "\":\"" + escapeJson(value) + "\"");
         }
       }
       return joiner.toString();
     } catch (Exception e) {
-      log.warn("リクエストヘッダーのJSON変換に失敗しました: {}", e.getMessage());
+      log.warn("Failed to convert request headers to JSON: {}", e.getMessage());
       return null;
     }
-  }
-
-  /**
-   * リクエストボディを抽出する。
-   *
-   * <p>{@link ContentCachingRequestWrapper} の場合のみボディを読み取り可能。 パスワード関連フィールドが含まれる場合はマスク処理を行う。
-   * 最大文字数を超える場合は切り捨てる。
-   *
-   * @param request HTTPリクエスト
-   * @return リクエストボディ文字列。取得できない場合はnull
-   */
-  public static String extractRequestBody(HttpServletRequest request) {
-    if (request instanceof ContentCachingRequestWrapper wrapper) {
-      byte[] content = wrapper.getContentAsByteArray();
-      if (content.length > 0) {
-        String body = new String(content, StandardCharsets.UTF_8);
-        // パスワード関連フィールドをマスク処理
-        body = maskSensitiveFields(body);
-        return truncate(body, MAX_REQUEST_BODY_LENGTH);
-      }
-    }
-    return null;
-  }
-
-  /**
-   * JSON文字列内の特殊文字をエスケープする。
-   *
-   * <p>エスケープ対象: バックスラッシュ、ダブルクォート、改行、復帰、タブ
-   *
-   * @param value エスケープ対象の文字列
-   * @return エスケープ後の文字列。nullの場合は空文字列
-   */
-  public static String escapeJson(String value) {
-    if (value == null) {
-      return "";
-    }
-    return value
-        .replace("\\", "\\\\")
-        .replace("\"", "\\\"")
-        .replace("\n", "\\n")
-        .replace("\r", "\\r")
-        .replace("\t", "\\t");
-  }
-
-  /**
-   * 機密フィールド（パスワード等）をマスク処理する。
-   *
-   * <p>JSONボディ内の "password" を含むキーの値をマスクする。 簡易的な正規表現ベースの置換を使用。
-   *
-   * @param body リクエストボディ文字列
-   * @return マスク処理後の文字列
-   */
-  private static String maskSensitiveFields(String body) {
-    if (body == null) {
-      return null;
-    }
-    // "xxxpasswordxxx":"value" パターンをマスク（大文字小文字無視）
-    return body.replaceAll(
-        "(?i)(\"[^\"]*" + PASSWORD_PATTERN + "[^\"]*\"\\s*:\\s*)\"[^\"]*\"",
-        "$1\"" + MASKED_VALUE + "\"");
   }
 }

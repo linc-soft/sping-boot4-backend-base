@@ -19,8 +19,10 @@ public interface CommonConstants {
   /** MDC key for trace ID */
   String MDC_TRACE_ID_KEY = "traceId";
 
-  /** Maximum text length to store in the error log */
-  int MAX_TEXT_LENGTH = 4000;
+  /**
+   * Maximum character length for MySQL TEXT column (65,535 bytes / utf8mb4 max 4 bytes ≈ 16,383)
+   */
+  int MAX_TEXT_LENGTH = 16000;
 
   /** Suffix to truncate the text */
   String TRUNCATE_SUFFIX = "...[truncated]";
@@ -60,4 +62,16 @@ public interface CommonConstants {
 
   /** X-CSRF-TOKEN header name */
   String HEADER_X_CSRF_TOKEN = "X-CSRF-TOKEN";
+
+  /** Cookie header name */
+  String HEADER_COOKIE = "Cookie";
+
+  /** Set-Cookie header name */
+  String HEADER_SET_COOKIE = "Set-Cookie";
+
+  /** Mask replacement string for sensitive data */
+  String MASK_VALUE = "******";
+
+  /** Sensitive field names for JSON body masking (pipe-separated for regex alternation) */
+  String SENSITIVE_FIELD_NAMES = "password|passwd|pwd|secret|token|credential";
 }

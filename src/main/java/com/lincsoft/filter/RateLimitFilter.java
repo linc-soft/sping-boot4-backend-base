@@ -3,6 +3,7 @@ package com.lincsoft.filter;
 import com.lincsoft.common.Result;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.util.LogUtil;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
@@ -86,8 +87,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
       return;
     }
 
-    // Resolve client IP address
-    String clientIp = request.getRemoteAddr();
+    // Resolve client IP address (proxy-aware, uses X-Forwarded-For etc.)
+    String clientIp = LogUtil.getClientIp(request);
     Bucket bucket = bucketCache.computeIfAbsent(clientIp, _ -> createBucket());
 
     // Try to consume one token
