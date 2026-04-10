@@ -65,4 +65,44 @@ public class TokenBlacklistService {
     String key = CommonConstants.REDIS_TOKEN_BLACKLIST_PREFIX + jti;
     return Boolean.TRUE.equals(stringRedisTemplate.hasKey(key));
   }
+
+  /**
+   * Registers an active session for the given user by storing the refresh token's JTI. If the user
+   * already has an active session, the previous refresh token is revoked (kicked off).
+   *
+   * @param username the username of the authenticated user
+   * @param newJti the JTI of the new refresh token
+   * @param refreshExpirationMillis the TTL for the session entry (matches refresh token lifetime)
+   */
+  public void registerSession(String username, String newJti, long refreshExpirationMillis) {
+    String sessionKey = CommonConstants.REDIS_ACTIVE_SESSION_PREFIX + username;
+
+    // Check for existing active session and revoke it
+    String oldJti = stringRedisTemplate.opsForValue().get(sessionKey);
+    if (oldJti != null && !oldJti.isBlank()) {
+      // Revoke the old refresh token with the remaining TTL of the session key
+      Long remainingMillis = stringRedisTemplate.getExpire(sessionKey, TimeUnit.MILLISECONDS);
+      if (remainingMillis != null && remainingMillis > 0) {
+        revokeToken(oldJti, remainingMillis);
+        log.info("Kicked off previous session: username={}, oldJti={}", username, oldJti);
+      }
+    }
+
+    // Store the new session
+    stringRedisTemplate
+        .opsForValue()
+        .set(sessionKey, newJti, refreshExpirationMillis, TimeUnit.MILLISECONDS);
+    log.debug("Session registered: username={}, jti={}", username, newJti);
+  }
+
+  /**
+   * Removes the active session record for the given user.
+   *
+   * @param username the username whose session should be cleared
+   */
+  public void removeSession(String username) {
+    String sessionKey = CommonConstants.REDIS_ACTIVE_SESSION_PREFIX + username;
+    stringRedisTemplate.delete(sessionKey);
+    log.debug("Session removed: username={}", username);
+  }
 }

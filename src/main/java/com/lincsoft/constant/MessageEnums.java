@@ -27,6 +27,8 @@ public enum MessageEnums {
   USER_NOT_FOUND(100001, "User Not Found"),
   USER_INACTIVE(100002, "User Inactive"),
   TOKEN_REVOKED(100003, "Token Revoked"),
+  INVALID_CREDENTIALS(100004, "Invalid Credentials"),
+  INVALID_REFRESH_TOKEN(100005, "Invalid Refresh Token"),
   RATE_LIMITED(429, "Too Many Requests");
 
   @Getter private final int code;

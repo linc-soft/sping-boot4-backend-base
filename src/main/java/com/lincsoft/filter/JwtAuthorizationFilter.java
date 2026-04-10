@@ -121,6 +121,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     try {
       // Parse the JWT token and retrieve the claims
       Claims claims = JwtUtil.parseToken(token, appProperties.getJwt().getSecret());
+
+      // Reject non-access tokens (e.g., refresh tokens must not be used as access tokens)
+      String tokenType = claims.get(CommonConstants.JWT_CLAIM_TOKEN_TYPE_KEY, String.class);
+      if (!CommonConstants.TOKEN_TYPE_ACCESS.equals(tokenType)) {
+        log.warn("Non-access token used in Authorization header: type={}", tokenType);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType("application/json;charset=UTF-8");
+        response
+            .getWriter()
+            .write(objectMapper.writeValueAsString(Result.error(MessageEnums.UNAUTHORIZED)));
+        return;
+      }
+
       // Get the username from the token subject
       String subject = claims.getSubject();
 

@@ -61,14 +61,16 @@ public class UserService implements UserDetailsService {
   private final RoleService roleService;
 
   /**
-   * Loads user details by user ID for Spring Security authentication.
+   * Loads user details by username for Spring Security authentication.
    *
-   * <p>This method is called by Spring Security during the authentication process. It performs the
-   * following steps:
+   * <p>This method is called by Spring Security during the authentication process (via {@link
+   * org.springframework.security.authentication.dao.DaoAuthenticationProvider}) and by {@link
+   * com.lincsoft.filter.JwtAuthorizationFilter} for JWT token validation. It performs the following
+   * steps:
    *
    * <ol>
    *   <li>Checks Spring Cache for previously loaded UserDetails (Redis-backed)
-   *   <li>On cache miss, queries the database to find the user by ID
+   *   <li>On cache miss, queries the database to find the user by username
    *   <li>Validates that the user exists
    *   <li>Checks if the user account is active
    *   <li>Retrieves the user's roles from the database
@@ -76,18 +78,18 @@ public class UserService implements UserDetailsService {
    *   <li>Constructs a {@link UserDetails} object (automatically cached by Spring Cache)
    * </ol>
    *
-   * @param userId the user ID to look up
+   * @param username the username to look up
    * @return a fully populated UserDetails object with username, password, and authorities
    * @throws UsernameNotFoundException if the user is not found in the database
    * @throws BusinessException if the user exists but is inactive
    */
   @NullMarked
   @Override
-  @Cacheable(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, key = "#userId")
-  public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-    // Build query to find user by ID
+  @Cacheable(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, key = "#username")
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    // Build query to find user by username
     QueryWrapper<MstUser> userQueryWrapper = new QueryWrapper<>();
-    userQueryWrapper.eq("id", userId);
+    userQueryWrapper.eq("username", username);
     MstUser user = userMapper.selectOne(userQueryWrapper);
 
     // Validate user existence
@@ -120,15 +122,15 @@ public class UserService implements UserDetailsService {
   }
 
   /**
-   * Evicts the cached UserDetails for the specified user ID.
+   * Evicts the cached UserDetails for the specified username.
    *
    * <p>Should be called when user state changes (e.g., role update, password change, account
    * deactivation) to ensure the next authentication loads fresh data from the database.
    *
-   * @param userId the user ID whose cache entry should be evicted
+   * @param username the username whose cache entry should be evicted
    */
-  @CacheEvict(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, key = "#userId")
-  public void evictUserDetailsCache(String userId) {
-    log.debug("Evicted UserDetails cache for user: {}", userId);
+  @CacheEvict(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, key = "#username")
+  public void evictUserDetailsCache(String username) {
+    log.debug("Evicted UserDetails cache for user: {}", username);
   }
 }

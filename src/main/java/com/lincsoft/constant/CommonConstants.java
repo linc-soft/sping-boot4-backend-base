@@ -39,6 +39,9 @@ public interface CommonConstants {
   /** User status inactive */
   String USER_STATUS_INACTIVE = "0";
 
+  /** User status active */
+  String USER_STATUS_ACTIVE = "1";
+
   /** CSRF cookie name */
   String CSRF_COOKIE_NAME = "csrfToken";
 
@@ -47,6 +50,9 @@ public interface CommonConstants {
 
   /** Redis key prefix for JWT token blacklist */
   String REDIS_TOKEN_BLACKLIST_PREFIX = "token:blacklist:";
+
+  /** Redis key prefix for active session (username → refresh token JTI) */
+  String REDIS_ACTIVE_SESSION_PREFIX = "token:session:";
 
   /** Cache name for UserDetails entries, used by {@code @Cacheable} in UserService. */
   String REDIS_USER_DETAILS_PREFIX = "user:details";
@@ -77,4 +83,19 @@ public interface CommonConstants {
 
   /** Sensitive field names for JSON body masking (pipe-separated for regex alternation) */
   String SENSITIVE_FIELD_NAMES = "password|passwd|pwd|secret|token|credential";
+
+  /** JWT claim key to distinguish token type (access / refresh) */
+  String JWT_CLAIM_TOKEN_TYPE_KEY = "tokenType";
+
+  /** Token type value: access */
+  String TOKEN_TYPE_ACCESS = "access";
+
+  /** Token type value: refresh */
+  String TOKEN_TYPE_REFRESH = "refresh";
+
+  /** Refresh token cookie name */
+  String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+
+  /** Refresh token cookie path (only sent to refresh endpoint) */
+  String REFRESH_TOKEN_COOKIE_PATH = "/api/auth/refresh";
 }
