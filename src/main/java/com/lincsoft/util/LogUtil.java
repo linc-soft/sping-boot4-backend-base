@@ -256,7 +256,8 @@ public final class LogUtil {
    * Builds response headers as a JSON string.
    *
    * <p>Uses Jackson {@link ObjectMapper} for safe JSON conversion. Header names and values are
-   * automatically escaped by ObjectMapper, eliminating JSON injection risks.
+   * automatically escaped by ObjectMapper, eliminating JSON injection risks. Sensitive headers
+   * (e.g., Set-Cookie) are masked with "{@value CommonConstants#MASK_VALUE}".
    *
    * @param response the HTTP response
    * @return the JSON string of response headers, or {@code null} if building fails
@@ -267,7 +268,11 @@ public final class LogUtil {
       Collection<String> headerNames = response.getHeaderNames();
       if (headerNames != null) {
         for (String name : headerNames) {
-          headerMap.put(name, response.getHeader(name));
+          if (SENSITIVE_HEADERS.contains(name)) {
+            headerMap.put(name, CommonConstants.MASK_VALUE);
+          } else {
+            headerMap.put(name, response.getHeader(name));
+          }
         }
       }
       return OBJECT_MAPPER.writeValueAsString(headerMap);
