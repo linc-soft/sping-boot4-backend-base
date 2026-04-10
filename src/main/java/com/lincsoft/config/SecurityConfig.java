@@ -3,6 +3,7 @@ package com.lincsoft.config;
 import com.lincsoft.common.Result;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.filter.ContentCachingFilter;
 import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.filter.RateLimitFilter;
 import com.lincsoft.filter.TraceIdFilter;
@@ -46,7 +47,7 @@ import tools.jackson.databind.ObjectMapper;
  *   <li>CORS: withCredentials policy
  *   <li>Session Management: STATELESS mode (server-side session management disabled)
  *   <li>URL Access Rules: Whitelist (login, public API) and authenticated endpoints
- *   <li>Filter Chain: TraceIdFilter, RateLimitFilter, JwtAuthorizationFilter,
+ *   <li>Filter Chain: ContentCachingFilter, TraceIdFilter, RateLimitFilter, JwtAuthorizationFilter,
  *       UsernamePasswordAuthenticationFilter
  *   <li>Password Encoder: BCrypt algorithm
  *   <li>Authentication Manager: Spring Security standard AuthenticationManager
@@ -146,8 +147,9 @@ public class SecurityConfig {
               // All other requests require authentication
               authorize.anyRequest().authenticated();
             })
-        // Filter Chain: TraceIdFilter, RateLimitFilter, JwtAuthorizationFilter,
-        // UsernamePasswordAuthenticationFilter
+        // Filter Chain: ContentCachingFilter, TraceIdFilter, RateLimitFilter,
+        // JwtAuthorizationFilter, UsernamePasswordAuthenticationFilter
+        .addFilterBefore(contentCachingFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(traceIdFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(rateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -223,6 +225,26 @@ public class SecurityConfig {
     response.setStatus(status.value());
     response.setContentType("application/json;charset=UTF-8");
     response.getWriter().write(objectMapper.writeValueAsString(Result.error(messageEnum)));
+  }
+
+  /**
+   * Creates the ContentCachingFilter instance.
+   *
+   * <p>This filter wraps the request and response with caching wrappers to enable multiple reads of
+   * request/response bodies. It is placed first in the security filter chain so that all subsequent
+   * filters and interceptors can access the cached body content.
+   *
+   * <p><b>Design Note:</b> This method intentionally does NOT use the {@code @Bean} annotation.
+   * Spring Boot automatically registers all {@code @Bean} Filters into the Servlet container, which
+   * would cause this filter to be executed twice: once by the Servlet container and once by the
+   * SecurityFilterChain. By using {@code new} directly and manually adding it via {@code
+   * addFilterBefore()}, we ensure the filter is only executed once at the correct position in the
+   * security filter chain.
+   *
+   * @return the configured ContentCachingFilter instance
+   */
+  private ContentCachingFilter contentCachingFilter() {
+    return new ContentCachingFilter();
   }
 
   /**
