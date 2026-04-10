@@ -72,6 +72,9 @@ public interface CommonConstants {
   /** Mask replacement string for sensitive data */
   String MASK_VALUE = "******";
 
+  /** Maximum length of the User-Agent field (to match VARCHAR(255) in the DDL) */
+  int MAX_USER_AGENT_LENGTH = 255;
+
   /** Sensitive field names for JSON body masking (pipe-separated for regex alternation) */
   String SENSITIVE_FIELD_NAMES = "password|passwd|pwd|secret|token|credential";
 }

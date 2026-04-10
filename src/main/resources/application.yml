@@ -57,3 +57,9 @@ app:
     # Auth-only whitelist requires CSRF but bypasses authentication
     auth-only-whitelist:
       - /api/auth/refresh
+  # Access log interceptor settings
+  access-log:
+    exclude-path-patterns:
+      - /actuator/**
+      - /favicon.ico
+      - /error

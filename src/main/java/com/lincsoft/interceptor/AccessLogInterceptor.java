@@ -8,8 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.StringJoiner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -32,7 +30,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  *   <li>Records response status code, headers, and body
  *   <li>Records client IP (proxy-aware), User-Agent, and operating user
  *   <li>Records processing time (milliseconds) and traceId
- *   <li>Masks sensitive data (Authorization header, password fields)
+ *   <li>Masks sensitive data (Authorization header, password fields, etc.)
  *   <li>Reads response body via {@link ContentCachingResponseWrapper}
  * </ul>
  *
@@ -108,12 +106,13 @@ public class AccessLogInterceptor implements HandlerInterceptor {
 
       // Set response information
       accessLog.setResponseStatus(response.getStatus());
-      accessLog.setResponseHeaders(buildResponseHeaders(response));
+      accessLog.setResponseHeaders(LogUtil.buildResponseHeaders(response));
       accessLog.setResponseBody(extractResponseBody(response));
 
       // Set client information
       accessLog.setClientIp(LogUtil.getClientIp(request));
-      accessLog.setUserAgent(request.getHeader("User-Agent"));
+      accessLog.setUserAgent(
+          LogUtil.truncate(request.getHeader("User-Agent"), CommonConstants.MAX_USER_AGENT_LENGTH));
 
       // Retrieve operating user from MDC
       accessLog.setUsername(MDC.get(CommonConstants.MDC_CURRENT_USER_KEY));
@@ -148,43 +147,22 @@ public class AccessLogInterceptor implements HandlerInterceptor {
   }
 
   /**
-   * Builds response headers as a JSON string.
+   * Extracts the response body and masks sensitive data.
+   *
+   * <p>The body can only be read if the response is a {@link ContentCachingResponseWrapper}. Masks
+   * sensitive fields via {@link LogUtil#sanitizeBody(String)} and truncates if it exceeds the
+   * maximum length.
    *
    * @param response the HTTP response
-   * @return JSON string of response headers
-   */
-  private String buildResponseHeaders(HttpServletResponse response) {
-    try {
-      StringJoiner joiner = new StringJoiner(",", "{", "}");
-      Collection<String> headerNames = response.getHeaderNames();
-      if (headerNames != null) {
-        for (String name : headerNames) {
-          String value = response.getHeader(name);
-          joiner.add("\"" + LogUtil.escapeJson(name) + "\":\"" + LogUtil.escapeJson(value) + "\"");
-        }
-      }
-      return joiner.toString();
-    } catch (Exception e) {
-      log.warn("Failed to convert response headers to JSON: {}", e.getMessage());
-      return null;
-    }
-  }
-
-  /**
-   * Extracts the response body.
-   *
-   * <p>The body can only be read if the response is a {@link ContentCachingResponseWrapper}.
-   * Truncates if it exceeds the maximum length.
-   *
-   * @param response the HTTP response
-   * @return response body string, or null if it cannot be retrieved
+   * @return the masked response body string, or null if it cannot be retrieved
    */
   private String extractResponseBody(HttpServletResponse response) {
     if (response instanceof ContentCachingResponseWrapper wrapper) {
       byte[] content = wrapper.getContentAsByteArray();
       if (content.length > 0) {
         String body = new String(content, StandardCharsets.UTF_8);
-        return LogUtil.truncate(body, CommonConstants.MAX_TEXT_LENGTH);
+        // Mask sensitive fields and truncate to maximum length
+        return LogUtil.truncate(LogUtil.sanitizeBody(body), CommonConstants.MAX_TEXT_LENGTH);
       }
     }
     return null;

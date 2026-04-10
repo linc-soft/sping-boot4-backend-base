@@ -2,16 +2,20 @@ package com.lincsoft.util;
 
 import com.lincsoft.constant.CommonConstants;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.ContentCachingRequestWrapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Common log processing utility class.
@@ -27,9 +31,9 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
  *   <li>{@link #isValidIp(String)}: Validates IP address
  *   <li>{@link #truncate(String, int)}: Truncates string to specified maximum length
  *   <li>{@link #sanitizeBody(String)}: Masks sensitive information in JSON body
- *   <li>{@link #escapeJson(String)}: Escapes JSON special characters
  *   <li>{@link #buildRequestHeaders(HttpServletRequest)}: Builds request headers as JSON string
  *       (with sensitive header masking)
+ *   <li>{@link #buildResponseHeaders(HttpServletResponse)}: Builds response headers as JSON string
  *   <li>{@link #extractRequestBody(HttpServletRequest)}: Extracts request body
  * </ul>
  *
@@ -56,8 +60,11 @@ public final class LogUtil {
           "(\"(?:" + CommonConstants.SENSITIVE_FIELD_NAMES + ")\"\\s*:\\s*\")([^\"]*)(\")",
           Pattern.CASE_INSENSITIVE);
 
+  /** ObjectMapper instance for header JSON conversion (thread-safe) */
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
   private LogUtil() {
-    throw new AssertionError("Utility class: instantiation not allowed");
+    throw new AssertionError("Utility class: instantiation is not allowed");
   }
 
   /**
@@ -189,41 +196,6 @@ public final class LogUtil {
   }
 
   /**
-   * Escapes special characters in a JSON string.
-   *
-   * <p>Characters to escape:
-   *
-   * <ul>
-   *   <li>{@code "} → {@code \"}
-   *   <li>{@code \} → {@code \\}
-   *   <li>newline → {@code \n}
-   *   <li>carriage return → {@code \r}
-   *   <li>tab → {@code \t}
-   * </ul>
-   *
-   * @param value the string to escape
-   * @return the escaped string, or an empty string if the input is {@code null}
-   */
-  public static String escapeJson(String value) {
-    if (value == null) {
-      return "";
-    }
-    StringBuilder sb = new StringBuilder(value.length());
-    for (int i = 0; i < value.length(); i++) {
-      char ch = value.charAt(i);
-      switch (ch) {
-        case '"' -> sb.append("\\\"");
-        case '\\' -> sb.append("\\\\");
-        case '\n' -> sb.append("\\n");
-        case '\r' -> sb.append("\\r");
-        case '\t' -> sb.append("\\t");
-        default -> sb.append(ch);
-      }
-    }
-    return sb.toString();
-  }
-
-  /**
    * Extracts the request body from {@link ContentCachingRequestWrapper} and masks sensitive
    * information.
    *
@@ -252,32 +224,55 @@ public final class LogUtil {
   /**
    * Builds request headers as a JSON string.
    *
-   * <p>Sensitive headers (Authorization, Cookie, Set-Cookie) are masked with "{@value
-   * CommonConstants#MASK_VALUE}". Header names and values are JSON-escaped.
+   * <p>Uses Jackson {@link ObjectMapper} for safe JSON conversion. Sensitive headers
+   * (Authorization, Cookie, Set-Cookie) are masked with "{@value CommonConstants#MASK_VALUE}".
    *
    * @param request the HTTP request
    * @return the JSON string of request headers, or {@code null} if building fails
    */
   public static String buildRequestHeaders(HttpServletRequest request) {
     try {
-      StringJoiner joiner = new StringJoiner(",", "{", "}");
+      Map<String, String> headerMap = new LinkedHashMap<>();
       Enumeration<String> headerNames = request.getHeaderNames();
       if (headerNames != null) {
         while (headerNames.hasMoreElements()) {
           String name = headerNames.nextElement();
-          String value;
           if (SENSITIVE_HEADERS.contains(name)) {
             // Mask sensitive header values
-            value = CommonConstants.MASK_VALUE;
+            headerMap.put(name, CommonConstants.MASK_VALUE);
           } else {
-            value = request.getHeader(name);
+            headerMap.put(name, request.getHeader(name));
           }
-          joiner.add("\"" + escapeJson(name) + "\":\"" + escapeJson(value) + "\"");
         }
       }
-      return joiner.toString();
+      return OBJECT_MAPPER.writeValueAsString(headerMap);
     } catch (Exception e) {
       log.warn("Failed to convert request headers to JSON: {}", e.getMessage());
+      return null;
+    }
+  }
+
+  /**
+   * Builds response headers as a JSON string.
+   *
+   * <p>Uses Jackson {@link ObjectMapper} for safe JSON conversion. Header names and values are
+   * automatically escaped by ObjectMapper, eliminating JSON injection risks.
+   *
+   * @param response the HTTP response
+   * @return the JSON string of response headers, or {@code null} if building fails
+   */
+  public static String buildResponseHeaders(HttpServletResponse response) {
+    try {
+      Map<String, String> headerMap = new LinkedHashMap<>();
+      Collection<String> headerNames = response.getHeaderNames();
+      if (headerNames != null) {
+        for (String name : headerNames) {
+          headerMap.put(name, response.getHeader(name));
+        }
+      }
+      return OBJECT_MAPPER.writeValueAsString(headerMap);
+    } catch (Exception e) {
+      log.warn("Failed to convert response headers to JSON: {}", e.getMessage());
       return null;
     }
   }

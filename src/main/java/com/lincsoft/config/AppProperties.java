@@ -66,6 +66,13 @@ public class AppProperties {
   private Security security = new Security();
 
   /**
+   * Access log configuration settings.
+   *
+   * <p>Defines path exclusion patterns for the access log interceptor.
+   */
+  private AccessLog accessLog = new AccessLog();
+
+  /**
    * Async thread pool configuration settings.
    *
    * <p>Defines thread pool parameters for asynchronous log saving operations.
@@ -94,7 +101,7 @@ public class AppProperties {
   }
 
   /**
-   * Validates CORS allowed origins configuration.
+   * Validates CORS allowed origins' configuration.
    *
    * <p>Ensures that each origin value is a valid URL without wildcards. Wildcard origins ({@code
    * *}) are not allowed when {@code AllowCredentials=true}, and pattern-based origins (e.g., {@code
@@ -368,5 +375,24 @@ public class AppProperties {
      * <p>Default: 30 seconds
      */
     private int awaitTerminationSeconds = 30;
+  }
+
+  /**
+   * Inner class for access log configuration.
+   *
+   * <p>Binds properties under the {@code app.access-log} prefix. Defines excluded path patterns for
+   * the access log interceptor.
+   */
+  @Data
+  public static class AccessLog {
+    /**
+     * URL path patterns to exclude from access log recording.
+     *
+     * <p>Ant patterns passed to Spring MVC's {@code excludePathPatterns}. Specifies paths that do
+     * not require logging, such as static resources, health checks, and error pages.
+     *
+     * <p>Default: actuator, favicon.ico, error endpoints
+     */
+    private String[] excludePathPatterns = {"/actuator/**", "/favicon.ico", "/error"};
   }
 }

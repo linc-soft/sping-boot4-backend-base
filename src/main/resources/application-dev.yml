@@ -39,3 +39,13 @@ app:
       - /v3/api-docs/**
       - /swagger-ui/**
       - /swagger-ui.html
+  # Access log: exclude Swagger/API docs paths in development
+  access-log:
+    exclude-path-patterns:
+      - /actuator/**
+      - /favicon.ico
+      - /error
+      - /v3/api-docs
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
