@@ -5,6 +5,7 @@ import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.filter.RateLimitFilter;
+import com.lincsoft.filter.TraceIdFilter;
 import com.lincsoft.services.system.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -45,7 +46,8 @@ import tools.jackson.databind.ObjectMapper;
  *   <li>CORS: withCredentials policy
  *   <li>Session Management: STATELESS mode (server-side session management disabled)
  *   <li>URL Access Rules: Whitelist (login, public API) and authenticated endpoints
- *   <li>Filter Chain: RateLimitFilter, JwtAuthorizationFilter, UsernamePasswordAuthenticationFilter
+ *   <li>Filter Chain: TraceIdFilter, RateLimitFilter, JwtAuthorizationFilter,
+ *       UsernamePasswordAuthenticationFilter
  *   <li>Password Encoder: BCrypt algorithm
  *   <li>Authentication Manager: Spring Security standard AuthenticationManager
  * </ul>
@@ -144,8 +146,9 @@ public class SecurityConfig {
               // All other requests require authentication
               authorize.anyRequest().authenticated();
             })
-        // Filter Chain: RateLimitFilter, JwtAuthorizationFilter,
+        // Filter Chain: TraceIdFilter, RateLimitFilter, JwtAuthorizationFilter,
         // UsernamePasswordAuthenticationFilter
+        .addFilterBefore(traceIdFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(rateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
         // Exception Handling
@@ -223,6 +226,26 @@ public class SecurityConfig {
   }
 
   /**
+   * Creates the TraceIdFilter instance.
+   *
+   * <p>This filter generates a unique traceId for each request and sets it in MDC, request
+   * attributes, and response headers. It is placed first in the security filter chain to ensure all
+   * subsequent filters and handlers have access to the traceId for logging and tracing.
+   *
+   * <p><b>Design Note:</b> This method intentionally does NOT use the {@code @Bean} annotation.
+   * Spring Boot automatically registers all {@code @Bean} Filters into the Servlet container, which
+   * would cause this filter to be executed twice: once by the Servlet container and once by the
+   * SecurityFilterChain. By using {@code new} directly and manually adding it via {@code
+   * addFilterBefore()}, we ensure the filter is only executed once at the correct position in the
+   * security filter chain.
+   *
+   * @return the configured TraceIdFilter instance
+   */
+  private TraceIdFilter traceIdFilter() {
+    return new TraceIdFilter();
+  }
+
+  /**
    * Creates the RateLimitFilter instance.
    *
    * <p>This filter applies per-IP rate limiting using the Bucket4j token-bucket algorithm. It is
@@ -285,9 +308,14 @@ public class SecurityConfig {
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     // Allowed Headers (explicitly specified to reduce attack surface)
     configuration.setAllowedHeaders(
-        Arrays.asList("Authorization", "Content-Type", "X-CSRF-TOKEN", "X-Trace-Id"));
+        Arrays.asList(
+            CommonConstants.HEADER_AUTHORIZATION,
+            CommonConstants.HEADER_CONTENT_TYPE,
+            CommonConstants.HEADER_X_CSRF_TOKEN,
+            CommonConstants.HEADER_TRACE_ID));
     // Exposed Headers
-    configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Trace-Id"));
+    configuration.setExposedHeaders(
+        Arrays.asList(CommonConstants.HEADER_AUTHORIZATION, CommonConstants.HEADER_TRACE_ID));
     // withCredentials policy: Access-Control-Allow-Credentials: true
     configuration.setAllowCredentials(true);
     // Preflight Cache Time: 3600 seconds

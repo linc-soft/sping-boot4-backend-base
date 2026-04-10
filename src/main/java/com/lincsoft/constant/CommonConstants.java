@@ -48,4 +48,16 @@ public interface CommonConstants {
 
   /** Cache name for UserDetails entries, used by {@code @Cacheable} in UserService. */
   String REDIS_USER_DETAILS_PREFIX = "user:details";
+
+  /** Trace ID response header name */
+  String HEADER_TRACE_ID = "X-Trace-Id";
+
+  /** Authorization header name */
+  String HEADER_AUTHORIZATION = "Authorization";
+
+  /** Content-Type header name */
+  String HEADER_CONTENT_TYPE = "Content-Type";
+
+  /** X-CSRF-TOKEN header name */
+  String HEADER_X_CSRF_TOKEN = "X-CSRF-TOKEN";
 }

@@ -1,9 +1,11 @@
 package com.lincsoft.config;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,6 +66,21 @@ public class AsyncConfig implements AsyncConfigurer {
     executor.setWaitForTasksToCompleteOnShutdown(asyncProps.isWaitForTasksToCompleteOnShutdown());
     // Shutdown wait time in seconds
     executor.setAwaitTerminationSeconds(asyncProps.getAwaitTerminationSeconds());
+    // MDC context propagation: copy traceId, username etc. from caller thread to async thread
+    executor.setTaskDecorator(
+        runnable -> {
+          Map<String, String> contextMap = MDC.getCopyOfContextMap();
+          return () -> {
+            try {
+              if (contextMap != null) {
+                MDC.setContextMap(contextMap);
+              }
+              runnable.run();
+            } finally {
+              MDC.clear();
+            }
+          };
+        });
     // Initialize the executor
     executor.initialize();
     return executor;
