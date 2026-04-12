@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.Data;
 
 /**
@@ -30,7 +31,7 @@ public abstract class BaseEntity implements Serializable {
 
   /* Create Time */
   @TableField(fill = FieldFill.INSERT)
-  private String createAt;
+  private LocalDateTime createAt;
 
   /* Update User */
   @TableField(fill = FieldFill.INSERT_UPDATE)
@@ -38,5 +39,5 @@ public abstract class BaseEntity implements Serializable {
 
   /* Update Time */
   @TableField(fill = FieldFill.INSERT_UPDATE)
-  private String updateAt;
+  private LocalDateTime updateAt;
 }
