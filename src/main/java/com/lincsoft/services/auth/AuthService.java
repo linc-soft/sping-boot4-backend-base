@@ -11,6 +11,7 @@ import com.lincsoft.exception.BusinessException;
 import com.lincsoft.services.master.UserService;
 import com.lincsoft.services.system.TokenBlacklistService;
 import com.lincsoft.util.JwtUtil;
+import com.lincsoft.util.LogUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
@@ -21,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -47,6 +50,7 @@ public class AuthService {
   private final UserService userService;
   private final AppProperties appProperties;
   private final TokenBlacklistService tokenBlacklistService;
+  private final LoginProtectionService loginProtectionService;
 
   /**
    * Authenticate user via {@link AuthenticationManager} and generate access + refresh tokens.
@@ -55,42 +59,83 @@ public class AuthService {
    * (DaoAuthenticationProvider → UserDetailsService → PasswordEncoder). On success, generates a
    * token pair with username as the JWT subject.
    *
+   * <p>Includes brute-force protection:
+   *
+   * <ul>
+   *   <li>Lock check: {@link UserService#loadUserByUsername(String)} embeds the account lock status
+   *       into {@link
+   *       org.springframework.security.core.userdetails.UserDetails#isAccountNonLocked()}. Spring
+   *       Security throws {@link LockedException} internally when the account is locked.
+   *   <li>On failure: Records the failure for both account and IP dimensions via {@link
+   *       LoginProtectionService}.
+   *   <li>On success: Clears all failure counters for the account and IP.
+   * </ul>
+   *
+   * <p><b>Security note — username enumeration prevention:</b> Both {@link LockedException} and
+   * {@link BadCredentialsException} are caught together and mapped to the same {@code
+   * INVALID_CREDENTIALS} error code. This ensures that "account locked", "wrong password", and
+   * "user not found" are indistinguishable to the caller, preventing username enumeration via
+   * distinct error codes. Additionally, because the lock check happens inside {@code
+   * DaoAuthenticationProvider} (after {@code loadUserByUsername}), Spring Security's built-in
+   * timing-attack mitigation (dummy password hash on user-not-found) remains active for all paths.
+   *
    * @param request the login request containing username and password
+   * @param httpRequest the HTTP servlet request for extracting client IP
    * @param response the HTTP response for setting the refresh token cookie
    * @return LoginResponse containing the access token
    */
-  public LoginResponse login(LoginRequest request, HttpServletResponse response) {
-    // Delegate authentication to Spring Security's AuthenticationManager
-    Authentication authentication =
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+  public LoginResponse login(
+      LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
+    String username = request.username();
+    String clientIp = LogUtil.getClientIp(httpRequest);
 
-    // Extract authenticated user details
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-    String username = userDetails.getUsername();
+    try {
+      // Delegate authentication to Spring Security's AuthenticationManager.
+      // DaoAuthenticationProvider calls loadUserByUsername(), which embeds the lock status.
+      // If locked, LockedException is thrown here; if credentials wrong, BadCredentialsException.
+      Authentication authentication =
+          authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(username, request.password()));
 
-    // Generate tokens with username as subject
-    String secret = appProperties.getJwt().getSecret();
-    AuthenticatedUserDTO userDTO =
-        new AuthenticatedUserDTO(username, CommonConstants.USER_STATUS_ACTIVE);
+      // Extract authenticated user details
+      UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+      String authenticatedUsername = userDetails.getUsername();
 
-    String accessToken =
-        JwtUtil.generateAccessToken(
-            username, userDTO, secret, appProperties.getJwt().getExpiration());
-    String refreshToken =
-        JwtUtil.generateRefreshToken(
-            username, secret, appProperties.getJwt().getRefreshExpiration());
+      // Generate tokens with username as subject
+      String secret = appProperties.getJwt().getSecret();
+      AuthenticatedUserDTO userDTO =
+          new AuthenticatedUserDTO(authenticatedUsername, CommonConstants.USER_STATUS_ACTIVE);
 
-    // Register active session (kicks off previous session if exists)
-    Claims refreshClaims = JwtUtil.parseToken(refreshToken, secret);
-    tokenBlacklistService.registerSession(
-        username, refreshClaims.getId(), appProperties.getJwt().getRefreshExpiration());
+      String accessToken =
+          JwtUtil.generateAccessToken(
+              authenticatedUsername, userDTO, secret, appProperties.getJwt().getExpiration());
+      String refreshToken =
+          JwtUtil.generateRefreshToken(
+              authenticatedUsername, secret, appProperties.getJwt().getRefreshExpiration());
 
-    // Set refresh token as HttpOnly cookie
-    setRefreshTokenCookie(response, refreshToken, appProperties.getJwt().getRefreshExpiration());
+      // Register active session (kicks off previous session if exists)
+      Claims refreshClaims = JwtUtil.parseToken(refreshToken, secret);
+      tokenBlacklistService.registerSession(
+          authenticatedUsername,
+          refreshClaims.getId(),
+          appProperties.getJwt().getRefreshExpiration());
 
-    log.info("User logged in successfully: username={}", username);
-    return new LoginResponse(accessToken);
+      // Set refresh token as HttpOnly cookie
+      setRefreshTokenCookie(response, refreshToken, appProperties.getJwt().getRefreshExpiration());
+
+      // Clear failure counters on successful login
+      loginProtectionService.recordSuccess(authenticatedUsername, clientIp);
+
+      log.info("User logged in successfully: username={}", authenticatedUsername);
+      return new LoginResponse(accessToken);
+    } catch (LockedException | BadCredentialsException e) {
+      // Record login failure for brute-force protection.
+      // Both LockedException (account locked) and BadCredentialsException (wrong password /
+      // user not found) are mapped to the same INVALID_CREDENTIALS error to prevent username
+      // enumeration — callers cannot distinguish between these two cases.
+      loginProtectionService.recordFailure(username, clientIp);
+      throw new BusinessException(MessageEnums.INVALID_CREDENTIALS);
+    }
   }
 
   /**

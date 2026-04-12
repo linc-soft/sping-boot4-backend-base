@@ -98,4 +98,16 @@ public interface CommonConstants {
 
   /** Refresh token cookie path (only sent to refresh endpoint) */
   String REFRESH_TOKEN_COOKIE_PATH = "/api/auth/refresh";
+
+  /** Redis key prefix for IP blacklist (auto-blocked IPs) */
+  String REDIS_IP_BLOCKED_PREFIX = "ip:blocked:";
+
+  /** Redis key prefix for login failure count per IP */
+  String REDIS_LOGIN_FAIL_IP_PREFIX = "login:fail:ip:";
+
+  /** Redis key prefix for login failure count per account */
+  String REDIS_LOGIN_FAIL_ACCOUNT_PREFIX = "login:fail:account:";
+
+  /** Redis key prefix for account lock */
+  String REDIS_LOGIN_LOCKED_PREFIX = "login:locked:";
 }

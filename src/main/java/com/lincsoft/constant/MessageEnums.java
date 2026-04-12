@@ -29,6 +29,8 @@ public enum MessageEnums {
   TOKEN_REVOKED(100003, "Token Revoked"),
   INVALID_CREDENTIALS(100004, "Invalid Credentials"),
   INVALID_REFRESH_TOKEN(100005, "Invalid Refresh Token"),
+  IP_BLOCKED(100006, "IP Blocked"),
+  ACCOUNT_LOCKED(100007, "Account Locked"),
   RATE_LIMITED(429, "Too Many Requests");
 
   @Getter private final int code;

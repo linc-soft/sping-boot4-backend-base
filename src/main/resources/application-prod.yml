@@ -48,6 +48,19 @@ app:
     refill-tokens: 50
     refill-period-seconds: 60
     expire-after-access-minutes: 30
+    # IP whitelist (CIDR and individual IPs) - customize for your network
+    white-list:
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+    # Login protection: strict settings for production
+    ip-max-failures: 20
+    ip-fail-window-minutes: 10
+    ip-block-duration-minutes: 60
+    account-max-failures: 5
+    account-fail-window-minutes: 10
+    account-lock-step-minutes: 5
+    account-lock-max-hours: 24
   async:
     core-pool-size: 8
     max-pool-size: 16

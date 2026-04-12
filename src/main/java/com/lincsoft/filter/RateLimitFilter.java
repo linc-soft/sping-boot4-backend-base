@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.lincsoft.common.Result;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.util.IpChecker;
 import com.lincsoft.util.LogUtil;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -22,15 +23,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Rate Limiting Filter using Bucket4j token-bucket algorithm.
+ * Rate Limiting and IP Access Control Filter.
  *
- * <p>This filter applies per-IP rate limiting to all incoming HTTP requests. Each unique client IP
- * address is assigned a token bucket with a configurable capacity and refill rate. When a client
- * exceeds the allowed request rate, a 429 Too Many Requests response is returned.
+ * <p>This filter provides two layers of IP-based request protection, evaluated in order:
+ *
+ * <ol>
+ *   <li><b>Whitelist check:</b> Whitelisted IPs (configured via {@code app.rate-limit.white-list})
+ *       bypass rate limiting entirely and proceed directly to the next filter.
+ *   <li><b>Rate limiting:</b> All other IPs are subject to per-IP token-bucket rate limiting using
+ *       the Bucket4j algorithm.
+ * </ol>
+ *
+ * <p>IP blacklist enforcement is handled separately by {@link IpBlacklistFilter}, which runs before
+ * this filter and is always active regardless of the {@code enabled} flag.
  *
  * <p>Configuration is driven by {@link AppProperties.RateLimit}:
  *
  * <ul>
+ *   <li>White list: IP addresses/CIDR ranges that bypass rate limiting
  *   <li>Capacity: Maximum burst size (tokens in the bucket)
  *   <li>Refill tokens and period: Token replenishment rate
  *   <li>Enabled flag: Allows disabling rate limiting entirely
@@ -62,7 +72,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
   private final Cache<String, Bucket> bucketCache;
 
   /**
-   * Creates a new RateLimitFilter with the given configuration and object mapper.
+   * Creates a new RateLimitFilter with the given dependencies.
    *
    * @param appProperties application configuration properties
    * @param objectMapper object mapper for JSON serialization
@@ -78,12 +88,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
   }
 
   /**
-   * Applies rate limiting to the incoming request based on the client IP address.
+   * Applies IP access control and rate limiting to the incoming request.
    *
-   * <p>If rate limiting is disabled via configuration, the request passes through directly. If the
-   * client has remaining tokens, the request proceeds and the remaining count is added to the
-   * response headers. If the bucket is exhausted, a 429 response is returned with a Retry-After
-   * header.
+   * <p>Processing order:
+   *
+   * <ol>
+   *   <li>If rate limiting is disabled, pass through directly.
+   *   <li>Resolve client IP address (proxy-aware).
+   *   <li>If IP is whitelisted → pass through (skip rate limiting).
+   *   <li>Otherwise → apply token-bucket rate limiting.
+   * </ol>
    *
    * @param request the HTTP servlet request
    * @param response the HTTP servlet response
@@ -106,6 +120,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     // Resolve client IP address (proxy-aware, uses X-Forwarded-For etc.)
     String clientIp = LogUtil.getClientIp(request);
+
+    // 1. Whitelist: bypass rate limiting entirely
+    if (IpChecker.isWhitelisted(clientIp)) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
+    // 2. Rate limiting: token-bucket algorithm
     Bucket bucket = bucketCache.get(clientIp, _ -> createBucket());
 
     // Try to consume one token

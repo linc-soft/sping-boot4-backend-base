@@ -4,6 +4,7 @@ import com.lincsoft.common.Result;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.filter.ContentCachingFilter;
+import com.lincsoft.filter.IpBlacklistFilter;
 import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.filter.RateLimitFilter;
 import com.lincsoft.filter.TraceIdFilter;
@@ -47,8 +48,8 @@ import tools.jackson.databind.ObjectMapper;
  *   <li>CORS: withCredentials policy
  *   <li>Session Management: STATELESS mode (server-side session management disabled)
  *   <li>URL Access Rules: Whitelist (login, public API) and authenticated endpoints
- *   <li>Filter Chain: ContentCachingFilter, TraceIdFilter, RateLimitFilter, JwtAuthorizationFilter,
- *       UsernamePasswordAuthenticationFilter
+ *   <li>Filter Chain: IpBlacklistFilter, ContentCachingFilter, TraceIdFilter, RateLimitFilter,
+ *       JwtAuthorizationFilter, UsernamePasswordAuthenticationFilter
  *   <li>Password Encoder: BCrypt algorithm
  *   <li>Authentication Manager: Spring Security standard AuthenticationManager
  * </ul>
@@ -154,8 +155,9 @@ public class SecurityConfig {
               // All other requests require authentication
               authorize.anyRequest().authenticated();
             })
-        // Filter Chain: ContentCachingFilter, TraceIdFilter, RateLimitFilter,
+        // Filter Chain: IpBlacklistFilter, ContentCachingFilter, TraceIdFilter, RateLimitFilter,
         // JwtAuthorizationFilter, UsernamePasswordAuthenticationFilter
+        .addFilterBefore(ipBlacklistFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(contentCachingFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(traceIdFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(rateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -272,6 +274,22 @@ public class SecurityConfig {
    */
   private TraceIdFilter traceIdFilter() {
     return new TraceIdFilter();
+  }
+
+  /**
+   * Creates the IpBlacklistFilter instance.
+   *
+   * <p>This filter rejects requests from IPs that have been auto-blocked by {@link
+   * com.lincsoft.services.auth.LoginProtectionService}. It runs before {@link RateLimitFilter} and
+   * is always active, regardless of whether rate limiting is enabled.
+   *
+   * <p><b>Design Note:</b> This method intentionally does NOT use the {@code @Bean} annotation to
+   * prevent double registration by the Servlet container.
+   *
+   * @return the configured IpBlacklistFilter instance
+   */
+  private IpBlacklistFilter ipBlacklistFilter() {
+    return new IpBlacklistFilter(objectMapper);
   }
 
   /**

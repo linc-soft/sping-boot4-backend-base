@@ -3,6 +3,7 @@ package com.lincsoft.config;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 import org.jspecify.annotations.NonNull;
@@ -289,6 +290,106 @@ public class AppProperties {
      * <p>Default: 10 minutes
      */
     private long expireAfterAccessMinutes = 10;
+
+    // ==================== IP Whitelist / Blacklist ====================
+
+    /**
+     * IP whitelist entries (supports CIDR notation and single IP addresses).
+     *
+     * <p>Whitelisted IPs bypass rate limiting entirely. Supports IPv4/IPv6 CIDR notation (e.g.,
+     * {@code 10.0.0.0/8}) and individual IP addresses (e.g., {@code 203.0.113.50}).
+     *
+     * <p>Default: empty list (no whitelisted IPs)
+     */
+    private List<String> whiteList = new ArrayList<>();
+
+    /**
+     * Auto-ban duration in minutes for IPs that exceed the login failure threshold.
+     *
+     * <p>When a non-whitelisted IP reaches {@link #ipMaxFailures} failed login attempts within the
+     * {@link #ipFailWindowMinutes} window, it is automatically added to the Redis blacklist for
+     * this duration.
+     *
+     * <p>Default: 60 minutes (1 hour)
+     */
+    private long ipBlockDurationMinutes = 60;
+
+    /**
+     * Maximum number of failed login attempts allowed per IP before auto-ban.
+     *
+     * <p>Only applies to non-whitelisted IPs. When this threshold is reached within the {@link
+     * #ipFailWindowMinutes} window, the IP is automatically blacklisted.
+     *
+     * <p>Default: 20 attempts
+     */
+    private int ipMaxFailures = 20;
+
+    /**
+     * Time window in minutes for counting IP-level login failures.
+     *
+     * <p>The failure counter for each IP resets after this duration of inactivity.
+     *
+     * <p>Default: 10 minutes
+     */
+    private long ipFailWindowMinutes = 10;
+
+    // ==================== Account Lock ====================
+
+    /**
+     * Maximum number of failed login attempts allowed per account before locking (threshold X).
+     *
+     * <p>Applies to all IPs (both whitelisted and non-whitelisted). When this threshold is reached,
+     * the account is locked with a duration calculated as: {@code (failureCount -
+     * accountMaxFailures) * accountLockStepMinutes}, capped at {@link #accountLockMaxHours}.
+     *
+     * <p>Default: 5 attempts
+     */
+    private int accountMaxFailures = 5;
+
+    /**
+     * Time window in minutes for counting account-level login failures.
+     *
+     * <p>The failure counter for each account resets after this duration of inactivity.
+     *
+     * <p>Default: 10 minutes
+     */
+    private long accountFailWindowMinutes = 10;
+
+    /**
+     * Lock duration step in minutes per excess failure (N).
+     *
+     * <p>Each additional failure beyond {@link #accountMaxFailures} adds this many minutes to the
+     * lock duration. For example, with accountMaxFailures=5 and accountLockStepMinutes=5: 6th
+     * failure → 5 min lock, 7th failure → 10 min lock, 8th failure → 15 min lock.
+     *
+     * <p>Default: 5 minutes
+     */
+    private long accountLockStepMinutes = 5;
+
+    /**
+     * Maximum account lock duration in hours (M).
+     *
+     * <p>The calculated lock duration will never exceed this value regardless of the number of
+     * failed attempts.
+     *
+     * <p>Default: 24 hours
+     */
+    private long accountLockMaxHours = 24;
+
+    /**
+     * Amount to decrement the account failure counter on successful login.
+     *
+     * <p>Instead of clearing the counter entirely on success, the counter is reduced by this value
+     * (floored at 0). This prevents attackers from using a known-good password to reset the counter
+     * while still giving legitimate users some leniency after a successful login.
+     *
+     * <p>For example, with accountSuccessDecrement=2: a user who failed 4 times and then succeeds
+     * will have a counter of 2 afterwards, so one accidental mistype the next day won't trigger a
+     * lock.
+     *
+     * <p>Default: 2
+     */
+    private long accountSuccessDecrement = 2;
   }
 
   /**

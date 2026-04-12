@@ -32,6 +32,21 @@ app:
     refill-tokens: 100
     refill-period-seconds: 60
     expire-after-access-minutes: 10
+    # IP whitelist (CIDR and individual IPs)
+    white-list:
+      - 127.0.0.1
+      - 0:0:0:0:0:0:0:1
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+    # Login protection: moderate settings for test
+    ip-max-failures: 20
+    ip-fail-window-minutes: 10
+    ip-block-duration-minutes: 30
+    account-max-failures: 5
+    account-fail-window-minutes: 10
+    account-lock-step-minutes: 5
+    account-lock-max-hours: 12
   async:
     core-pool-size: 4
     max-pool-size: 12

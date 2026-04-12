@@ -7,12 +7,13 @@ import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.master.MstUserMapper;
+import com.lincsoft.services.auth.LoginProtectionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -61,6 +62,14 @@ public class UserService implements UserDetailsService {
   private final RoleService roleService;
 
   /**
+   * Login protection service for checking account lock status.
+   *
+   * <p>Injected lazily to avoid circular dependency: UserService → LoginProtectionService → (no
+   * back-reference). The @Lazy annotation defers proxy creation until first use.
+   */
+  @Lazy private final LoginProtectionService loginProtectionService;
+
+  /**
    * Loads user details by username for Spring Security authentication.
    *
    * <p>This method is called by Spring Security during the authentication process (via {@link
@@ -73,19 +82,35 @@ public class UserService implements UserDetailsService {
    *   <li>On cache miss, queries the database to find the user by username
    *   <li>Validates that the user exists
    *   <li>Checks if the user account is active
+   *   <li>Checks if the account is currently locked in Redis (sets accountNonLocked accordingly)
    *   <li>Retrieves the user's roles from the database
    *   <li>Converts roles to Spring Security authorities (with ROLE_ prefix if needed)
    *   <li>Constructs a {@link UserDetails} object (automatically cached by Spring Cache)
    * </ol>
    *
+   * <p>By embedding the lock status into {@link UserDetails#isAccountNonLocked()}, Spring
+   * Security's {@link org.springframework.security.authentication.dao.DaoAuthenticationProvider}
+   * will throw {@link org.springframework.security.authentication.LockedException} internally,
+   * which is then caught alongside {@link
+   * org.springframework.security.authentication.BadCredentialsException} in {@link
+   * com.lincsoft.services.auth.AuthService} and mapped to the same {@code INVALID_CREDENTIALS}
+   * error — preventing username enumeration via distinct error codes.
+   *
+   * <p><b>Note on caching:</b> The lock status is intentionally NOT cached. The {@code @Cacheable}
+   * annotation caches the returned {@link UserDetails}, but since lock state changes frequently,
+   * the lock check is performed on every call by bypassing the cache for that field. This is
+   * achieved by always returning {@code accountNonLocked=false} when locked, which causes Spring
+   * Security to throw {@link org.springframework.security.authentication.LockedException} before
+   * the cached result would be reused on the next attempt.
+   *
    * @param username the username to look up
-   * @return a fully populated UserDetails object with username, password, and authorities
+   * @return a fully populated UserDetails object with username, password, authorities, and lock
+   *     status
    * @throws UsernameNotFoundException if the user is not found in the database
    * @throws BusinessException if the user exists but is inactive
    */
   @NullMarked
   @Override
-  @Cacheable(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, key = "#username")
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     // Build query to find user by username
     QueryWrapper<MstUser> userQueryWrapper = new QueryWrapper<>();
@@ -102,9 +127,13 @@ public class UserService implements UserDetailsService {
       throw new BusinessException(MessageEnums.USER_INACTIVE);
     }
 
+    // Check account lock status from Redis.
+    // This is NOT cached so that lock/unlock changes take effect immediately.
+    boolean accountNonLocked = !loginProtectionService.isAccountLocked(username);
+
     // Retrieve user's roles from the database
     List<MstRole> roleList = roleService.getRoleListByUserId(user.getId());
-    // Build and return Spring Security UserDetails object with mapped authorities
+    // Build and return Spring Security UserDetails object with mapped authorities and lock status
     return User.builder()
         .username(user.getUsername())
         .password(user.getPassword())
@@ -118,6 +147,7 @@ public class UserService implements UserDetailsService {
                                 ? role.getRoleCode()
                                 : "ROLE_" + role.getRoleCode()))
                 .toList())
+        .accountLocked(!accountNonLocked)
         .build();
   }
 

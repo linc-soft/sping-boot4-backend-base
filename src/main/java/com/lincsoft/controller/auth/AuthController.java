@@ -41,13 +41,16 @@ public class AuthController {
    * User login.
    *
    * @param loginRequest the login credentials
+   * @param request the HTTP request for extracting client IP (used by login protection)
    * @param response the HTTP response for setting the refresh token cookie
    * @return LoginResponse containing the access token
    */
   @PostMapping("/login")
   public LoginResponse login(
-      @Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-    return authService.login(loginRequest, response);
+      @Valid @RequestBody LoginRequest loginRequest,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+    return authService.login(loginRequest, request, response);
   }
 
   /**

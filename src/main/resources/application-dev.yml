@@ -44,6 +44,17 @@ app:
   # Rate limiting: disabled in development to avoid interfering with debugging
   rate-limit:
     enabled: false
+    # IP whitelist (CIDR and individual IPs)
+    white-list:
+      - 127.0.0.1
+      - 0:0:0:0:0:0:0:1
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+    # Account lock: relaxed settings for development
+    account-max-failures: 10
+    account-lock-step-minutes: 1
+    account-lock-max-hours: 1
   # Access log: exclude Swagger/API docs paths in development
   access-log:
     exclude-path-patterns:
