@@ -63,6 +63,10 @@ app:
       - /actuator/**
       - /favicon.ico
       - /error
+  # Access log batch write settings
+  access-log-batch:
+    batch-size: 100
+    flush-interval-ms: 5000
 
 # SpringDoc OpenAPI settings
 springdoc:

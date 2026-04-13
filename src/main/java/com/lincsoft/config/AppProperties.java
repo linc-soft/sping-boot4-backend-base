@@ -81,6 +81,13 @@ public class AppProperties {
   private Async async = new Async();
 
   /**
+   * Access log batch write configuration settings.
+   *
+   * <p>Controls the in-memory buffer and scheduled flush behavior for batch inserting access logs.
+   */
+  private AccessLogBatch accessLogBatch = new AccessLogBatch();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -505,5 +512,35 @@ public class AppProperties {
      * <p>Default: actuator, favicon.ico, error endpoints
      */
     private String[] excludePathPatterns = {"/actuator/**", "/favicon.ico", "/error"};
+  }
+
+  /**
+   * Access log batch write configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.access-log-batch} prefix. Controls the in-memory
+   * buffer size and scheduled flush interval for batch inserting access logs, reducing database
+   * pressure under high concurrency.
+   */
+  @Data
+  public static class AccessLogBatch {
+    /**
+     * Maximum number of log entries per batch INSERT.
+     *
+     * <p>When the buffer reaches this size, a flush is triggered immediately regardless of the
+     * scheduled interval. Also used as the drain limit per scheduled flush cycle.
+     *
+     * <p>Default: 100
+     */
+    private int batchSize = 100;
+
+    /**
+     * Scheduled flush interval in milliseconds.
+     *
+     * <p>A fixed-rate scheduled task drains the buffer at this interval, ensuring logs are
+     * persisted even under low traffic.
+     *
+     * <p>Default: 5000 (5 seconds)
+     */
+    private long flushIntervalMs = 5000;
   }
 }
