@@ -3,6 +3,7 @@ package com.lincsoft.util;
 import static com.lincsoft.constant.CommonConstants.REDIS_IP_BLOCKED_PREFIX;
 
 import com.lincsoft.config.AppProperties;
+import com.lincsoft.services.auth.LoginProtectionService;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,7 @@ import org.springframework.stereotype.Component;
  * 10.0.0.0/8}) via Spring Security's {@link IpAddressMatcher}.
  *
  * <p>Blacklist checks query the Redis key {@code ip:blocked:{ip}}, which is written by {@link
- * com.lincsoft.services.auth.LoginProtectionService} when an IP exceeds the login failure
- * threshold.
+ * LoginProtectionService} when an IP exceeds the login failure threshold.
  *
  * @author 林创科技
  * @since 2026-04-11
@@ -109,9 +109,9 @@ public class IpChecker {
   /**
    * Checks whether the given IP address is currently blacklisted in Redis.
    *
-   * <p>The blacklist key ({@code ip:blocked:{ip}}) is written by {@link
-   * com.lincsoft.services.auth.LoginProtectionService} when an IP exceeds the configured login
-   * failure threshold, and expires automatically after the configured block duration.
+   * <p>The blacklist key ({@code ip:blocked:{ip}}) is written by {@link LoginProtectionService}
+   * when an IP exceeds the configured login failure threshold, and expires automatically after the
+   * configured block duration.
    *
    * @param ip the client IP address to check
    * @return {@code true} if the IP is blacklisted, {@code false} otherwise
