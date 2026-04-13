@@ -68,6 +68,20 @@ app:
     batch-size: 100
     flush-interval-ms: 5000
 
+# ========================================
+# Actuator & Monitoring settings
+# ========================================
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
 # SpringDoc OpenAPI settings
 springdoc:
   api-docs:

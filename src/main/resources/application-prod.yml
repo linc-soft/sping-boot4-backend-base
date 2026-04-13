@@ -67,6 +67,19 @@ app:
     queue-capacity: 2000
     await-termination-seconds: 60
 
+# Actuator: minimal exposure for production
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name:backend-base}
+
 # Disable API documentation in production
 springdoc:
   api-docs:

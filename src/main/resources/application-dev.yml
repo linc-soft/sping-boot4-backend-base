@@ -67,3 +67,13 @@ app:
       - /swagger-ui.html
       - /doc.html
       - /webjars/**
+
+# Actuator: expose more endpoints for development debugging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,beans,env,configprops,mappings
+  endpoint:
+    health:
+      show-details: always

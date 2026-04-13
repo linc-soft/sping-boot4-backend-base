@@ -41,6 +41,23 @@ public class ContentCachingFilter extends OncePerRequestFilter {
   /** Maximum size for request body cache in bytes. Default: 10KB */
   private static final int DEFAULT_CONTENT_CACHE_LIMIT = 10240;
 
+  /** Actuator path prefix to exclude from content caching */
+  private static final String ACTUATOR_PATH_PREFIX = "/actuator";
+
+  /**
+   * Excludes Actuator endpoints from content caching.
+   *
+   * <p>Actuator endpoints (health check, metrics, prometheus) do not need request/response body
+   * caching. Excluding them avoids unnecessary overhead from Prometheus scraping every 15 seconds.
+   *
+   * @param request the HTTP request
+   * @return {@code true} if the request path starts with "/actuator"
+   */
+  @Override
+  protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+    return request.getRequestURI().startsWith(ACTUATOR_PATH_PREFIX);
+  }
+
   /**
    * Wraps request/response with caching wrappers and executes the filter chain.
    *
