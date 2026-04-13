@@ -41,6 +41,10 @@
     <springdoc.version>3.0.2</springdoc.version>
     <!-- Knife4j UI Version -->
     <knife4j.version>4.5.0</knife4j.version>
+    <!-- MapStruct Version -->
+    <mapstruct.version>1.6.3</mapstruct.version>
+    <!-- Lombok MapStruct Binding Version -->
+    <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
     <!-- FMT Maven Plugin Version -->
     <fmt-maven-plugin.version>2.29</fmt-maven-plugin.version>
     <!-- Active Profile -->
@@ -100,7 +104,7 @@
       <version>${jjwt.version}</version>
     </dependency>
 
-    <!-- JJWT Jackson シリアライザー -->
+    <!-- JJWT Jackson Serializer -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>
@@ -168,6 +172,13 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- MapStruct (bean mapping code generator) -->
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
+    </dependency>
+
     <!-- ========== Test ========== -->
 
     <!-- Spring Boot Test Starter -->
@@ -228,6 +239,18 @@
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
+            </path>
+            <!-- MapStruct annotation processor -->
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${mapstruct.version}</version>
+            </path>
+            <!-- Lombok-MapStruct binding (ensures Lombok runs before MapStruct) -->
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok-mapstruct-binding</artifactId>
+              <version>${lombok-mapstruct-binding.version}</version>
             </path>
             <!-- Spring Boot configuration processor -->
             <path>
