@@ -105,7 +105,7 @@
       <fileNamePattern>${LOG_HOME}/archive/operation.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
       <!-- Maximum size of a single file -->
       <maxFileSize>100MB</maxFileSize>
-      <!-- Error log is long-term retention (90 days) -->
+      <!-- Operation log is long-term retention (90 days) -->
       <maxHistory>90</maxHistory>
       <!-- Maximum total archive size -->
       <totalSizeCap>5GB</totalSizeCap>
