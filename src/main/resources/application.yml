@@ -16,7 +16,7 @@ spring:
   # Data source settings
   datasource:
     # Local MySQL connection URL
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_SCHEMA:schema}?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=Asia/Tokyo&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_SCHEMA:schema}?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=Asia/Tokyo
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
