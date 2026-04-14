@@ -66,9 +66,11 @@ public class RedisConfig implements CachingConfigurer {
     // to prevent arbitrary class instantiation (deserialization attack prevention)
     BasicPolymorphicTypeValidator typeValidator =
         BasicPolymorphicTypeValidator.builder()
-            .allowIfBaseType(Object.class)
-            .allowIfSubTypeIsArray()
             .allowIfSubType("com.lincsoft")
+            .allowIfSubType("java.util")
+            .allowIfSubType("java.lang")
+            .allowIfSubType("org.springframework.security.core.userdetails")
+            .allowIfSubTypeIsArray()
             .build();
 
     return GenericJacksonJsonRedisSerializer.builder()
