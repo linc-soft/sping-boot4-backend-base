@@ -42,6 +42,18 @@ public class SysOperationLog implements Serializable {
   /** Operation Processing Time (Milliseconds) */
   private Long duration;
 
+  /** Request Method (GET/POST/PUT/DELETE) */
+  private String requestMethod;
+
+  /** Request URL */
+  private String requestUrl;
+
+  /** Client IP Address */
+  private String clientIp;
+
+  /** Operating Username */
+  private String username;
+
   /** Record Creation Time */
   private LocalDateTime createTime;
 }

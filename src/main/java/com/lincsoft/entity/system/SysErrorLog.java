@@ -47,6 +47,18 @@ public class SysErrorLog implements Serializable {
   /** Stack Trace */
   private String stackTrace;
 
+  /** Request Method (GET/POST/PUT/DELETE) */
+  private String requestMethod;
+
+  /** Request URL */
+  private String requestUrl;
+
+  /** Client IP Address */
+  private String clientIp;
+
+  /** Operating Username */
+  private String username;
+
   /** Record Creation Time */
   private LocalDateTime createTime;
 }

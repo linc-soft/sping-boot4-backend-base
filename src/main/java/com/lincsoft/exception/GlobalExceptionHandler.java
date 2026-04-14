@@ -6,6 +6,7 @@ import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.entity.system.SysErrorLog;
 import com.lincsoft.services.system.ErrorLogAsyncService;
 import com.lincsoft.util.LogUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.stream.Collectors;
@@ -16,6 +17,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Global exception handler for the application.
@@ -137,6 +140,21 @@ public class GlobalExceptionHandler {
       // Set the stack trace
       errorLog.setStackTrace(
           LogUtil.truncate(getStackTraceAsString(e), CommonConstants.MAX_TEXT_LENGTH));
+
+      // Set request context information
+      errorLog.setUsername(MDC.get(CommonConstants.MDC_CURRENT_USER_KEY));
+      errorLog.setClientIp(LogUtil.getClientIp());
+      try {
+        ServletRequestAttributes attributes =
+            (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+          HttpServletRequest request = attributes.getRequest();
+          errorLog.setRequestUrl(request.getRequestURI());
+          errorLog.setRequestMethod(request.getMethod());
+        }
+      } catch (Exception ex2) {
+        log.warn("Failed to retrieve request context for error log: {}", ex2.getMessage());
+      }
 
       // Save error logs asynchronously.
       errorLogAsyncService.saveErrorLog(errorLog);

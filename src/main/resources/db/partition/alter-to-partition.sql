@@ -13,20 +13,29 @@
 -- Pre-check: Verify create_time has no NULL values
 -- If any result returns non-zero, fix the data before proceeding
 -- ============================================================
-SELECT 'sys_access_log' AS table_name,
-       COUNT(*)         AS null_count
-FROM sys_access_log
-WHERE create_time IS NULL
+SELECT
+  'sys_access_log' AS table_name,
+  COUNT(*) AS null_count
+FROM
+  sys_access_log
+WHERE
+  create_time IS NULL
 UNION ALL
-SELECT 'sys_error_log',
-       COUNT(*)
-FROM sys_error_log
-WHERE create_time IS NULL
+SELECT
+  'sys_error_log',
+  COUNT(*)
+FROM
+  sys_error_log
+WHERE
+  create_time IS NULL
 UNION ALL
-SELECT 'sys_operation_log',
-       COUNT(*)
-FROM sys_operation_log
-WHERE create_time IS NULL;
+SELECT
+  'sys_operation_log',
+  COUNT(*)
+FROM
+  sys_operation_log
+WHERE
+  create_time IS NULL;
 
 -- If NULL values exist, fix them first (adjust the date as needed):
 -- UPDATE sys_access_log    SET create_time = '2026-04-01 00:00:00' WHERE create_time IS NULL;
@@ -38,16 +47,16 @@ WHERE create_time IS NULL;
 -- For large tables, consider using pt-online-schema-change.
 -- ============================================================
 ALTER TABLE sys_access_log
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (id, create_time);
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (id, create_time);
 
 ALTER TABLE sys_error_log
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (id, create_time);
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (id, create_time);
 
 ALTER TABLE sys_operation_log
-  DROP PRIMARY KEY,
-  ADD PRIMARY KEY (id, create_time);
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (id, create_time);
 
 -- ============================================================
 -- Step 2A: Add monthly partitions (choose either 2A or 2B)
@@ -98,17 +107,21 @@ PARTITION p_future VALUES LESS THAN MAXVALUE COMMENT 'Catch-all partition'
 -- ============================================================
 -- Verification: Check partition information
 -- ============================================================
-SELECT TABLE_NAME,
-       PARTITION_NAME,
-       PARTITION_ORDINAL_POSITION,
-       PARTITION_DESCRIPTION,
-       TABLE_ROWS
-FROM INFORMATION_SCHEMA.PARTITIONS
-WHERE TABLE_SCHEMA = DATABASE()
+SELECT
+  TABLE_NAME,
+  PARTITION_NAME,
+  PARTITION_ORDINAL_POSITION,
+  PARTITION_DESCRIPTION,
+  TABLE_ROWS
+FROM
+  INFORMATION_SCHEMA.PARTITIONS
+WHERE
+  TABLE_SCHEMA = DATABASE ()
   AND TABLE_NAME IN (
-                     'sys_access_log',
-                     'sys_error_log',
-                     'sys_operation_log'
+    'sys_access_log',
+    'sys_error_log',
+    'sys_operation_log'
   )
-ORDER BY TABLE_NAME,
-         PARTITION_ORDINAL_POSITION;
+ORDER BY
+  TABLE_NAME,
+  PARTITION_ORDINAL_POSITION;

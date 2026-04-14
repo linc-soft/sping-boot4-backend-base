@@ -4,6 +4,8 @@ import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.entity.system.SysOperationLog;
 import com.lincsoft.services.system.OperationLogAsyncService;
+import com.lincsoft.util.LogUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +22,8 @@ import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * AOP aspect that intercepts service methods annotated with {@link OperationLog} to automatically
@@ -168,6 +172,22 @@ public class OperationLogAspect {
     logEntity.setOperationType(annotation.type().name());
     logEntity.setDescription(description);
     logEntity.setDuration(duration);
+    logEntity.setUsername(MDC.get(CommonConstants.MDC_CURRENT_USER_KEY));
+    logEntity.setClientIp(LogUtil.getClientIp());
+
+    // Set request context from RequestContextHolder
+    try {
+      ServletRequestAttributes attributes =
+          (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+      if (attributes != null) {
+        HttpServletRequest request = attributes.getRequest();
+        logEntity.setRequestMethod(request.getMethod());
+        logEntity.setRequestUrl(request.getRequestURI());
+      }
+    } catch (Exception e) {
+      log.warn("Failed to retrieve request context for operation log: {}", e.getMessage());
+    }
+
     logEntity.setCreateTime(LocalDateTime.now());
     return logEntity;
   }
