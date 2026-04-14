@@ -66,8 +66,14 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
     if (body instanceof Result) {
       return body;
     }
-    // If StringHttpMessageConverter is selected,
-    // the Result object must be manually serialized to a JSON string.
+
+    /*
+     StringHttpMessageConverter case: Controller returns String type. Spring selects
+     StringHttpMessageConverter for String return types, which would output plain text instead of
+     JSON. Here we manually serialize the wrapped Result to JSON string and set the content type
+     to application/json to ensure consistent API response format. Example: return "hello" →
+     {"code": 200, "data": "hello"}
+    */
     if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
       try {
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
