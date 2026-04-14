@@ -3,11 +3,15 @@ package com.lincsoft.services.auth;
 import static com.lincsoft.constant.CommonConstants.*;
 
 import com.lincsoft.config.AppProperties;
+import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.util.IpChecker;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.stereotype.Service;
 
 /**
@@ -47,15 +51,12 @@ public class LoginProtectionService {
   /**
    * Checks whether the given account is currently locked in Redis.
    *
-   * <p>This method is called by {@link
-   * com.lincsoft.services.master.UserService#loadUserByUsername(String)} to embed the lock status
-   * into {@link org.springframework.security.core.userdetails.UserDetails#isAccountNonLocked()}.
-   * Spring Security's {@link
-   * org.springframework.security.authentication.dao.DaoAuthenticationProvider} then throws {@link
-   * org.springframework.security.authentication.LockedException} internally, which is caught
-   * alongside {@link org.springframework.security.authentication.BadCredentialsException} in {@link
-   * com.lincsoft.services.auth.AuthService} and mapped to the same {@code INVALID_CREDENTIALS}
-   * error — preventing username enumeration via distinct error codes or response timing.
+   * <p>This method is called by {@link PreAuthenticationChecks} during the {@link
+   * DaoAuthenticationProvider} authentication flow, before password validation. If the account is
+   * locked, {@link PreAuthenticationChecks} throws {@link LockedException}, which is caught
+   * alongside {@link BadCredentialsException} in {@link AuthService} and mapped to the same {@code
+   * INVALID_CREDENTIALS} error — preventing username enumeration via distinct error codes or
+   * response timing.
    *
    * @param username the username to check
    * @return {@code true} if the account is currently locked, {@code false} otherwise

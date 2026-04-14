@@ -3,11 +3,8 @@ package com.lincsoft.config;
 import com.lincsoft.common.Result;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
-import com.lincsoft.filter.ContentCachingFilter;
-import com.lincsoft.filter.IpBlacklistFilter;
-import com.lincsoft.filter.JwtAuthorizationFilter;
-import com.lincsoft.filter.RateLimitFilter;
-import com.lincsoft.filter.TraceIdFilter;
+import com.lincsoft.filter.*;
+import com.lincsoft.services.auth.LoginProtectionService;
 import com.lincsoft.services.system.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -81,6 +78,9 @@ public class SecurityConfig {
 
   /** Token blacklist service for JWT revocation support. */
   private final TokenBlacklistService tokenBlacklistService;
+
+  /** Custom pre-authentication checks for real-time account lock validation. */
+  private final PreAuthenticationChecks preAuthenticationChecks;
 
   /**
    * Configures the security filter chain.
@@ -280,8 +280,8 @@ public class SecurityConfig {
    * Creates the IpBlacklistFilter instance.
    *
    * <p>This filter rejects requests from IPs that have been auto-blocked by {@link
-   * com.lincsoft.services.auth.LoginProtectionService}. It runs before {@link RateLimitFilter} and
-   * is always active, regardless of whether rate limiting is enabled.
+   * LoginProtectionService}. It runs before {@link RateLimitFilter} and is always active,
+   * regardless of whether rate limiting is enabled.
    *
    * <p><b>Design Note:</b> This method intentionally does NOT use the {@code @Bean} annotation to
    * prevent double registration by the Servlet container.
@@ -404,6 +404,7 @@ public class SecurityConfig {
     // constructor and set PasswordEncoder separately via setPasswordEncoder()
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder());
+    provider.setPreAuthenticationChecks(preAuthenticationChecks);
     return provider;
   }
 

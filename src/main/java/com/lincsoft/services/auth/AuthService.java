@@ -8,6 +8,7 @@ import com.lincsoft.controller.auth.vo.LoginResponse;
 import com.lincsoft.controller.auth.vo.RefreshResponse;
 import com.lincsoft.dto.AuthenticatedUserDTO;
 import com.lincsoft.exception.BusinessException;
+import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.services.master.UserService;
 import com.lincsoft.services.system.TokenBlacklistService;
 import com.lincsoft.util.JwtUtil;
@@ -62,10 +63,9 @@ public class AuthService {
    * <p>Includes brute-force protection:
    *
    * <ul>
-   *   <li>Lock check: {@link UserService#loadUserByUsername(String)} embeds the account lock status
-   *       into {@link
-   *       org.springframework.security.core.userdetails.UserDetails#isAccountNonLocked()}. Spring
-   *       Security throws {@link LockedException} internally when the account is locked.
+   *   <li>Lock check: {@link PreAuthenticationChecks} performs a real-time account lock check from
+   *       Redis before password validation. If the account is locked, {@link LockedException} is
+   *       thrown by the pre-authentication checker.
    *   <li>On failure: Records the failure for both account and IP dimensions via {@link
    *       LoginProtectionService}.
    *   <li>On success: Clears all failure counters for the account and IP.
@@ -76,8 +76,9 @@ public class AuthService {
    * INVALID_CREDENTIALS} error code. This ensures that "account locked", "wrong password", and
    * "user not found" are indistinguishable to the caller, preventing username enumeration via
    * distinct error codes. Additionally, because the lock check happens inside {@code
-   * DaoAuthenticationProvider} (after {@code loadUserByUsername}), Spring Security's built-in
-   * timing-attack mitigation (dummy password hash on user-not-found) remains active for all paths.
+   * DaoAuthenticationProvider} (via {@code PreAuthenticationChecks}, after {@code
+   * loadUserByUsername}), Spring Security's built-in timing-attack mitigation (dummy password hash
+   * on user-not-found) remains active for all paths.
    *
    * @param request the login request containing username and password
    * @param httpRequest the HTTP servlet request for extracting client IP
@@ -91,8 +92,9 @@ public class AuthService {
 
     try {
       // Delegate authentication to Spring Security's AuthenticationManager.
-      // DaoAuthenticationProvider calls loadUserByUsername(), which embeds the lock status.
-      // If locked, LockedException is thrown here; if credentials wrong, BadCredentialsException.
+      // DaoAuthenticationProvider calls loadUserByUsername(), then PreAuthenticationChecks
+      // verifies lock status from Redis. If locked, LockedException is thrown;
+      // if credentials wrong, BadCredentialsException.
       Authentication authentication =
           authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(username, request.password()));
