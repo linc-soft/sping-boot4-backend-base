@@ -1,7 +1,7 @@
 package com.lincsoft.entity.master;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.lincsoft.common.BaseEntity;
+import com.lincsoft.common.VersionedEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("mst_role")
-public class MstRole extends BaseEntity {
+public class MstRole extends VersionedEntity {
   /** Role Name */
   private String roleName;
 

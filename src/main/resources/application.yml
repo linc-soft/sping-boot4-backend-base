@@ -85,6 +85,15 @@ management:
     health:
       show-details: when-authorized
 
+# MyBatis-Plus settings
+mybatis-plus:
+  global-config:
+    db-config:
+      # Logical delete configuration
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
 # SpringDoc OpenAPI settings
 springdoc:
   api-docs:

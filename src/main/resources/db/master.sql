@@ -7,7 +7,6 @@
 -- Engine: InnoDB
 -- Character Set: utf8mb4
 -- ============================================================
-
 -- ============================================================
 -- mst_user table
 -- Records user information such as username, password, etc.
@@ -22,8 +21,9 @@ CREATE TABLE IF NOT EXISTS mst_user
   create_at DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
   update_by VARCHAR(20) COMMENT 'Updater',
   update_at DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_user_username (username)
+  version   INT          DEFAULT 0 COMMENT 'Optimistic lock version',
+  deleted   TINYINT(1)   DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'User table';
@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS mst_role
   create_at   DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
   update_by   VARCHAR(20) COMMENT 'Updater',
   update_at   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
+  version     INT          DEFAULT 0 COMMENT 'Optimistic lock version',
+  deleted     TINYINT(1)   DEFAULT 0 COMMENT 'Logical delete flag',
   PRIMARY KEY (id),
   UNIQUE KEY uk_role_role_code (role_code)
 ) ENGINE = InnoDB
@@ -55,14 +57,14 @@ CREATE TABLE IF NOT EXISTS mst_role
 CREATE TABLE IF NOT EXISTS mst_user_role
 (
   id        BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
-  user_id   BIGINT   DEFAULT NULL COMMENT 'User ID',
-  role_id   BIGINT   DEFAULT NULL COMMENT 'Role ID',
+  user_id   BIGINT     DEFAULT NULL COMMENT 'User ID',
+  role_id   BIGINT     DEFAULT NULL COMMENT 'Role ID',
   create_by VARCHAR(20) COMMENT 'Creator',
-  create_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
+  create_at DATETIME   DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
   update_by VARCHAR(20) COMMENT 'Updater',
-  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_user_role_user_id_role_id (user_id, role_id)
+  update_at DATETIME   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
+  deleted   TINYINT(1) DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'User-role relationship table';

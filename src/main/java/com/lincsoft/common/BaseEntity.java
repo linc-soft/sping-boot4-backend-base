@@ -1,9 +1,6 @@
 package com.lincsoft.common;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -40,4 +37,7 @@ public abstract class BaseEntity implements Serializable {
   /* Update Time */
   @TableField(fill = FieldFill.INSERT_UPDATE)
   private LocalDateTime updateAt;
+
+  /* Delete Flag */
+  @TableLogic private Integer deleted;
 }
