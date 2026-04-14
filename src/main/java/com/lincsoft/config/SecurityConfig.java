@@ -134,13 +134,32 @@ public class SecurityConfig {
                                 .maxAgeInSeconds(31536000)
                                 .preload(appProperties.getSecurity().isHstsPreload()))
                     .contentSecurityPolicy(
-                        csp ->
-                            csp.policyDirectives(
-                                "default-src 'self'; "
-                                    + "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                                    + "style-src 'self' 'unsafe-inline'; "
-                                    + "img-src 'self' data:; "
-                                    + "font-src 'self' data:")))
+                        csp -> {
+                          // Environment-aware CSP: strict in production, relaxed in development
+                          boolean strict = appProperties.getSecurity().getCsp().isStrict();
+                          String scriptSrc =
+                              strict
+                                  ? "'self'"
+                                  : appProperties.getSecurity().getCsp().getScriptSrc();
+                          String styleSrc =
+                              strict
+                                  ? "'self'"
+                                  : appProperties.getSecurity().getCsp().getStyleSrc();
+
+                          csp.policyDirectives(
+                              "default-src 'self'; "
+                                  + "script-src "
+                                  + scriptSrc
+                                  + "; "
+                                  + "style-src "
+                                  + styleSrc
+                                  + "; "
+                                  + "img-src 'self' data:; "
+                                  + "font-src 'self' data:; "
+                                  + "frame-ancestors 'none'; "
+                                  + "base-uri 'self'; "
+                                  + "form-action 'self'");
+                        }))
         // URL Access Rules
         .authorizeHttpRequests(
             authorize -> {

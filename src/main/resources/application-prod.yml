@@ -42,6 +42,11 @@ app:
   security:
     # Enable HSTS preload directive for production (requires 100% HTTPS coverage)
     hsts-preload: true
+    # CSP: strict for production (no unsafe-inline or unsafe-eval)
+    csp:
+      strict: true
+      script-src: "'self'"
+      style-src: "'self'"
   # Rate limiting: strict settings for production
   rate-limit:
     capacity: 50

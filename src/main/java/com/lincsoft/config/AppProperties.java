@@ -432,6 +432,54 @@ public class AppProperties {
      * <p>Default: false (development-safe)
      */
     private boolean hstsPreload = false;
+
+    /**
+     * Content Security Policy configuration.
+     *
+     * <p>Defines CSP directives that can be customized per environment to balance security and
+     * development convenience.
+     */
+    private Csp csp = new Csp();
+  }
+
+  /**
+   * Content Security Policy configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.security.csp} prefix. Defines CSP directives that can
+   * be customized per environment.
+   */
+  @Data
+  public static class Csp {
+    /**
+     * Script source directives for Content-Security-Policy header.
+     *
+     * <p>Specifies allowed script sources. In production, should be {@code 'self'} only. In
+     * development, may include {@code 'unsafe-inline'} and {@code 'unsafe-eval'} for frameworks
+     * that require them.
+     *
+     * <p>Default: 'self' (production-secure)
+     */
+    private String scriptSrc = "'self'";
+
+    /**
+     * Style source directives for Content-Security-Policy header.
+     *
+     * <p>Specifies allowed style sources. In production, should be {@code 'self'} only. In
+     * development, may include {@code 'unsafe-inline'} for hot-reload and dev tools.
+     *
+     * <p>Default: 'self' (production-secure)
+     */
+    private String styleSrc = "'self'";
+
+    /**
+     * Whether to enable strict CSP mode (no unsafe-inline or unsafe-eval).
+     *
+     * <p>When {@code true}, enforces strict CSP policy for production. When {@code false}, allows
+     * relaxed policy for development environments.
+     *
+     * <p>Default: true (production-secure)
+     */
+    private boolean strict = true;
   }
 
   /**

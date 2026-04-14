@@ -41,6 +41,11 @@ app:
       - /swagger-ui.html
       - /doc.html
       - /webjars/**
+    # CSP: relaxed for development (Swagger UI and dev tools require unsafe-inline)
+    csp:
+      strict: false
+      script-src: "'self' 'unsafe-inline' 'unsafe-eval'"
+      style-src: "'self' 'unsafe-inline'"
   # Rate limiting: disabled in development to avoid interfering with debugging
   rate-limit:
     enabled: false
