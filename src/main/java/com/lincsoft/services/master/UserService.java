@@ -6,14 +6,20 @@ import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.exception.BusinessException;
+import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.mapper.master.MstUserMapper;
+import com.lincsoft.services.auth.AuthService;
 import com.lincsoft.services.auth.LoginProtectionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -73,9 +79,8 @@ public class UserService implements UserDetailsService {
    * Loads user details by username for Spring Security authentication.
    *
    * <p>This method is called by Spring Security during the authentication process (via {@link
-   * org.springframework.security.authentication.dao.DaoAuthenticationProvider}) and by {@link
-   * com.lincsoft.filter.JwtAuthorizationFilter} for JWT token validation. It performs the following
-   * steps:
+   * DaoAuthenticationProvider}) and by {@link JwtAuthorizationFilter} for JWT token validation. It
+   * performs the following steps:
    *
    * <ol>
    *   <li>Checks Spring Cache for previously loaded UserDetails (Redis-backed)
@@ -89,19 +94,17 @@ public class UserService implements UserDetailsService {
    * </ol>
    *
    * <p>By embedding the lock status into {@link UserDetails#isAccountNonLocked()}, Spring
-   * Security's {@link org.springframework.security.authentication.dao.DaoAuthenticationProvider}
-   * will throw {@link org.springframework.security.authentication.LockedException} internally,
-   * which is then caught alongside {@link
-   * org.springframework.security.authentication.BadCredentialsException} in {@link
-   * com.lincsoft.services.auth.AuthService} and mapped to the same {@code INVALID_CREDENTIALS}
-   * error — preventing username enumeration via distinct error codes.
+   * Security's {@link DaoAuthenticationProvider} will throw {@link LockedException} internally,
+   * which is then caught alongside {@link BadCredentialsException} in {@link AuthService} and
+   * mapped to the same {@code INVALID_CREDENTIALS} error — preventing username enumeration via
+   * distinct error codes.
    *
    * <p><b>Note on caching:</b> The lock status is intentionally NOT cached. The {@code @Cacheable}
    * annotation caches the returned {@link UserDetails}, but since lock state changes frequently,
    * the lock check is performed on every call by bypassing the cache for that field. This is
    * achieved by always returning {@code accountNonLocked=false} when locked, which causes Spring
-   * Security to throw {@link org.springframework.security.authentication.LockedException} before
-   * the cached result would be reused on the next attempt.
+   * Security to throw {@link LockedException} before the cached result would be reused on the next
+   * attempt.
    *
    * @param username the username to look up
    * @return a fully populated UserDetails object with username, password, authorities, and lock
@@ -111,6 +114,7 @@ public class UserService implements UserDetailsService {
    */
   @NullMarked
   @Override
+  @Cacheable(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, key = "#username")
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     // Build query to find user by username
     QueryWrapper<MstUser> userQueryWrapper = new QueryWrapper<>();

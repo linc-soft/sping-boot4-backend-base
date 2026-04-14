@@ -1,7 +1,6 @@
 package com.lincsoft.config;
 
-import static com.lincsoft.constant.CommonConstants.REDIS_USER_DETAILS_PREFIX;
-
+import com.lincsoft.constant.CommonConstants;
 import java.time.Duration;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -110,7 +109,8 @@ public class RedisConfig implements CachingConfigurer {
 
     return RedisCacheManager.builder(connectionFactory)
         .cacheDefaults(defaultConfig)
-        .withInitialCacheConfigurations(Map.of(REDIS_USER_DETAILS_PREFIX, userDetailsConfig))
+        .withInitialCacheConfigurations(
+            Map.of(CommonConstants.REDIS_USER_DETAILS_PREFIX, userDetailsConfig))
         .build();
   }
 
