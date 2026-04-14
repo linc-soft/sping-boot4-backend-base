@@ -22,13 +22,11 @@ import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -71,14 +69,14 @@ public class AuthService {
    *   <li>On success: Clears all failure counters for the account and IP.
    * </ul>
    *
-   * <p><b>Security note — username enumeration prevention:</b> Both {@link LockedException} and
-   * {@link BadCredentialsException} are caught together and mapped to the same {@code
-   * INVALID_CREDENTIALS} error code. This ensures that "account locked", "wrong password", and
-   * "user not found" are indistinguishable to the caller, preventing username enumeration via
-   * distinct error codes. Additionally, because the lock check happens inside {@code
-   * DaoAuthenticationProvider} (via {@code PreAuthenticationChecks}, after {@code
-   * loadUserByUsername}), Spring Security's built-in timing-attack mitigation (dummy password hash
-   * on user-not-found) remains active for all paths.
+   * <p><b>Security note — username enumeration prevention:</b> {@link LockedException}, {@link
+   * BadCredentialsException}, {@link UsernameNotFoundException}, and {@link DisabledException} are
+   * all caught together and mapped to the same {@code INVALID_CREDENTIALS} error code. This ensures
+   * that "account locked", "wrong password", "user not found", and "user disabled" are
+   * indistinguishable to the caller, preventing username enumeration via distinct error codes.
+   * Additionally, because {@code loadUserByUsername()} throws {@code UsernameNotFoundException}
+   * (not {@code BusinessException}), Spring Security's built-in timing-attack mitigation (dummy
+   * password hash on user-not-found) remains active for all paths.
    *
    * @param request the login request containing username and password
    * @param httpRequest the HTTP servlet request for extracting client IP
@@ -130,11 +128,14 @@ public class AuthService {
 
       log.info("User logged in successfully: username={}", authenticatedUsername);
       return new LoginResponse(accessToken);
-    } catch (LockedException | BadCredentialsException e) {
+    } catch (LockedException
+        | BadCredentialsException
+        | UsernameNotFoundException
+        | DisabledException e) {
       // Record login failure for brute-force protection.
-      // Both LockedException (account locked) and BadCredentialsException (wrong password /
-      // user not found) are mapped to the same INVALID_CREDENTIALS error to prevent username
-      // enumeration — callers cannot distinguish between these two cases.
+      // All authentication exceptions (LockedException, BadCredentialsException,
+      // UsernameNotFoundException, DisabledException) are mapped to the same INVALID_CREDENTIALS
+      // error to prevent username enumeration — callers cannot distinguish between these cases.
       loginProtectionService.recordFailure(username, clientIp);
       throw new BusinessException(MessageEnums.INVALID_CREDENTIALS);
     }
@@ -189,7 +190,7 @@ public class AuthService {
 
     // Reload user details to verify user is still active
     // This call goes through UserDetailsService (with @Cacheable) and will throw
-    // BusinessException if user is not found or inactive
+    // UsernameNotFoundException or DisabledException if user is not found or inactive
     String username = claims.getSubject();
     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 

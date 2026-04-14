@@ -2,10 +2,8 @@ package com.lincsoft.services.master;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lincsoft.constant.CommonConstants;
-import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
-import com.lincsoft.exception.BusinessException;
 import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.mapper.master.MstUserMapper;
 import java.util.List;
@@ -14,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -90,7 +89,7 @@ public class UserService implements UserDetailsService {
    * @param username the username to look up
    * @return a fully populated UserDetails object with username, password, and authorities
    * @throws UsernameNotFoundException if the user is not found in the database
-   * @throws BusinessException if the user exists but is inactive
+   * @throws DisabledException if the user exists but is inactive (disabled)
    */
   @NullMarked
   @Override
@@ -103,12 +102,12 @@ public class UserService implements UserDetailsService {
 
     // Validate user existence
     if (user == null) {
-      throw new BusinessException(MessageEnums.USER_NOT_FOUND);
+      throw new UsernameNotFoundException("User not found: " + username);
     }
 
     // Validate user status - must be active
     if (user.getStatus() == null || CommonConstants.USER_STATUS_INACTIVE.equals(user.getStatus())) {
-      throw new BusinessException(MessageEnums.USER_INACTIVE);
+      throw new DisabledException("User is inactive");
     }
 
     // Retrieve user's roles from the database
