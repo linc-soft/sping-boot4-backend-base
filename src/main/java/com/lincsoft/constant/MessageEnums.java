@@ -31,7 +31,8 @@ public enum MessageEnums {
   INVALID_REFRESH_TOKEN(100005, "Invalid Refresh Token"),
   IP_BLOCKED(100006, "IP Blocked"),
   ACCOUNT_LOCKED(100007, "Account Locked"),
-  RATE_LIMITED(429, "Too Many Requests");
+  RATE_LIMITED(429, "Too Many Requests"),
+  ROLE_CODE_DUPLICATE(100008, "Role Code Already Exists");
 
   @Getter private final int code;
   @Getter private final String message;
