@@ -69,7 +69,7 @@ public class AppProperties {
   /**
    * Access log configuration settings.
    *
-   * <p>Defines path exclusion patterns for the access log interceptor.
+   * <p>Defines path exclusion patterns for the access log interceptor and batch write parameters.
    */
   private AccessLog accessLog = new AccessLog();
 
@@ -79,13 +79,6 @@ public class AppProperties {
    * <p>Defines thread pool parameters for asynchronous log saving operations.
    */
   private Async async = new Async();
-
-  /**
-   * Access log batch write configuration settings.
-   *
-   * <p>Controls the in-memory buffer and scheduled flush behavior for batch inserting access logs.
-   */
-  private AccessLogBatch accessLogBatch = new AccessLogBatch();
 
   /**
    * Validates JWT secret key length on application startup.
@@ -499,7 +492,7 @@ public class AppProperties {
    * Inner class for access log configuration.
    *
    * <p>Binds properties under the {@code app.access-log} prefix. Defines excluded path patterns for
-   * the access log interceptor.
+   * the access log interceptor and batch write parameters for buffered persistence.
    */
   @Data
   public static class AccessLog {
@@ -512,17 +505,7 @@ public class AppProperties {
      * <p>Default: actuator, favicon.ico, error endpoints
      */
     private String[] excludePathPatterns = {"/actuator/**", "/favicon.ico", "/error"};
-  }
 
-  /**
-   * Access log batch write configuration inner class.
-   *
-   * <p>Binds properties under the {@code app.access-log-batch} prefix. Controls the in-memory
-   * buffer size and scheduled flush interval for batch inserting access logs, reducing database
-   * pressure under high concurrency.
-   */
-  @Data
-  public static class AccessLogBatch {
     /**
      * Maximum number of log entries per batch INSERT.
      *
@@ -542,5 +525,16 @@ public class AppProperties {
      * <p>Default: 5000 (5 seconds)
      */
     private long flushIntervalMs = 5000;
+
+    /**
+     * Maximum number of batches to flush in a single scheduled invocation.
+     *
+     * <p>Prevents a single flush cycle from monopolizing the scheduler thread for too long when the
+     * buffer has a massive backlog. Each invocation processes up to {@code maxBatchesPerFlush *
+     * batchSize} entries.
+     *
+     * <p>Default: 20
+     */
+    private int maxBatchesPerFlush = 20;
   }
 }

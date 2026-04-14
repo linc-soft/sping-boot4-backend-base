@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
  * <p>Flush is triggered by:
  *
  * <ul>
- *   <li>Scheduled fixed-rate task (configurable via {@code app.access-log-batch.flush-interval-ms})
+ *   <li>Scheduled fixed-rate task (configurable via {@code app.access-log.flush-interval-ms})
  *   <li>Application shutdown ({@link PreDestroy} callback ensures remaining logs are persisted)
  * </ul>
  *
@@ -54,25 +54,41 @@ public class AccessLogAsyncService {
   /**
    * Scheduled task that drains the buffer and performs batch INSERT.
    *
-   * <p>Runs at a fixed rate defined by {@code app.access-log-batch.flush-interval-ms}. Each
-   * invocation drains up to {@code batchSize} entries from the queue. If more entries remain, they
-   * will be picked up in the next cycle.
+   * <p>Runs at a fixed rate defined by {@code app.access-log.flush-interval-ms}. Each invocation
+   * loops to drain multiple batches (up to {@code app.access-log.max-batches-per-flush}) so that
+   * traffic spikes do not cause unbounded buffer growth.
    *
    * <p>Uses MyBatis-Plus {@link Db#saveBatch(java.util.Collection)} for efficient batch insertion.
    */
-  @Scheduled(fixedRateString = "${app.access-log-batch.flush-interval-ms:5000}")
+  @Scheduled(fixedRateString = "${app.access-log.flush-interval-ms:5000}")
   public void flushLogs() {
-    int batchSize = appProperties.getAccessLogBatch().getBatchSize();
-    List<SysAccessLog> batch = drainBuffer(batchSize);
-    if (batch.isEmpty()) {
-      return;
+    int batchSize = appProperties.getAccessLog().getBatchSize();
+    int maxBatches = appProperties.getAccessLog().getMaxBatchesPerFlush();
+    int totalFlushed = 0;
+
+    for (int i = 0; i < maxBatches; i++) {
+      List<SysAccessLog> batch = drainBuffer(batchSize);
+      if (batch.isEmpty()) {
+        break;
+      }
+      try {
+        Db.saveBatch(batch);
+        totalFlushed += batch.size();
+      } catch (Exception e) {
+        log.error(
+            "Failed to batch insert access logs ({} entries): {}", batch.size(), e.getMessage(), e);
+        break;
+      }
     }
-    try {
-      Db.saveBatch(batch);
-      log.debug("Flushed {} access log(s) to database", batch.size());
-    } catch (Exception e) {
-      log.error(
-          "Failed to batch insert access logs ({} entries): {}", batch.size(), e.getMessage(), e);
+
+    if (totalFlushed > 0) {
+      log.debug("Flushed {} access log(s) to database", totalFlushed);
+    }
+
+    if (!buffer.isEmpty()) {
+      log.warn(
+          "Access log buffer still has {} pending entries after flush (max batches reached)",
+          buffer.size());
     }
   }
 

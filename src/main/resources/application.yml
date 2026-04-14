@@ -61,16 +61,15 @@ app:
     # Auth-only whitelist requires CSRF but bypasses authentication
     auth-only-whitelist:
       - /api/auth/refresh
-  # Access log interceptor settings
+  # Access log settings
   access-log:
     exclude-path-patterns:
       - /actuator/**
       - /favicon.ico
       - /error
-  # Access log batch write settings
-  access-log-batch:
     batch-size: 100
     flush-interval-ms: 5000
+    max-batches-per-flush: 20
 
 # ========================================
 # Actuator & Monitoring settings
