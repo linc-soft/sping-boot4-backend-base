@@ -14,9 +14,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * Link trace filter for request tracing.
  *
- * <p>Generates a unique traceId for each HTTP request and sets it in the MDC context, request
- * attributes, and response headers. After request completion, clears the traceId from MDC to
- * prevent data leakage during thread pool reuse.
+ * <p>Prioritizes the traceId from the incoming request header ({@code X-Trace-Id}) for
+ * cross-service tracing. If no traceId is present, generates a new one. Sets the traceId in the MDC
+ * context, request attributes, and response headers. After request completion, clears the traceId
+ * from MDC to prevent data leakage during thread pool reuse.
  *
  * <p><b>Design Note:</b> This filter intentionally does not use the {@code @Component} annotation.
  * Since Spring Boot automatically registers {@code @Bean} filters with the Servlet container, using
@@ -31,9 +32,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class TraceIdFilter extends OncePerRequestFilter {
 
   /**
-   * Generates a unique traceId for each request and sets it in MDC, request attributes, and
-   * response headers. Clears MDC in the finally block to prevent data leakage during thread pool
-   * reuse.
+   * Reads traceId from the request header ({@code X-Trace-Id}) if present, otherwise generates a
+   * new one. Sets it in MDC, request attributes, and response headers. Clears MDC in the finally
+   * block to prevent data leakage during thread pool reuse.
    *
    * @param request HTTP servlet request
    * @param response HTTP servlet response
@@ -48,8 +49,11 @@ public class TraceIdFilter extends OncePerRequestFilter {
       @NonNull FilterChain filterChain)
       throws ServletException, IOException {
 
-    // Generate unique traceId (32-character UUID with hyphens removed)
-    String traceId = UUID.randomUUID().toString().replace("-", "");
+    // Prioritize traceId from upstream request header for cross-service tracing
+    String traceId = request.getHeader(CommonConstants.HEADER_TRACE_ID);
+    if (traceId == null || traceId.isBlank()) {
+      traceId = UUID.randomUUID().toString().replace("-", "");
+    }
 
     // Set traceId in MDC (automatically attached to log output)
     MDC.put(CommonConstants.MDC_TRACE_ID_KEY, traceId);
