@@ -1,9 +1,13 @@
 package com.lincsoft.filter;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lincsoft.common.Result;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.entity.master.MstUser;
+import com.lincsoft.interceptor.DataPermissionUserHolder;
+import com.lincsoft.mapper.master.MstUserMapper;
 import com.lincsoft.services.system.TokenBlacklistService;
 import com.lincsoft.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -76,6 +80,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
    * deactivation).
    */
   private final TokenBlacklistService tokenBlacklistService;
+
+  /** User mapper for resolving username → user ID (used by data permission holder). */
+  private final MstUserMapper userMapper;
 
   /**
    * Processes the incoming HTTP request to validate JWT authentication.
@@ -165,6 +172,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         // Set username in MDC for logging and audit purposes (used in MetaObjectHandler, etc.)
         MDC.put(CommonConstants.MDC_CURRENT_USER_KEY, userDetails.getUsername());
+
+        // Resolve and store user ID in thread-local holder for data permission interceptor
+        QueryWrapper<MstUser> qw = new QueryWrapper<>();
+        qw.eq("username", userDetails.getUsername());
+        com.lincsoft.entity.master.MstUser user = userMapper.selectOne(qw);
+        if (user != null) {
+          DataPermissionUserHolder.setCurrentUserId(user.getId());
+        }
       }
     } catch (JwtException e) {
       log.warn("JWT authentication failed: {}", e.getMessage());
@@ -180,8 +195,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     try {
       filterChain.doFilter(request, response);
     } finally {
-      // Clean up MDC to prevent cross-request contamination in thread pools
+      // Clean up MDC and data permission holder to prevent cross-request contamination
       MDC.remove(CommonConstants.MDC_CURRENT_USER_KEY);
+      DataPermissionUserHolder.clear();
     }
   }
 }

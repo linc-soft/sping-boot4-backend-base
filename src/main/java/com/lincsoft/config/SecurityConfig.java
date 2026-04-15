@@ -4,6 +4,7 @@ import com.lincsoft.common.Result;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.filter.*;
+import com.lincsoft.mapper.master.MstUserMapper;
 import com.lincsoft.services.auth.LoginProtectionService;
 import com.lincsoft.services.system.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -78,6 +79,9 @@ public class SecurityConfig {
 
   /** Token blacklist service for JWT revocation support. */
   private final TokenBlacklistService tokenBlacklistService;
+
+  /** User mapper for resolving username → user ID in the JWT filter. */
+  private final MstUserMapper userMapper;
 
   /** Custom pre-authentication checks for real-time account lock validation. */
   private final PreAuthenticationChecks preAuthenticationChecks;
@@ -347,7 +351,7 @@ public class SecurityConfig {
    */
   private JwtAuthorizationFilter jwtAuthorizationFilter() {
     return new JwtAuthorizationFilter(
-        userDetailsService, appProperties, objectMapper, tokenBlacklistService);
+        userDetailsService, appProperties, objectMapper, tokenBlacklistService, userMapper);
   }
 
   /**

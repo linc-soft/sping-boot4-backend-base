@@ -110,4 +110,13 @@ public interface CommonConstants {
 
   /** Redis key prefix for account lock */
   String REDIS_LOGIN_LOCKED_PREFIX = "login:locked:";
+
+  /** Redis key prefix for user accessible dept IDs (data permission cache) */
+  String REDIS_DATA_PERM_DEPT_IDS_PREFIX = "dataperm:dept:";
+
+  /** Redis key prefix for user granted resource IDs (data permission cache) */
+  String REDIS_DATA_PERM_RESOURCE_IDS_PREFIX = "dataperm:resource:";
+
+  /** Sentinel value indicating the user has ALL-scope access (no dept filter needed) */
+  Long DATA_PERM_ALL_SCOPE_SENTINEL = -1L;
 }

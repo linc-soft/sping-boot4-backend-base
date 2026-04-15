@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.lincsoft.interceptor.DataPermissionInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +18,10 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @MapperScan("com.lincsoft.mapper")
+@RequiredArgsConstructor
 public class MyBatisPlusConfig {
+
+  private final DataPermissionInterceptor dataPermissionInterceptor;
 
   /**
    * MyBatis-Plus Plugin Registration
@@ -30,6 +35,8 @@ public class MyBatisPlusConfig {
   @Bean
   public MybatisPlusInterceptor mybatisPlusInterceptor() {
     MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+    // Add data permission interceptor first (must run before pagination)
+    interceptor.addInnerInterceptor(dataPermissionInterceptor);
     // Add pagination plugin
     interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
     // Add optimistic locking plugin

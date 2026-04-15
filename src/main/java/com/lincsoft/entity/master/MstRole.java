@@ -23,4 +23,7 @@ public class MstRole extends VersionedEntity {
 
   /** Role Description */
   private String description;
+
+  /** Parent role ID for single inheritance. NULL indicates this is a root role. */
+  private Long parentRoleId;
 }

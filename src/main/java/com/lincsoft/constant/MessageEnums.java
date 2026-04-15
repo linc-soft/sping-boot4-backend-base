@@ -38,7 +38,13 @@ public enum MessageEnums {
   /* Master Data Error Codes 200_001 - 200_999 */
   USER_NOT_FOUND(200_001, "User Not Found"),
   USER_INACTIVE(200_002, "User Inactive"),
-  USERNAME_CANNOT_BE_UPDATED(200_003, "Username cannot be updated");
+  USERNAME_CANNOT_BE_UPDATED(200_003, "Username cannot be updated"),
+  /* Data Permission Error Codes 201_001 - 201_999 */
+  DEPT_HAS_CHILDREN(201_001, "Department has child departments and cannot be deleted"),
+  DEPT_CIRCULAR_REFERENCE(
+      201_002, "Operation would create a circular reference in the department tree"),
+  INVALID_PERM_BITS(201_003, "Permission bits value must be between 1 and 15"),
+  INVALID_VALID_PERIOD(201_004, "valid_from must be earlier than valid_until");
 
   @Getter private final int code;
   @Getter private final String message;
