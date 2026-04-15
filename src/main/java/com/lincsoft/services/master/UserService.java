@@ -1,10 +1,15 @@
 package com.lincsoft.services.master;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.CommonConstants;
+import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.constant.OperationType;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
+import com.lincsoft.exception.BusinessException;
 import com.lincsoft.filter.JwtAuthorizationFilter;
+import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.mapper.master.MstUserMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -12,14 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * User Service Implementation.
@@ -38,6 +43,7 @@ import org.springframework.stereotype.Service;
  *   <li>Handle user not found and inactive user scenarios
  *   <li>Cache UserDetails via Spring Cache ({@code @Cacheable}) to reduce database queries
  *   <li>Evict cached UserDetails via {@code @CacheEvict} when user state changes
+ *   <li>CRUD operations for user management
  * </ul>
  *
  * @author 林创科技
@@ -61,6 +67,12 @@ public class UserService implements UserDetailsService {
    */
   private final RoleService roleService;
 
+  /** Password encoder for encrypting user passwords. */
+  private final PasswordEncoder passwordEncoder;
+
+  /** Self reference for lazy initialization. */
+  @Lazy private final UserService self;
+
   /**
    * Loads user details by username for Spring Security authentication.
    *
@@ -80,11 +92,9 @@ public class UserService implements UserDetailsService {
    *
    * <p><b>Note on caching and account lock:</b> This method only caches static user data (username,
    * password hash, authorities). Account lock status is intentionally excluded from the cached
-   * {@link UserDetails} and is instead checked in real-time by {@link
-   * com.lincsoft.filter.PreAuthenticationChecks}, which is registered as a {@link
-   * org.springframework.security.core.userdetails.UserDetailsChecker} on {@link
-   * DaoAuthenticationProvider}. This ensures lock/unlock changes take effect immediately without
-   * being affected by cache TTL.
+   * {@link UserDetails} and is instead checked in real-time by {@link PreAuthenticationChecks},
+   * which is registered as a {@link UserDetailsChecker} on {@link DaoAuthenticationProvider}. This
+   * ensures lock/unlock changes take effect immediately without being affected by cache TTL.
    *
    * @param username the username to look up
    * @return a fully populated UserDetails object with username, password, and authorities
@@ -140,5 +150,181 @@ public class UserService implements UserDetailsService {
   @CacheEvict(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, key = "#username")
   public void evictUserDetailsCache(String username) {
     log.debug("Evicted UserDetails cache for user: {}", username);
+  }
+
+  /**
+   * Get user list by query conditions.
+   *
+   * @param username Username (partial match)
+   * @param status User status
+   * @return List of users
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.QUERY,
+      description = "Query users, return #{result.size()} users")
+  public List<MstUser> getUserList(String username, String status) {
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+
+    // Partial match for username
+    if (username != null && !username.isBlank()) {
+      queryWrapper.like("username", username);
+    }
+
+    // Exact match for status
+    if (status != null && !status.isBlank()) {
+      queryWrapper.eq("status", status);
+    }
+
+    // Order by update time descending
+    queryWrapper.orderByDesc("update_at");
+
+    return userMapper.selectList(queryWrapper);
+  }
+
+  /**
+   * Get user by ID.
+   *
+   * @param id User ID
+   * @return MstUser entity
+   * @throws BusinessException if the user is not found
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.QUERY,
+      description = "Query user #{result.username}")
+  public MstUser getUserById(Long id) {
+    MstUser user = userMapper.selectById(id);
+    if (user == null) {
+      throw new BusinessException(MessageEnums.NOT_FOUND, "user");
+    }
+    return user;
+  }
+
+  /**
+   * Create a new user.
+   *
+   * <p>Checks for username uniqueness before inserting. Password is encrypted before storage.
+   * Throws an exception if the username already exists.
+   *
+   * @param user MstUser entity
+   * @return The created user ID
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.CREATE,
+      description = "User created: #{user.username}")
+  @Transactional(rollbackFor = Exception.class)
+  public Long createUser(MstUser user) {
+    // Validate username uniqueness
+    validateUsernameUnique(user.getUsername());
+
+    // Encrypt password if provided
+    if (user.getPassword() != null && !user.getPassword().isBlank()) {
+      user.setPassword(passwordEncoder.encode(user.getPassword()));
+    }
+
+    // Set default status if not provided
+    if (user.getStatus() == null || user.getStatus().isBlank()) {
+      user.setStatus(CommonConstants.USER_STATUS_ACTIVE);
+    }
+
+    // Insert user
+    userMapper.insert(user);
+
+    return user.getId();
+  }
+
+  /**
+   * Update an existing user.
+   *
+   * <p>Checks for username uniqueness (excluding the current user) before updating. Password is
+   * encrypted if provided. Uses optimistic locking via version field. Throws an exception if the
+   * username already exists or if the user was modified by another transaction.
+   *
+   * @param user MstUser entity with updated values
+   * @throws BusinessException if the username is duplicate or optimistic lock fails
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.UPDATE,
+      description = "User updated: #{user.username}")
+  @Transactional(rollbackFor = Exception.class)
+  public void updateUser(MstUser user) {
+    // Get existing user for cache eviction
+    MstUser existingUser = self.getUserById(user.getId());
+
+    // username can't be updated
+    if (existingUser.getUsername().equals(user.getUsername())) {
+      throw new BusinessException(MessageEnums.USERNAME_CANNOT_BE_UPDATED);
+    }
+
+    // Encrypt password if provided
+    if (user.getPassword() != null && !user.getPassword().isBlank()) {
+      user.setPassword(passwordEncoder.encode(user.getPassword()));
+    } else {
+      // Keep existing password if not provided
+      user.setPassword(null);
+    }
+
+    // Update user (optimistic locking handled by @Version annotation)
+    int updated = userMapper.updateById(user);
+    if (updated == 0) {
+      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "user");
+    }
+
+    // Evict UserDetails cache
+    evictUserDetailsCache(existingUser.getUsername());
+  }
+
+  /**
+   * Delete a user.
+   *
+   * <p>Uses optimistic locking via version field. Throws an exception if the user was modified by
+   * another transaction.
+   *
+   * @param id User ID
+   * @param version Version for optimistic locking
+   * @throws BusinessException if the user is not found or optimistic lock fails
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.DELETE,
+      description = "User deleted: #{user.username}")
+  @Transactional(rollbackFor = Exception.class)
+  public void deleteUser(Long id, Integer version) {
+    // Get user for logging and cache eviction
+    MstUser user = self.getUserById(id);
+
+    // Set version for optimistic locking
+    user.setVersion(version);
+
+    // Delete user (optimistic locking handled by @Version annotation)
+    int deleted = userMapper.deleteById(user);
+    if (deleted == 0) {
+      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "user");
+    }
+
+    // Evict UserDetails cache
+    evictUserDetailsCache(user.getUsername());
+  }
+
+  /**
+   * Validate that the username is unique.
+   *
+   * @param username Username to check
+   * @throws BusinessException if the username already exists
+   */
+  private void validateUsernameUnique(String username) {
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("username", username);
+    if (userMapper.selectCount(queryWrapper) > 0) {
+      throw new BusinessException(MessageEnums.UNIQUE_CONSTRAINT_VIOLATION, "username");
+    }
   }
 }

@@ -37,7 +37,8 @@ public enum MessageEnums {
   IP_BLOCKED(100_004, "IP Blocked"),
   /* Master Data Error Codes 200_001 - 200_999 */
   USER_NOT_FOUND(200_001, "User Not Found"),
-  USER_INACTIVE(200_002, "User Inactive");
+  USER_INACTIVE(200_002, "User Inactive"),
+  USERNAME_CANNOT_BE_UPDATED(200_003, "Username cannot be updated");
 
   @Getter private final int code;
   @Getter private final String message;
