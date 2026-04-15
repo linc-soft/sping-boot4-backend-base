@@ -79,4 +79,45 @@ public class RoleService {
       throw new BusinessException(MessageEnums.ROLE_CODE_DUPLICATE);
     }
   }
+
+  /**
+   * Validate that the role code is unique, excluding the specified role ID.
+   *
+   * @param roleCode Role code to check
+   * @param excludeId Role ID to exclude from the check
+   * @throws BusinessException if the role code already exists for a different role
+   */
+  private void validateRoleCodeUniqueExclude(String roleCode, Long excludeId) {
+    QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("role_code", roleCode).ne("id", excludeId);
+    if (roleMapper.selectCount(queryWrapper) > 0) {
+      throw new BusinessException(MessageEnums.ROLE_CODE_DUPLICATE);
+    }
+  }
+
+  /**
+   * Update an existing role.
+   *
+   * <p>Checks for role code uniqueness (excluding the current role) before updating. Uses optimistic
+   * locking via version field. Throws an exception if the role code already exists or if the role
+   * was modified by another transaction.
+   *
+   * @param role MstRole entity with updated values
+   * @throws BusinessException if the role code is duplicate or optimistic lock fails
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "Role Manager",
+      type = OperationType.UPDATE,
+      description = "Role updated: #{role.roleName} (#{role.roleCode})")
+  public void updateRole(MstRole role) {
+    // Validate role code uniqueness (excluding current role)
+    validateRoleCodeUniqueExclude(role.getRoleCode(), role.getId());
+
+    // Update role (optimistic locking handled by @Version annotation)
+    int updated = roleMapper.updateById(role);
+    if (updated == 0) {
+      throw new BusinessException("Failed to update role: record may have been modified or deleted");
+    }
+  }
 }
