@@ -30,8 +30,8 @@ public class BusinessException extends RuntimeException {
    *
    * @param message Exception Enumeration
    */
-  public BusinessException(MessageEnums message) {
-    super(message.getMessage());
+  public BusinessException(MessageEnums message, Object... args) {
+    super(MessageEnums.format(message, args));
     this.code = message.getCode();
   }
 }

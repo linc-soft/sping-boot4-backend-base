@@ -23,17 +23,31 @@ public enum MessageEnums {
   BAD_REQUEST(400, "Bad Request"),
   UNAUTHORIZED(401, "Unauthorized"),
   FORBIDDEN(403, "Forbidden"),
-  INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
-  USER_NOT_FOUND(100001, "User Not Found"),
-  USER_INACTIVE(100002, "User Inactive"),
-  TOKEN_REVOKED(100003, "Token Revoked"),
-  INVALID_CREDENTIALS(100004, "Invalid Credentials"),
-  INVALID_REFRESH_TOKEN(100005, "Invalid Refresh Token"),
-  IP_BLOCKED(100006, "IP Blocked"),
-  ACCOUNT_LOCKED(100007, "Account Locked"),
+  UNIQUE_CONSTRAINT_VIOLATION(409, "The %s already exists. Please use a different value."),
+  OPTIMISTIC_LOCK_FAILED(
+      412, "The %s has been modified by another user. Please refresh and try again."),
   RATE_LIMITED(429, "Too Many Requests"),
-  ROLE_CODE_DUPLICATE(100008, "Role Code Already Exists");
+  INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
+  /* System Error Codes 100_001 - 100_999 */
+  TOKEN_REVOKED(100_001, "Token Revoked"),
+  INVALID_CREDENTIALS(100_002, "Invalid Credentials"),
+  INVALID_REFRESH_TOKEN(100_003, "Invalid Refresh Token"),
+  IP_BLOCKED(100_004, "IP Blocked"),
+  /* Master Data Error Codes 200_001 - 200_999 */
+  USER_NOT_FOUND(200_001, "User Not Found"),
+  USER_INACTIVE(200_002, "User Inactive");
 
   @Getter private final int code;
   @Getter private final String message;
+
+  /**
+   * Format message with arguments.
+   *
+   * @param message Message template
+   * @param args Arguments to format the message
+   * @return Formatted message string
+   */
+  public static String format(MessageEnums message, Object... args) {
+    return String.format(message.message, args);
+  }
 }

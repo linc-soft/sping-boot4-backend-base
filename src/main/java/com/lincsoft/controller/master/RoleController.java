@@ -1,14 +1,12 @@
 package com.lincsoft.controller.master;
 
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
+import com.lincsoft.controller.master.vo.RoleUpdateRequest;
 import com.lincsoft.mapstruct.RoleMapper;
 import com.lincsoft.services.master.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Role controller.
@@ -38,5 +36,15 @@ public class RoleController {
   @PostMapping
   public Long createRole(@Valid @RequestBody RoleCreateRequest request) {
     return roleService.createRole(roleMapper.toEntity(request));
+  }
+
+  /**
+   * Update an existing role.
+   *
+   * @param request Role update request
+   */
+  @PutMapping
+  public void updateRole(@Valid @RequestBody RoleUpdateRequest request) {
+    roleService.updateRole(roleMapper.toEntity(request));
   }
 }

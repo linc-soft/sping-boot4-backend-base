@@ -1,6 +1,7 @@
 package com.lincsoft.mapstruct;
 
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
+import com.lincsoft.controller.master.vo.RoleUpdateRequest;
 import com.lincsoft.entity.master.MstRole;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,4 +30,21 @@ public interface RoleMapper {
   @Mapping(target = "deleted", ignore = true)
   @Mapping(target = "version", ignore = true)
   MstRole toEntity(RoleCreateRequest request);
+
+  /**
+   * Convert RoleUpdateRequest to MstRole.
+   *
+   * <p>Framework-managed audit fields (createBy, createAt, updateBy, updateAt, deleted) are
+   * intentionally ignored. The id and version fields are mapped from the request for update
+   * operations.
+   *
+   * @param request Role update request
+   * @return MstRole entity
+   */
+  @Mapping(target = "createBy", ignore = true)
+  @Mapping(target = "createAt", ignore = true)
+  @Mapping(target = "updateBy", ignore = true)
+  @Mapping(target = "updateAt", ignore = true)
+  @Mapping(target = "deleted", ignore = true)
+  MstRole toEntity(RoleUpdateRequest request);
 }

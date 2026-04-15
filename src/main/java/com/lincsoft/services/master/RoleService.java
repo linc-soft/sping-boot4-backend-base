@@ -57,8 +57,8 @@ public class RoleService {
       type = OperationType.CREATE,
       description = "Role created: #{role.roleName} (#{role.roleCode})")
   public Long createRole(MstRole role) {
-    // Validate role code uniqueness
-    validateRoleCodeUnique(role.getRoleCode());
+    // Validate role code uniqueness (excluding any existing role)
+    validateRoleCodeUnique(role.getRoleCode(), null);
 
     // Insert role
     roleMapper.insert(role);
@@ -67,16 +67,46 @@ public class RoleService {
   }
 
   /**
+   * Update an existing role.
+   *
+   * <p>Checks for role code uniqueness (excluding the current role) before updating. Uses
+   * optimistic locking via version field. Throws an exception if the role code already exists or if
+   * the role was modified by another transaction.
+   *
+   * @param role MstRole entity with updated values
+   * @throws BusinessException if the role code is duplicate or optimistic lock fails
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "Role Manager",
+      type = OperationType.UPDATE,
+      description = "Role updated: #{role.roleName} (#{role.roleCode})")
+  public void updateRole(MstRole role) {
+    // Validate role code uniqueness (excluding current role)
+    validateRoleCodeUnique(role.getRoleCode(), role.getId());
+
+    // Update role (optimistic locking handled by @Version annotation)
+    int updated = roleMapper.updateById(role);
+    if (updated == 0) {
+      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
+    }
+  }
+
+  /**
    * Validate that the role code is unique.
    *
    * @param roleCode Role code to check
    * @throws BusinessException if the role code already exists
    */
-  private void validateRoleCodeUnique(String roleCode) {
+  private void validateRoleCodeUnique(String roleCode, Long excludeId) {
     QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
     queryWrapper.eq("role_code", roleCode);
+    // Exclude the current role if an excludeId is provided
+    if (excludeId != null) {
+      queryWrapper.ne("id", excludeId);
+    }
     if (roleMapper.selectCount(queryWrapper) > 0) {
-      throw new BusinessException(MessageEnums.ROLE_CODE_DUPLICATE);
+      throw new BusinessException(MessageEnums.UNIQUE_CONSTRAINT_VIOLATION, "role code");
     }
   }
 }
