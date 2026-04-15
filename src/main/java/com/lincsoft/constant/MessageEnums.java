@@ -27,6 +27,7 @@ public enum MessageEnums {
   UNIQUE_CONSTRAINT_VIOLATION(409, "The %s already exists. Please use a different value."),
   OPTIMISTIC_LOCK_FAILED(
       412, "The %s has been modified by another user. Please refresh and try again."),
+  RESOURCE_IS_USED(423, "The %s is used by other resources. Please check and try again."),
   RATE_LIMITED(429, "Too Many Requests"),
   INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
   /* System Error Codes 100_001 - 100_999 */

@@ -1,6 +1,7 @@
 package com.lincsoft.controller.master;
 
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
+import com.lincsoft.controller.master.vo.RoleDeleteRequest;
 import com.lincsoft.controller.master.vo.RoleResponse;
 import com.lincsoft.controller.master.vo.RoleUpdateRequest;
 import com.lincsoft.mapstruct.RoleMapper;
@@ -58,5 +59,15 @@ public class RoleController {
   @PutMapping
   public void updateRole(@Valid @RequestBody RoleUpdateRequest request) {
     roleService.updateRole(roleMapper.toEntity(request));
+  }
+
+  /**
+   * Delete a role.
+   *
+   * @param request Role delete request
+   */
+  @DeleteMapping
+  public void deleteRole(@Valid @RequestBody RoleDeleteRequest request) {
+    roleService.deleteRole(request.id(), request.version());
   }
 }

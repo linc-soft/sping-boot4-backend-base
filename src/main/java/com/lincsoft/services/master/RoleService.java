@@ -9,6 +9,7 @@ import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUserRole;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.master.MstRoleMapper;
+import com.lincsoft.mapper.master.MstUserRoleMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ import org.springframework.stereotype.Service;
 public class RoleService {
   /** Role mapper for database operations. */
   private final MstRoleMapper roleMapper;
+
+  /** User role mapper for checking role usage. */
+  private final MstUserRoleMapper userRoleMapper;
 
   /**
    * Get role list by user ID.
@@ -104,6 +108,54 @@ public class RoleService {
     int updated = roleMapper.updateById(role);
     if (updated == 0) {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
+    }
+  }
+
+  /**
+   * Delete a role.
+   *
+   * <p>Checks if the role is in use by any user before deleting. Uses optimistic locking via
+   * version field. Throws an exception if the role is in use or if the role was modified by another
+   * transaction.
+   *
+   * @param id Role ID
+   * @param version Version for optimistic locking
+   * @throws BusinessException if the role is in use, not found, or optimistic lock fails
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "Role Manager",
+      type = OperationType.DELETE,
+      description = "Role deleted: #{role.roleName} (#{role.roleCode})")
+  public void deleteRole(Long id, Integer version) {
+    // Get role for logging and validation
+    MstRole role = getRoleById(id);
+
+    // Check if role is in use
+    validateRoleNotInUse(id);
+
+    // Set version for optimistic locking
+    role.setVersion(version);
+
+    // Delete role (optimistic locking handled by @Version annotation)
+    int deleted = roleMapper.deleteById(role);
+    if (deleted == 0) {
+      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
+    }
+  }
+
+  /**
+   * Validate that the role is not in use by any user.
+   *
+   * @param roleId Role ID to check
+   * @throws BusinessException if the role is assigned to any user
+   */
+  private void validateRoleNotInUse(Long roleId) {
+    QueryWrapper<MstUserRole> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("role_id", roleId);
+    long count = userRoleMapper.selectCount(queryWrapper);
+    if (count > 0) {
+      throw new BusinessException(MessageEnums.RESOURCE_IS_USED, "role");
     }
   }
 
