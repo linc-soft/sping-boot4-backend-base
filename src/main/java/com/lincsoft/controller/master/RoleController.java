@@ -11,6 +11,7 @@ import com.lincsoft.services.master.RoleService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -39,6 +40,7 @@ public class RoleController {
    * @return Role info response
    */
   @GetMapping("/{id}")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER.roleCode)")
   public RoleInfoResponse getRole(@PathVariable Long id) {
     return roleMapper.toInfoResponse(roleService.getRoleById(id));
   }
@@ -50,6 +52,7 @@ public class RoleController {
    * @return List of role items
    */
   @GetMapping
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER.roleCode)")
   public List<RoleListResponseItem> getRoleList(RoleListRequest request) {
     return roleMapper.toListResponse(
         roleService.getRoleList(request.roleName(), request.roleCode(), request.description()));
@@ -62,6 +65,7 @@ public class RoleController {
    * @return created role ID
    */
   @PostMapping
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ADMIN.roleCode)")
   public Long createRole(@Valid @RequestBody RoleCreateRequest request) {
     return roleService.createRole(roleMapper.toEntity(request));
   }
@@ -72,6 +76,7 @@ public class RoleController {
    * @param request Role update request
    */
   @PutMapping
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ADMIN.roleCode)")
   public void updateRole(@Valid @RequestBody RoleUpdateRequest request) {
     roleService.updateRole(roleMapper.toEntity(request));
   }
@@ -82,6 +87,7 @@ public class RoleController {
    * @param request Role delete request
    */
   @DeleteMapping
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ADMIN.roleCode)")
   public void deleteRole(@Valid @RequestBody RoleDeleteRequest request) {
     roleService.deleteRole(request.id(), request.version());
   }
