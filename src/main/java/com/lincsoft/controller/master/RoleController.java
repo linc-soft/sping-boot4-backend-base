@@ -1,6 +1,7 @@
 package com.lincsoft.controller.master;
 
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
+import com.lincsoft.controller.master.vo.RoleResponse;
 import com.lincsoft.controller.master.vo.RoleUpdateRequest;
 import com.lincsoft.mapstruct.RoleMapper;
 import com.lincsoft.services.master.RoleService;
@@ -26,6 +27,17 @@ public class RoleController {
 
   /** Role mapper for converting between VO and entity. */
   private final RoleMapper roleMapper;
+
+  /**
+   * Get role by ID.
+   *
+   * @param id Role ID
+   * @return Role response
+   */
+  @GetMapping("/{id}")
+  public RoleResponse getRole(@PathVariable Long id) {
+    return roleMapper.toResponse(roleService.getRoleById(id));
+  }
 
   /**
    * Create a new role.

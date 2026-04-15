@@ -1,6 +1,7 @@
 package com.lincsoft.mapstruct;
 
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
+import com.lincsoft.controller.master.vo.RoleResponse;
 import com.lincsoft.controller.master.vo.RoleUpdateRequest;
 import com.lincsoft.entity.master.MstRole;
 import org.mapstruct.Mapper;
@@ -47,4 +48,12 @@ public interface RoleMapper {
   @Mapping(target = "updateAt", ignore = true)
   @Mapping(target = "deleted", ignore = true)
   MstRole toEntity(RoleUpdateRequest request);
+
+  /**
+   * Convert MstRole to RoleResponse.
+   *
+   * @param entity MstRole entity
+   * @return RoleResponse VO
+   */
+  RoleResponse toResponse(MstRole entity);
 }

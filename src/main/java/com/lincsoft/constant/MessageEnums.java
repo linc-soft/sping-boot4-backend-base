@@ -23,6 +23,7 @@ public enum MessageEnums {
   BAD_REQUEST(400, "Bad Request"),
   UNAUTHORIZED(401, "Unauthorized"),
   FORBIDDEN(403, "Forbidden"),
+  NOT_FOUND(404, "%s Not Found"),
   UNIQUE_CONSTRAINT_VIOLATION(409, "The %s already exists. Please use a different value."),
   OPTIMISTIC_LOCK_FAILED(
       412, "The %s has been modified by another user. Please refresh and try again."),

@@ -43,6 +43,21 @@ public class RoleService {
   }
 
   /**
+   * Get role by ID.
+   *
+   * @param id Role ID
+   * @return MstRole entity
+   * @throws BusinessException if the role is not found
+   */
+  public MstRole getRoleById(Long id) {
+    MstRole role = roleMapper.selectById(id);
+    if (role == null) {
+      throw new BusinessException(MessageEnums.NOT_FOUND, "role");
+    }
+    return role;
+  }
+
+  /**
    * Create a new role.
    *
    * <p>Checks for role code uniqueness before inserting. Throws an exception if the role code
