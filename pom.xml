@@ -81,6 +81,13 @@
       <version>${mybatis-plus.version}</version>
     </dependency>
 
+    <!-- MyBatisPlus JSqlParser (分页插件等依赖，3.5.9+ 需单独引入) -->
+    <dependency>
+      <groupId>com.baomidou</groupId>
+      <artifactId>mybatis-plus-jsqlparser</artifactId>
+      <version>${mybatis-plus.version}</version>
+    </dependency>
+
     <!-- MyBatisPlus Join -->
     <dependency>
       <groupId>com.github.yulichang</groupId>

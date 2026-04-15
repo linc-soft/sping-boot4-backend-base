@@ -1,10 +1,13 @@
 package com.lincsoft.controller.master;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lincsoft.controller.master.vo.UserCreateRequest;
 import com.lincsoft.controller.master.vo.UserDeleteRequest;
 import com.lincsoft.controller.master.vo.UserInfoResponse;
 import com.lincsoft.controller.master.vo.UserListRequest;
 import com.lincsoft.controller.master.vo.UserListResponseItem;
+import com.lincsoft.controller.master.vo.UserPageRequest;
+import com.lincsoft.controller.master.vo.UserPageResponseItem;
 import com.lincsoft.controller.master.vo.UserUpdateRequest;
 import com.lincsoft.mapstruct.UserMapper;
 import com.lincsoft.services.master.UserService;
@@ -52,6 +55,17 @@ public class UserController {
   @GetMapping
   public List<UserListResponseItem> getUserList(UserListRequest request) {
     return userMapper.toListResponse(userService.getUserList(request.username(), request.status()));
+  }
+
+  /**
+   * Get user page by query conditions with pagination.
+   *
+   * @param request Page request with pagination parameters and query conditions
+   * @return IPage of user items
+   */
+  @GetMapping("/page")
+  public IPage<UserPageResponseItem> getUserPage(UserPageRequest request) {
+    return userMapper.toPageResponse(userService.getUserPage(request));
   }
 
   /**

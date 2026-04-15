@@ -1,5 +1,6 @@
 package com.lincsoft.mapstruct;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lincsoft.controller.master.vo.*;
 import com.lincsoft.entity.master.MstUser;
 import java.util.List;
@@ -71,4 +72,22 @@ public interface UserMapper {
    * @return List of UserListResponseItem VO
    */
   List<UserListResponseItem> toListResponse(List<MstUser> entities);
+
+  /**
+   * Convert MstUser to UserPageResponseItem.
+   *
+   * @param entity MstUser entity
+   * @return UserPageResponseItem VO
+   */
+  UserPageResponseItem toPageResponseItem(MstUser entity);
+
+  /**
+   * Convert IPage of MstUser to IPage of UserPageResponseItem.
+   *
+   * @param entities IPage of MstUser entities
+   * @return IPage of UserPageResponseItem VO
+   */
+  default IPage<UserPageResponseItem> toPageResponse(IPage<MstUser> entities) {
+    return entities.convert(this::toPageResponseItem);
+  }
 }

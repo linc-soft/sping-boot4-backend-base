@@ -1,10 +1,13 @@
 package com.lincsoft.services.master;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.OperationType;
+import com.lincsoft.controller.master.vo.UserPageRequest;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.exception.BusinessException;
@@ -181,6 +184,40 @@ public class UserService implements UserDetailsService {
     queryWrapper.orderByDesc("update_at");
 
     return userMapper.selectList(queryWrapper);
+  }
+
+  /**
+   * Get user page by query conditions with pagination.
+   *
+   * @param request Page request with pagination parameters and query conditions
+   * @return IPage of users
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.QUERY,
+      description = "Query users page, return #{result.total} total records")
+  public IPage<MstUser> getUserPage(UserPageRequest request) {
+    // Build page object
+    Page<MstUser> page = new Page<>(request.getPage(), request.getSize());
+
+    // Build query conditions
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+
+    // Partial match for username
+    if (request.getUsername() != null && !request.getUsername().isBlank()) {
+      queryWrapper.like("username", request.getUsername());
+    }
+
+    // Exact match for status
+    if (request.getStatus() != null && !request.getStatus().isBlank()) {
+      queryWrapper.eq("status", request.getStatus());
+    }
+
+    // Order by update time descending
+    queryWrapper.orderByDesc("update_at");
+
+    return userMapper.selectPage(page, queryWrapper);
   }
 
   /**
