@@ -96,7 +96,7 @@ public class AccessLogAsyncService {
    * Drains up to {@code limit} entries from the buffer into a list.
    *
    * @param limit maximum number of entries to drain
-   * @return list of drained entries (may be empty, never null)
+   * @return list of drained entries (maybe empty, never null)
    */
   private List<SysAccessLog> drainBuffer(int limit) {
     List<SysAccessLog> batch = new ArrayList<>(limit);

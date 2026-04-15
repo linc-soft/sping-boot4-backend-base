@@ -99,6 +99,7 @@ public class AuthService {
 
       // Extract authenticated user details
       UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+      assert userDetails != null;
       String authenticatedUsername = userDetails.getUsername();
 
       // Generate tokens with username as subject
@@ -250,7 +251,7 @@ public class AuthService {
     // Revoke refresh token from cookie
     String refreshToken = extractRefreshTokenFromCookie(request);
     if (refreshToken != null) {
-      revokeTokenSafely(refreshToken, secret, "refresh");
+      revokeTokenSafely(refreshToken, secret);
     }
 
     // Clear refresh token cookie
@@ -270,7 +271,7 @@ public class AuthService {
    * Safely revoke a token by adding its JTI to the blacklist. Exceptions during revocation are
    * logged but do not interrupt the logout flow.
    */
-  private void revokeTokenSafely(String token, String secret, String tokenType) {
+  private void revokeTokenSafely(String token, String secret) {
     try {
       Claims claims = JwtUtil.parseToken(token, secret);
       String jti = claims.getId();
@@ -281,7 +282,7 @@ public class AuthService {
         }
       }
     } catch (JwtException e) {
-      log.warn("Failed to revoke {} token during logout: {}", tokenType, e.getMessage());
+      log.warn("Failed to revoke {} token during logout: {}", "refresh", e.getMessage());
     }
   }
 

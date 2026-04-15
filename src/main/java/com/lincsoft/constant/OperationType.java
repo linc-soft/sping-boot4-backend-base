@@ -20,5 +20,5 @@ public enum OperationType {
   LOGOUT(),
   IMPORT(),
   EXPORT(),
-  OTHER();
+  OTHER()
 }
