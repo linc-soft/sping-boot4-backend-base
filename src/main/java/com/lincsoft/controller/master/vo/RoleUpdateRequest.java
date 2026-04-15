@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
  * @param roleName Role name
  * @param roleCode Role code
  * @param description Role description
+ * @param version Version for optimistic locking
  * @author 林创科技
  * @since 2026-04-14
  */
@@ -28,4 +29,5 @@ public record RoleUpdateRequest(
                     + " underscores (no leading/trailing/consecutive underscores)")
         @Size(max = 64, message = "Role code must be at most 64 characters")
         String roleCode,
-    @Size(max = 255, message = "Description must be at most 255 characters") String description) {}
+    @Size(max = 255, message = "Description must be at most 255 characters") String description,
+    @NotNull(message = "Version is required") Integer version) {}
