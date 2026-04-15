@@ -1,7 +1,7 @@
 package com.lincsoft.controller.master.vo;
 
 /**
- * Role response VO.
+ * Role info response VO.
  *
  * @param id Role ID
  * @param roleName Role name
@@ -11,5 +11,5 @@ package com.lincsoft.controller.master.vo;
  * @author 林创科技
  * @since 2026-04-15
  */
-public record RoleResponse(
+public record RoleInfoResponse(
     Long id, String roleName, String roleCode, String description, Integer version) {}

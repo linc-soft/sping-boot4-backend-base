@@ -1,7 +1,7 @@
 package com.lincsoft.mapstruct;
 
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
-import com.lincsoft.controller.master.vo.RoleResponse;
+import com.lincsoft.controller.master.vo.RoleInfoResponse;
 import com.lincsoft.controller.master.vo.RoleUpdateRequest;
 import com.lincsoft.entity.master.MstRole;
 import org.mapstruct.Mapper;
@@ -50,10 +50,10 @@ public interface RoleMapper {
   MstRole toEntity(RoleUpdateRequest request);
 
   /**
-   * Convert MstRole to RoleResponse.
+   * Convert MstRole to RoleInfoResponse.
    *
    * @param entity MstRole entity
-   * @return RoleResponse VO
+   * @return RoleInfoResponse VO
    */
-  RoleResponse toResponse(MstRole entity);
+  RoleInfoResponse toInfoResponse(MstRole entity);
 }
