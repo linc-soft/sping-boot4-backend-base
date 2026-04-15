@@ -3,10 +3,13 @@ package com.lincsoft.controller.master;
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
 import com.lincsoft.controller.master.vo.RoleDeleteRequest;
 import com.lincsoft.controller.master.vo.RoleInfoResponse;
+import com.lincsoft.controller.master.vo.RoleListRequest;
+import com.lincsoft.controller.master.vo.RoleListResponseItem;
 import com.lincsoft.controller.master.vo.RoleUpdateRequest;
 import com.lincsoft.mapstruct.RoleMapper;
 import com.lincsoft.services.master.RoleService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +41,18 @@ public class RoleController {
   @GetMapping("/{id}")
   public RoleInfoResponse getRole(@PathVariable Long id) {
     return roleMapper.toInfoResponse(roleService.getRoleById(id));
+  }
+
+  /**
+   * Get role list by query conditions.
+   *
+   * @param request Query parameters (roleName, roleCode, description)
+   * @return List of role items
+   */
+  @GetMapping
+  public List<RoleListResponseItem> getRoleList(RoleListRequest request) {
+    return roleMapper.toListResponse(
+        roleService.getRoleList(request.roleName(), request.roleCode(), request.description()));
   }
 
   /**

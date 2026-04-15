@@ -1,9 +1,8 @@
 package com.lincsoft.mapstruct;
 
-import com.lincsoft.controller.master.vo.RoleCreateRequest;
-import com.lincsoft.controller.master.vo.RoleInfoResponse;
-import com.lincsoft.controller.master.vo.RoleUpdateRequest;
+import com.lincsoft.controller.master.vo.*;
 import com.lincsoft.entity.master.MstRole;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -56,4 +55,20 @@ public interface RoleMapper {
    * @return RoleInfoResponse VO
    */
   RoleInfoResponse toInfoResponse(MstRole entity);
+
+  /**
+   * Convert MstRole to RoleListResponseItem.
+   *
+   * @param entity MstRole entity
+   * @return RoleListResponseItem VO
+   */
+  RoleListResponseItem toListResponseItem(MstRole entity);
+
+  /**
+   * Convert list of MstRole to list of RoleListResponseItem.
+   *
+   * @param entities List of MstRole entities
+   * @return List of RoleListResponseItem VO
+   */
+  List<RoleListResponseItem> toListResponse(List<MstRole> entities);
 }

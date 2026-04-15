@@ -12,6 +12,7 @@ import com.lincsoft.mapper.master.MstRoleMapper;
 import com.lincsoft.mapper.master.MstUserRoleMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,12 +32,20 @@ public class RoleService {
   /** User role mapper for checking role usage. */
   private final MstUserRoleMapper userRoleMapper;
 
+  /** Self reference for lazy initialization. */
+  @Lazy private final RoleService self;
+
   /**
    * Get role list by user ID.
    *
    * @param userId User ID
    * @return List of roles
    */
+  @OperationLog(
+      module = "Master",
+      subModule = "Role Manager",
+      type = OperationType.QUERY,
+      description = "Query roles by user ID: #{userId}, return #{result.size()} roles")
   public List<MstRole> getRoleListByUserId(Long userId) {
     return roleMapper.selectJoinList(
         MstRole.class,
@@ -47,12 +56,54 @@ public class RoleService {
   }
 
   /**
+   * Get role list by query conditions.
+   *
+   * @param roleName Role name (partial match)
+   * @param roleCode Role code (prefix match)
+   * @param description Description (partial match)
+   * @return List of roles
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "Role Manager",
+      type = OperationType.QUERY,
+      description = "Query roles, return #{result.size()} roles")
+  public List<MstRole> getRoleList(String roleName, String roleCode, String description) {
+    QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
+
+    // Partial match for role name
+    if (roleName != null && !roleName.isBlank()) {
+      queryWrapper.like("role_name", roleName);
+    }
+
+    // Prefix match for role code
+    if (roleCode != null && !roleCode.isBlank()) {
+      queryWrapper.likeRight("role_code", roleCode);
+    }
+
+    // Partial match for description
+    if (description != null && !description.isBlank()) {
+      queryWrapper.like("description", description);
+    }
+
+    // Order by update time descending
+    queryWrapper.orderByDesc("update_at");
+
+    return roleMapper.selectList(queryWrapper);
+  }
+
+  /**
    * Get role by ID.
    *
    * @param id Role ID
    * @return MstRole entity
    * @throws BusinessException if the role is not found
    */
+  @OperationLog(
+      module = "Master",
+      subModule = "Role Manager",
+      type = OperationType.QUERY,
+      description = "Query role #{result.roleName} (#{result.roleCode})")
   public MstRole getRoleById(Long id) {
     MstRole role = roleMapper.selectById(id);
     if (role == null) {
@@ -129,7 +180,7 @@ public class RoleService {
       description = "Role deleted: #{role.roleName} (#{role.roleCode})")
   public void deleteRole(Long id, Integer version) {
     // Get role for logging and validation
-    MstRole role = getRoleById(id);
+    MstRole role = self.getRoleById(id);
 
     // Check if role is in use
     validateRoleNotInUse(id);
