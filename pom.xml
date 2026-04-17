@@ -111,6 +111,14 @@
       <version>${jjwt.version}</version>
     </dependency>
 
+    <!-- JJWT Implementation (required at runtime) -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>${jjwt.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
     <!-- JJWT Jackson Serializer -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
