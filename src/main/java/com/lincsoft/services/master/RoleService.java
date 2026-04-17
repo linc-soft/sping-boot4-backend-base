@@ -45,7 +45,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.QUERY,
-      description = "Query roles by user ID: #{userId}, return #{result.size()} roles")
+      description = "Query roles by user ID: #{#userId}, return #{#result.size()} roles")
   public List<MstRole> getRoleListByUserId(Long userId) {
     return roleMapper.selectJoinList(
         MstRole.class,
@@ -67,7 +67,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.QUERY,
-      description = "Query roles, return #{result.size()} roles")
+      description = "Query roles, return #{#result.size()} roles")
   public List<MstRole> getRoleList(String roleName, String roleCode, String description) {
     QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
 
@@ -103,7 +103,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.QUERY,
-      description = "Query role #{result.roleName} (#{result.roleCode})")
+      description = "Query role #{#result.roleName} (#{#result.roleCode})")
   public MstRole getRoleById(Long id) {
     MstRole role = roleMapper.selectById(id);
     if (role == null) {
@@ -125,7 +125,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.CREATE,
-      description = "Role created: #{role.roleName} (#{role.roleCode})")
+      description = "Role created: #{#role.roleName} (#{#role.roleCode})")
   public Long createRole(MstRole role) {
     // Validate role code uniqueness (excluding any existing role)
     validateRoleCodeUnique(role.getRoleCode(), null);
@@ -150,7 +150,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.UPDATE,
-      description = "Role updated: #{role.roleName} (#{role.roleCode})")
+      description = "Role updated: #{#role.roleName} (#{#role.roleCode})")
   public void updateRole(MstRole role) {
     // Validate role code uniqueness (excluding current role)
     validateRoleCodeUnique(role.getRoleCode(), role.getId());
@@ -177,7 +177,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.DELETE,
-      description = "Role deleted: #{role.roleName} (#{role.roleCode})")
+      description = "Role deleted: #{#role.roleName} (#{#role.roleCode})")
   public void deleteRole(Long id, Integer version) {
     // Get role for logging and validation
     MstRole role = self.getRoleById(id);

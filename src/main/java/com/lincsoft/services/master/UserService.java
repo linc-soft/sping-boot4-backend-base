@@ -166,7 +166,7 @@ public class UserService implements UserDetailsService {
       module = "Master",
       subModule = "User Manager",
       type = OperationType.QUERY,
-      description = "Query users, return #{result.size()} users")
+      description = "Query users, return #{#result.size()} users")
   public List<MstUser> getUserList(String username, String status) {
     QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
 
@@ -196,7 +196,7 @@ public class UserService implements UserDetailsService {
       module = "Master",
       subModule = "User Manager",
       type = OperationType.QUERY,
-      description = "Query users page, return #{result.total} total records")
+      description = "Query users page, return #{#result.total} total records")
   public IPage<MstUser> getUserPage(UserPageRequest request) {
     // Build page object
     Page<MstUser> page = new Page<>(request.getPage(), request.getSize());
@@ -231,7 +231,7 @@ public class UserService implements UserDetailsService {
       module = "Master",
       subModule = "User Manager",
       type = OperationType.QUERY,
-      description = "Query user #{result.username}")
+      description = "Query user #{#result.username}")
   public MstUser getUserById(Long id) {
     MstUser user = userMapper.selectById(id);
     if (user == null) {
@@ -253,7 +253,7 @@ public class UserService implements UserDetailsService {
       module = "Master",
       subModule = "User Manager",
       type = OperationType.CREATE,
-      description = "User created: #{user.username}")
+      description = "User created: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
   public Long createUser(MstUser user) {
     // Validate username uniqueness
@@ -289,7 +289,7 @@ public class UserService implements UserDetailsService {
       module = "Master",
       subModule = "User Manager",
       type = OperationType.UPDATE,
-      description = "User updated: #{user.username}")
+      description = "User updated: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
   public void updateUser(MstUser user) {
     // Get existing user for cache eviction
@@ -332,7 +332,7 @@ public class UserService implements UserDetailsService {
       module = "Master",
       subModule = "User Manager",
       type = OperationType.DELETE,
-      description = "User deleted: #{user.username}")
+      description = "User deleted: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
   public void deleteUser(Long id, Integer version) {
     // Get user for logging and cache eviction

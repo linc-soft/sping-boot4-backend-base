@@ -18,7 +18,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.MDC;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -111,8 +111,8 @@ public class OperationLogAspect {
    * Resolves SpEL expressions in the description.
    *
    * <p>Supports expressions like {@code #{#paramName}}, {@code #{#result}}, {@code
-   * #{#result.propertyName}}. Evaluated in a read-only data-binding context that only permits
-   * property access (no method invocation) to prevent unintended side effects.
+   * #{#result.propertyName}}, {@code #{#result.method()}}. Evaluated using a {@link
+   * StandardEvaluationContext} that supports property access and method invocation.
    *
    * <p>On resolution failure, logs a warn message and returns the original description string.
    *
@@ -131,7 +131,7 @@ public class OperationLogAspect {
       String[] paramNames = signature.getParameterNames();
       Object[] args = joinPoint.getArgs();
 
-      SimpleEvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().build();
+      StandardEvaluationContext context = new StandardEvaluationContext();
       if (paramNames != null) {
         for (int i = 0; i < paramNames.length; i++) {
           context.setVariable(paramNames[i], args[i]);
