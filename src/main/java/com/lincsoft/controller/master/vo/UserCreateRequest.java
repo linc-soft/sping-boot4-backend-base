@@ -1,5 +1,7 @@
 package com.lincsoft.controller.master.vo;
 
+import com.lincsoft.annotation.ValidEnum;
+import com.lincsoft.constant.UserStatusEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -23,5 +25,4 @@ public record UserCreateRequest(
     @NotBlank(message = "Password is required")
         @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
         String password,
-    @Pattern(regexp = "^[01]$", message = "Status must be 0 (inactive) or 1 (active)")
-        String status) {}
+    @ValidEnum(UserStatusEnum.class) Integer status) {}
