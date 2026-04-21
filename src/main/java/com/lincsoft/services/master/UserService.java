@@ -8,6 +8,7 @@ import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.OperationType;
 import com.lincsoft.controller.master.vo.UserPageRequest;
+import com.lincsoft.dto.CacheableUserDetails;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.exception.BusinessException;
@@ -24,7 +25,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsChecker;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,21 +129,18 @@ public class UserService implements UserDetailsService {
 
     // Retrieve user's roles from the database
     List<MstRole> roleList = roleService.getRoleListByUserId(user.getId());
-    // Build and return Spring Security UserDetails object with mapped authorities
-    return User.builder()
-        .username(user.getUsername())
-        .password(user.getPassword())
-        .authorities(
-            roleList.stream()
-                .filter(role -> role.getRoleCode() != null)
-                .map(
-                    role ->
-                        new SimpleGrantedAuthority(
-                            role.getRoleCode().startsWith("ROLE_")
-                                ? role.getRoleCode()
-                                : "ROLE_" + role.getRoleCode()))
-                .toList())
-        .build();
+    // Build and return cacheable UserDetails object with mapped authorities
+    List<SimpleGrantedAuthority> authorities =
+        roleList.stream()
+            .filter(role -> role.getRoleCode() != null)
+            .map(
+                role ->
+                    new SimpleGrantedAuthority(
+                        role.getRoleCode().startsWith("ROLE_")
+                            ? role.getRoleCode()
+                            : "ROLE_" + role.getRoleCode()))
+            .toList();
+    return new CacheableUserDetails(user.getUsername(), user.getPassword(), authorities);
   }
 
   /**
