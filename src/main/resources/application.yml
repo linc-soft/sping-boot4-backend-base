@@ -58,7 +58,7 @@ app:
     # Public endpoints bypass authentication and CSRF protection
     public-endpoints:
       - /api/auth/login
-      - /api/common/**
+      - /api/common/enums
     # Auth-only whitelist requires CSRF but bypasses authentication
     auth-only-whitelist:
       - /api/auth/refresh
