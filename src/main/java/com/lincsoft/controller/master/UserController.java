@@ -81,7 +81,7 @@ public class UserController {
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ADMIN.roleCode)")
   @PostMapping
   public Long createUser(@Valid @RequestBody UserCreateRequest request) {
-    return userService.createUser(userMapper.toEntity(request));
+    return userService.createUser(userMapper.toEntity(request), request.roleIds());
   }
 
   /**

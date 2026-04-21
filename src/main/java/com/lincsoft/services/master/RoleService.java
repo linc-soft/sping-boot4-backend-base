@@ -36,6 +36,18 @@ public class RoleService {
   @Lazy private final RoleService self;
 
   /**
+   * Get roles by ID list.
+   *
+   * <p>Batch retrieves roles by their IDs. Used internally for role assignment operations.
+   *
+   * @param ids List of role IDs
+   * @return List of roles matching the given IDs
+   */
+  public List<MstRole> getRolesByIds(List<Integer> ids) {
+    return roleMapper.selectByIds(ids);
+  }
+
+  /**
    * Get role list by user ID.
    *
    * @param userId User ID

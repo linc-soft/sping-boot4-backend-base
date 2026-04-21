@@ -11,10 +11,12 @@ import com.lincsoft.controller.master.vo.UserPageRequest;
 import com.lincsoft.dto.CacheableUserDetails;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
+import com.lincsoft.entity.master.MstUserRole;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.mapper.master.MstUserMapper;
+import com.lincsoft.mapper.master.MstUserRoleMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +68,9 @@ public class UserService implements UserDetailsService {
    * <p>Provides access to user-related database queries and operations.
    */
   private final MstUserMapper userMapper;
+
+  /** User role mapper for managing user-role associations. */
+  private final MstUserRoleMapper userRoleMapper;
 
   /**
    * Role service for retrieving user roles.
@@ -256,7 +261,7 @@ public class UserService implements UserDetailsService {
       type = OperationType.CREATE,
       description = "User created: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
-  public Long createUser(MstUser user) {
+  public Long createUser(MstUser user, List<Integer> roleIds) {
     // Validate username uniqueness
     validateUsernameUnique(user.getUsername());
 
@@ -272,6 +277,14 @@ public class UserService implements UserDetailsService {
 
     // Insert user
     userMapper.insert(user);
+
+    // Assign roles to user if roleIds is provided
+    if (roleIds != null && !roleIds.isEmpty()) {
+      List<MstRole> roles = roleService.getRolesByIds(roleIds);
+      for (MstRole role : roles) {
+        self.assignRoleToUser(user, role);
+      }
+    }
 
     return user.getId();
   }
@@ -350,6 +363,26 @@ public class UserService implements UserDetailsService {
 
     // Evict UserDetails cache
     evictUserDetailsCache(user.getUsername());
+  }
+
+  /**
+   * Assign a role to a user.
+   *
+   * <p>Creates a user-role association record. Each invocation generates one operation log entry.
+   *
+   * @param user The user to assign the role to
+   * @param role The role to assign
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.CREATE,
+      description = "Assigned role #{#role.roleName} to user: #{#user.username}")
+  public void assignRoleToUser(MstUser user, MstRole role) {
+    MstUserRole userRole = new MstUserRole();
+    userRole.setUserId(user.getId());
+    userRole.setRoleId(role.getId());
+    userRoleMapper.insert(userRole);
   }
 
   /**
