@@ -310,7 +310,7 @@ public class UserService implements UserDetailsService {
     MstUser existingUser = self.getUserById(user.getId());
 
     // username can't be updated
-    if (existingUser.getUsername().equals(user.getUsername())) {
+    if (!existingUser.getUsername().equals(user.getUsername())) {
       throw new BusinessException(MessageEnums.USERNAME_CANNOT_BE_UPDATED);
     }
 

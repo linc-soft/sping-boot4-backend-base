@@ -27,5 +27,5 @@ public record UserCreateRequest(
     @NotBlank(message = "Password is required")
         @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
         String password,
-    @NotBlank(message = "Status is required") @ValidEnum(UserStatusEnum.class) Integer status,
+    @NotBlank(message = "Status is required") @ValidEnum(UserStatusEnum.class) String status,
     List<Integer> roleIds) {}

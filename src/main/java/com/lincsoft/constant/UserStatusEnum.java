@@ -16,14 +16,14 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum UserStatusEnum implements BaseEnum<Integer> {
-  ENABLED(1, "enabled"),
-  DISABLED(0, "disabled");
+public enum UserStatusEnum implements BaseEnum<String> {
+  ENABLED("1", "enabled"),
+  DISABLED("0", "disabled");
 
-  /** Numeric status code. */
-  private final Integer code;
+  /** status code. */
+  private final String code;
 
-  /** Descriptive status name. */
+  /** status name. */
   private final String name;
 
   /** Cached list of all status entries for API responses. */
