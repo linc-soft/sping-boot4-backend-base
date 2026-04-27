@@ -3,6 +3,7 @@ package com.lincsoft.controller.master;
 import com.lincsoft.controller.master.vo.RoleCreateRequest;
 import com.lincsoft.controller.master.vo.RoleDeleteRequest;
 import com.lincsoft.controller.master.vo.RoleInfoResponse;
+import com.lincsoft.controller.master.vo.RoleInheritanceRequest;
 import com.lincsoft.controller.master.vo.RoleListRequest;
 import com.lincsoft.controller.master.vo.RoleListResponseItem;
 import com.lincsoft.controller.master.vo.RoleUpdateRequest;
@@ -90,5 +91,53 @@ public class RoleController {
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ADMIN.roleCode)")
   public void deleteRole(@Valid @RequestBody RoleDeleteRequest request) {
     roleService.deleteRole(request.id(), request.version());
+  }
+
+  // ========== Role Inheritance Endpoints ==========
+
+  /**
+   * Add role inheritance relationship.
+   *
+   * @param request Role inheritance request (childRoleId, parentRoleId)
+   */
+  @PostMapping("/inheritance")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ADMIN.roleCode)")
+  public void addRoleInheritance(@Valid @RequestBody RoleInheritanceRequest request) {
+    roleService.addRoleInheritance(request.childRoleId(), request.parentRoleId());
+  }
+
+  /**
+   * Remove role inheritance relationship.
+   *
+   * @param request Role inheritance request (childRoleId, parentRoleId)
+   */
+  @DeleteMapping("/inheritance")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ADMIN.roleCode)")
+  public void removeRoleInheritance(@Valid @RequestBody RoleInheritanceRequest request) {
+    roleService.removeRoleInheritance(request.childRoleId(), request.parentRoleId());
+  }
+
+  /**
+   * Get parent roles of a given role.
+   *
+   * @param id Role ID
+   * @return List of parent roles
+   */
+  @GetMapping("/{id}/parents")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER.roleCode)")
+  public List<RoleListResponseItem> getParentRoles(@PathVariable Long id) {
+    return roleMapper.toListResponse(roleService.getParentRoles(id));
+  }
+
+  /**
+   * Get child roles of a given role.
+   *
+   * @param id Role ID
+   * @return List of child roles
+   */
+  @GetMapping("/{id}/children")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER.roleCode)")
+  public List<RoleListResponseItem> getChildRoles(@PathVariable Long id) {
+    return roleMapper.toListResponse(roleService.getChildRoles(id));
   }
 }

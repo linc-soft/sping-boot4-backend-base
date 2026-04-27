@@ -18,6 +18,7 @@ import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.mapper.master.MstUserMapper;
 import com.lincsoft.mapper.master.MstUserRoleMapper;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
@@ -132,18 +133,19 @@ public class UserService implements UserDetailsService {
       throw new DisabledException("User is inactive");
     }
 
-    // Retrieve user's roles from the database
-    List<MstRole> roleList = roleService.getRoleListByUserId(user.getId());
-    // Build and return cacheable UserDetails object with mapped authorities
+    // Retrieve user's direct roles from the database
+    List<MstRole> directRoles = roleService.getRoleListByUserId(user.getId());
+
+    // Resolve all effective role codes (direct + inherited via role hierarchy)
+    List<Long> directRoleIds = directRoles.stream().map(MstRole::getId).toList();
+    Set<String> allRoleCodes = roleService.resolveAllRoleCodes(directRoleIds);
+
+    // Build authorities from all effective roles (with ROLE_ prefix)
     List<SimpleGrantedAuthority> authorities =
-        roleList.stream()
-            .filter(role -> role.getRoleCode() != null)
+        allRoleCodes.stream()
             .map(
-                role ->
-                    new SimpleGrantedAuthority(
-                        role.getRoleCode().startsWith("ROLE_")
-                            ? role.getRoleCode()
-                            : "ROLE_" + role.getRoleCode()))
+                code ->
+                    new SimpleGrantedAuthority(code.startsWith("ROLE_") ? code : "ROLE_" + code))
             .toList();
     return new CacheableUserDetails(user.getUsername(), user.getPassword(), authorities);
   }

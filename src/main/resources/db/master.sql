@@ -73,6 +73,31 @@ CREATE TABLE IF NOT EXISTS mst_user_role
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'User-role relationship table';
 
 -- ============================================================
+-- mst_role_inheritance table
+-- Records the inheritance relationship between roles (multi-inheritance).
+-- A child role inherits all permissions from its parent roles.
+-- Note: No UNIQUE KEY due to logical delete (deleted flag).
+--       Duplicate prevention is handled at the application layer.
+-- ============================================================
+DROP TABLE IF EXISTS mst_role_inheritance;
+CREATE TABLE IF NOT EXISTS mst_role_inheritance
+(
+  id             BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  child_role_id  BIGINT     DEFAULT NULL COMMENT 'Child role ID (the role that inherits)',
+  parent_role_id BIGINT     DEFAULT NULL COMMENT 'Parent role ID (the role being inherited)',
+  create_by      VARCHAR(20) COMMENT 'Creator',
+  create_at      DATETIME   DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
+  update_by      VARCHAR(20) COMMENT 'Updater',
+  update_at      DATETIME   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
+  deleted        TINYINT(1) DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id),
+  INDEX idx_child_role_id (child_role_id),
+  INDEX idx_parent_role_id (parent_role_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Role inheritance relationship table';
+
+-- ============================================================
 -- Initial Data: admin user
 -- Default password: admin123 (BCrypt encoded)
 -- ============================================================
@@ -83,16 +108,28 @@ VALUES ('admin',
         'system',
         'system');
 
-INSERT INTO mst_role (role_name,
+-- ============================================================
+-- Initial Data: admin role, role manager, user manager
+-- ============================================================
+INSERT INTO mst_role (id,
+                      role_name,
                       role_code,
                       description,
                       create_by,
                       update_by)
-VALUES ('Administrator',
-        'ADMIN',
-        'Administrator',
-        'system',
-        'system');
+VALUES (1, 'Administrator', 'ADMIN', 'Administrator', 'system', 'system'),
+       (2, 'Role Manager', 'ROLE_MANAGER', 'Role Manager', 'system', 'system'),
+       (3, 'User Manager', 'USER_MANAGER', 'User Manager', 'system', 'system');
 
+-- ============================================================
+-- Initial Data: role inheritance relationship
+-- ============================================================
+INSERT INTO mst_role_inheritance (child_role_id, parent_role_id, create_by, update_by)
+VALUES (1, 2, 'system', 'system'),
+       (1, 3, 'system', 'system');
+
+-- ============================================================
+-- Initial Data: user-role relationship
+-- ============================================================
 INSERT INTO mst_user_role (user_id, role_id, create_by, update_by)
 VALUES (1, 1, 'system', 'system');
