@@ -13,6 +13,7 @@ import com.lincsoft.mapper.master.MstRoleInheritanceMapper;
 import com.lincsoft.mapper.master.MstRoleMapper;
 import com.lincsoft.mapper.master.MstUserRoleMapper;
 import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -76,17 +77,20 @@ public class RoleService {
   /**
    * Get role list by query conditions.
    *
+   * <p>Each returned item is bundled with the direct parent role IDs of that role (batch-resolved
+   * to avoid N+1 queries).
+   *
    * @param roleName Role name (partial match)
    * @param roleCode Role code (prefix match)
    * @param description Description (partial match)
-   * @return List of roles
+   * @return List of roles with their direct parent role IDs
    */
   @OperationLog(
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.QUERY,
       description = "Query roles, return #{#result.size()} roles")
-  public List<MstRole> getRoleList(String roleName, String roleCode, String description) {
+  public List<RoleWithParents> getRoleList(String roleName, String roleCode, String description) {
     QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
 
     // Partial match for role name
@@ -107,7 +111,7 @@ public class RoleService {
     // Order by update time descending
     queryWrapper.orderByDesc("update_at");
 
-    return roleMapper.selectList(queryWrapper);
+    return attachParentRoleIds(roleMapper.selectList(queryWrapper));
   }
 
   /**
@@ -316,23 +320,23 @@ public class RoleService {
    * Get parent roles for a given role ID.
    *
    * @param roleId Child role ID
-   * @return List of parent MstRole entities
+   * @return List of parent roles with their own direct parent role IDs
    */
-  public List<MstRole> getParentRoles(Long roleId) {
+  public List<RoleWithParents> getParentRoles(Long roleId) {
     List<Long> parentIds = getParentRoleIds(roleId);
     if (parentIds.isEmpty()) {
       return List.of();
     }
-    return roleMapper.selectByIds(parentIds);
+    return attachParentRoleIds(roleMapper.selectByIds(parentIds));
   }
 
   /**
    * Get child roles for a given role ID.
    *
    * @param roleId Parent role ID
-   * @return List of child MstRole entities
+   * @return List of child roles with their own direct parent role IDs
    */
-  public List<MstRole> getChildRoles(Long roleId) {
+  public List<RoleWithParents> getChildRoles(Long roleId) {
     QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
     qw.eq("parent_role_id", roleId);
     List<Long> childIds =
@@ -342,7 +346,35 @@ public class RoleService {
     if (childIds.isEmpty()) {
       return List.of();
     }
-    return roleMapper.selectByIds(childIds);
+    return attachParentRoleIds(roleMapper.selectByIds(childIds));
+  }
+
+  /**
+   * Attach direct parent role IDs to a list of roles.
+   *
+   * <p>Performs a single batch query against the inheritance table for all given role IDs to build
+   * a {@code childRoleId -> [parentRoleId...]} map, then wraps each role with its parent IDs. Roles
+   * without any parents get an empty list.
+   *
+   * @param roles List of roles (maybe empty)
+   * @return List of roles paired with their direct parent role IDs (same order as input)
+   */
+  private List<RoleWithParents> attachParentRoleIds(List<MstRole> roles) {
+    if (roles == null || roles.isEmpty()) {
+      return List.of();
+    }
+    List<Long> roleIds = roles.stream().map(MstRole::getId).toList();
+    QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
+    qw.in("child_role_id", roleIds);
+    Map<Long, List<Long>> parentIdsMap =
+        roleInheritanceMapper.selectList(qw).stream()
+            .collect(
+                Collectors.groupingBy(
+                    MstRoleInheritance::getChildRoleId,
+                    Collectors.mapping(MstRoleInheritance::getParentRoleId, Collectors.toList())));
+    return roles.stream()
+        .map(role -> new RoleWithParents(role, parentIdsMap.getOrDefault(role.getId(), List.of())))
+        .toList();
   }
 
   // ========== Private Validation Methods ==========

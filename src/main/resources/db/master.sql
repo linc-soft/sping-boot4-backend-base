@@ -118,15 +118,27 @@ INSERT INTO mst_role (id,
                       create_by,
                       update_by)
 VALUES (1, 'Administrator', 'ADMIN', 'Administrator', 'system', 'system'),
-       (2, 'Role Manager', 'ROLE_MANAGER', 'Role Manager', 'system', 'system'),
-       (3, 'User Manager', 'USER_MANAGER', 'User Manager', 'system', 'system');
+       (2, 'Role Viewer', 'ROLE_VIEW', 'Can view roles', 'system', 'system'),
+       (3, 'Role Creator', 'ROLE_NEW', 'Can create new roles', 'system', 'system'),
+       (4, 'Role Editor', 'ROLE_EDIT', 'Can edit roles', 'system', 'system'),
+       (5, 'Role Deleter', 'ROLE_DEL', 'Can delete roles', 'system', 'system'),
+       (6, 'User Viewer', 'USER_VIEW', 'Can view users', 'system', 'system'),
+       (7, 'User Creator', 'USER_NEW', 'Can create new users', 'system', 'system'),
+       (8, 'User Editor', 'USER_EDIT', 'Can edit users', 'system', 'system'),
+       (9, 'User Deleter', 'USER_DEL', 'Can delete users', 'system', 'system');
 
 -- ============================================================
 -- Initial Data: role inheritance relationship
 -- ============================================================
 INSERT INTO mst_role_inheritance (child_role_id, parent_role_id, create_by, update_by)
 VALUES (1, 2, 'system', 'system'),
-       (1, 3, 'system', 'system');
+       (1, 3, 'system', 'system'),
+       (1, 4, 'system', 'system'),
+       (1, 5, 'system', 'system'),
+       (1, 6, 'system', 'system'),
+       (1, 7, 'system', 'system'),
+       (1, 8, 'system', 'system'),
+       (1, 9, 'system', 'system');
 
 -- ============================================================
 -- Initial Data: user-role relationship

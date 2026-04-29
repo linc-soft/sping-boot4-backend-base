@@ -2,6 +2,7 @@ package com.lincsoft.mapstruct;
 
 import com.lincsoft.controller.master.vo.*;
 import com.lincsoft.entity.master.MstRole;
+import com.lincsoft.services.master.RoleWithParents;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -57,18 +58,25 @@ public interface RoleMapper {
   RoleInfoResponse toInfoResponse(MstRole entity);
 
   /**
-   * Convert MstRole to RoleListResponseItem.
+   * Convert a role bundled with its direct parent role IDs to a RoleListResponseItem.
    *
-   * @param entity MstRole entity
+   * @param dto Role together with its direct parent role IDs
    * @return RoleListResponseItem VO
    */
-  RoleListResponseItem toListResponseItem(MstRole entity);
+  @Mapping(target = "id", source = "role.id")
+  @Mapping(target = "roleName", source = "role.roleName")
+  @Mapping(target = "roleCode", source = "role.roleCode")
+  @Mapping(target = "description", source = "role.description")
+  @Mapping(target = "updateBy", source = "role.updateBy")
+  @Mapping(target = "updateAt", source = "role.updateAt")
+  @Mapping(target = "parentRoleIds", source = "parentRoleIds")
+  RoleListResponseItem toListResponseItem(RoleWithParents dto);
 
   /**
-   * Convert list of MstRole to list of RoleListResponseItem.
+   * Convert list of roles-with-parents to list of RoleListResponseItem.
    *
-   * @param entities List of MstRole entities
+   * @param list List of roles paired with their direct parent role IDs
    * @return List of RoleListResponseItem VO
    */
-  List<RoleListResponseItem> toListResponse(List<MstRole> entities);
+  List<RoleListResponseItem> toListResponse(List<RoleWithParents> list);
 }
