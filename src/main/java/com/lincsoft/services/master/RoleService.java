@@ -149,9 +149,6 @@ public class RoleService {
       type = OperationType.CREATE,
       description = "Role created: #{#role.roleName} (#{#role.roleCode})")
   public Long createRole(MstRole role) {
-    // Validate role code uniqueness (excluding any existing role)
-    validateRoleCodeUnique(role.getRoleCode(), null);
-
     // Insert role
     roleMapper.insert(role);
 
@@ -174,9 +171,6 @@ public class RoleService {
       type = OperationType.UPDATE,
       description = "Role updated: #{#role.roleName} (#{#role.roleCode})")
   public void updateRole(MstRole role) {
-    // Validate role code uniqueness (excluding current role)
-    validateRoleCodeUnique(role.getRoleCode(), role.getId());
-
     // Update role (optimistic locking handled by @Version annotation)
     int updated = roleMapper.updateById(role);
     if (updated == 0) {
@@ -187,19 +181,21 @@ public class RoleService {
   /**
    * Delete a role.
    *
-   * <p>Checks if the role is in use by any user before deleting. Uses optimistic locking via
-   * version field. Throws an exception if the role is in use or if the role was modified by another
-   * transaction.
+   * <p>Checks if the role is in use by any user and not inherited by other roles before deleting.
+   * After successful deletion, cleans up all inheritance relationships where this role is a child.
+   * Uses optimistic locking via version field.
    *
    * @param id Role ID
    * @param version Version for optimistic locking
-   * @throws BusinessException if the role is in use, not found, or optimistic lock fails
+   * @throws BusinessException if the role is in use, inherited by other roles, not found, or
+   *     optimistic lock fails
    */
   @OperationLog(
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.DELETE,
       description = "Role deleted: #{#role.roleName} (#{#role.roleCode})")
+  @Transactional(rollbackFor = Exception.class)
   public void deleteRole(Long id, Integer version) {
     // Get role for logging and validation
     MstRole role = self.getRoleById(id);
@@ -207,7 +203,7 @@ public class RoleService {
     // Check if role is in use
     validateRoleNotInUse(id);
 
-    // Check if role has inheritance relationships
+    // Check if role is inherited by other roles (as parent)
     validateRoleNotInherited(id);
 
     // Set version for optimistic locking
@@ -218,6 +214,9 @@ public class RoleService {
     if (deleted == 0) {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
     }
+
+    // Clean up inheritance relationships where this role is a child
+    deleteChildRoleInheritances(id);
   }
 
   // ========== Role Inheritance Management ==========
@@ -448,7 +447,7 @@ public class RoleService {
    */
   private void validateRoleNotInherited(Long roleId) {
     QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
-    qw.eq("parent_role_id", roleId).or().eq("child_role_id", roleId);
+    qw.eq("parent_role_id", roleId);
     long count = roleInheritanceMapper.selectCount(qw);
     if (count > 0) {
       throw new BusinessException(
@@ -472,20 +471,13 @@ public class RoleService {
   }
 
   /**
-   * Validate that the role code is unique.
+   * Delete all inheritance relationships where the given role is a child.
    *
-   * @param roleCode Role code to check
-   * @throws BusinessException if the role code already exists
+   * @param roleId Role ID whose child inheritance records should be removed
    */
-  private void validateRoleCodeUnique(String roleCode, Long excludeId) {
-    QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
-    queryWrapper.eq("role_code", roleCode);
-    // Exclude the current role if an excludeId is provided
-    if (excludeId != null) {
-      queryWrapper.ne("id", excludeId);
-    }
-    if (roleMapper.selectCount(queryWrapper) > 0) {
-      throw new BusinessException(MessageEnums.UNIQUE_CONSTRAINT_VIOLATION, "role code");
-    }
+  private void deleteChildRoleInheritances(Long roleId) {
+    QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
+    qw.eq("child_role_id", roleId);
+    roleInheritanceMapper.delete(qw);
   }
 }
