@@ -81,7 +81,7 @@ public class RoleService {
    * to avoid N+1 queries).
    *
    * @param roleName Role name (partial match)
-   * @param roleCode Role code (prefix match)
+   * @param roleCode Role code (prefix match, only for base roles)
    * @param description Description (partial match)
    * @return List of roles with their direct parent role IDs
    */
@@ -98,9 +98,11 @@ public class RoleService {
       queryWrapper.like("role_name", roleName);
     }
 
-    // Prefix match for role code
+    // Prefix match for role code (only for base roles, custom roles may have null role_code)
     if (roleCode != null && !roleCode.isBlank()) {
-      queryWrapper.likeRight("role_code", roleCode);
+      // Use OR condition to include roles with null role_code when searching
+      queryWrapper.and(
+          wrapper -> wrapper.likeRight("role_code", roleCode).or().isNull("role_code"));
     }
 
     // Partial match for description
@@ -125,7 +127,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.QUERY,
-      description = "Query role #{#result.roleName} (#{#result.roleCode})")
+      description = "Query role #{#result.roleName}")
   public MstRole getRoleById(Long id) {
     MstRole role = roleMapper.selectById(id);
     if (role == null) {
@@ -135,46 +137,63 @@ public class RoleService {
   }
 
   /**
-   * Create a new role.
+   * Create a new role with inheritance relationships.
    *
    * <p>Checks for role code uniqueness before inserting. Throws an exception if the role code
-   * already exists.
+   * already exists. Also handles role inheritance relationships if parentRoleIds are provided.
    *
    * @param role MstRole entity
+   * @param parentRoleIds List of parent role IDs (optional)
    * @return The created role ID
    */
   @OperationLog(
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.CREATE,
-      description = "Role created: #{#role.roleName} (#{#role.roleCode})")
-  public Long createRole(MstRole role) {
-    // Insert role
+      description = "Role created: #{#role.roleName}")
+  @Transactional(rollbackFor = Exception.class)
+  public Long createRole(MstRole role, List<Long> parentRoleIds) {
+    // Insert role (role_code may be null for custom roles)
     roleMapper.insert(role);
+
+    // Handle role inheritance if parentRoleIds are provided
+    if (parentRoleIds != null && !parentRoleIds.isEmpty()) {
+      for (Long parentRoleId : parentRoleIds) {
+        addRoleInheritance(role.getId(), parentRoleId);
+      }
+    }
 
     return role.getId();
   }
 
   /**
-   * Update an existing role.
+   * Update an existing role with inheritance relationships.
    *
    * <p>Checks for role code uniqueness (excluding the current role) before updating. Uses
-   * optimistic locking via version field. Throws an exception if the role code already exists or if
-   * the role was modified by another transaction.
+   * optimistic locking via version field. Also updates role inheritance relationships if
+   * parentRoleIds are provided.
    *
    * @param role MstRole entity with updated values
+   * @param parentRoleIds List of parent role IDs (optional)
    * @throws BusinessException if the role code is duplicate or optimistic lock fails
    */
   @OperationLog(
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.UPDATE,
-      description = "Role updated: #{#role.roleName} (#{#role.roleCode})")
-  public void updateRole(MstRole role) {
+      description = "Role updated: #{#role.roleName}")
+  @Transactional(rollbackFor = Exception.class)
+  public void updateRole(MstRole role, List<Long> parentRoleIds) {
     // Update role (optimistic locking handled by @Version annotation)
+    // Note: role_code is not updated as it's only for base roles
     int updated = roleMapper.updateById(role);
     if (updated == 0) {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
+    }
+
+    // Update role inheritance relationships if parentRoleIds are provided
+    if (parentRoleIds != null) {
+      updateRoleInheritance(role.getId(), parentRoleIds);
     }
   }
 
@@ -194,7 +213,7 @@ public class RoleService {
       module = "Master",
       subModule = "Role Manager",
       type = OperationType.DELETE,
-      description = "Role deleted: #{#role.roleName} (#{#role.roleCode})")
+      description = "Role deleted: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
   public void deleteRole(Long id, Integer version) {
     // Get role for logging and validation
@@ -225,12 +244,12 @@ public class RoleService {
    * Resolve all effective role codes for a given set of direct role IDs.
    *
    * <p>Uses BFS to traverse the inheritance graph, collecting all ancestor roles. Handles diamond
-   * inheritance and prevents infinite loops via visited set.
+   * inheritance and prevents infinite loops via visited set. Filters out null role codes.
    *
    * <p>Example: If role A inherits B, B inherits D, then resolving [A] returns codes of A, B, D.
    *
    * @param directRoleIds Direct role IDs assigned to the user
-   * @return Set of all effective role codes (direct + inherited)
+   * @return Set of all effective role codes (direct + inherited, non-null only)
    */
   public Set<String> resolveAllRoleCodes(List<Long> directRoleIds) {
     if (directRoleIds == null || directRoleIds.isEmpty()) {
@@ -244,7 +263,8 @@ public class RoleService {
     while (!queue.isEmpty()) {
       Long currentId = queue.poll();
       MstRole role = roleMapper.selectById(currentId);
-      if (role != null && role.getRoleCode() != null) {
+      // Only add non-null role codes (custom roles may have null role_code)
+      if (role != null && role.getRoleCode() != null && !role.getRoleCode().isBlank()) {
         roleCodes.add(role.getRoleCode());
       }
       // Traverse parent roles
@@ -312,6 +332,43 @@ public class RoleService {
     int deleted = roleInheritanceMapper.delete(qw);
     if (deleted == 0) {
       throw new BusinessException(MessageEnums.NOT_FOUND, "role inheritance");
+    }
+  }
+
+  /**
+   * Update role inheritance relationships.
+   *
+   * <p>Replaces all existing inheritance relationships for the given role with the new list of
+   * parent role IDs.
+   *
+   * @param childRoleId Child role ID
+   * @param newParentRoleIds New list of parent role IDs
+   */
+  @Transactional(rollbackFor = Exception.class)
+  public void updateRoleInheritance(Long childRoleId, List<Long> newParentRoleIds) {
+    // Get current parent role IDs
+    List<Long> currentParentIds = getParentRoleIds(childRoleId);
+
+    // Convert to sets for easier comparison
+    Set<Long> currentSet = new HashSet<>(currentParentIds);
+    Set<Long> newSet = new HashSet<>(newParentRoleIds != null ? newParentRoleIds : List.of());
+
+    // Find relationships to add
+    Set<Long> toAdd = new HashSet<>(newSet);
+    toAdd.removeAll(currentSet);
+
+    // Find relationships to remove
+    Set<Long> toRemove = new HashSet<>(currentSet);
+    toRemove.removeAll(newSet);
+
+    // Add new relationships
+    for (Long parentId : toAdd) {
+      addRoleInheritance(childRoleId, parentId);
+    }
+
+    // Remove old relationships
+    for (Long parentId : toRemove) {
+      removeRoleInheritance(childRoleId, parentId);
     }
   }
 

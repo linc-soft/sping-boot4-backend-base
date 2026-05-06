@@ -19,11 +19,13 @@ public interface RoleMapper {
    * Convert RoleCreateRequest to MstRole.
    *
    * <p>Fields managed by framework (id, audit fields, deleted, version) are intentionally ignored.
+   * role_code is not set as it's only for base roles.
    *
    * @param request Role create request
    * @return MstRole entity
    */
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "roleCode", ignore = true) // role_code only for base roles
   @Mapping(target = "createBy", ignore = true)
   @Mapping(target = "createAt", ignore = true)
   @Mapping(target = "updateBy", ignore = true)
@@ -37,11 +39,12 @@ public interface RoleMapper {
    *
    * <p>Framework-managed audit fields (createBy, createAt, updateBy, updateAt, deleted) are
    * intentionally ignored. The id and version fields are mapped from the request for update
-   * operations.
+   * operations. role_code is not updated as it's only for base roles.
    *
    * @param request Role update request
    * @return MstRole entity
    */
+  @Mapping(target = "roleCode", ignore = true) // role_code only for base roles, don't update
   @Mapping(target = "createBy", ignore = true)
   @Mapping(target = "createAt", ignore = true)
   @Mapping(target = "updateBy", ignore = true)

@@ -5,7 +5,9 @@ import com.lincsoft.entity.master.MstRoleInheritance;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * Role Inheritance mapper.
+ * Role inheritance mapper.
+ *
+ * <p>Provides database operations for role inheritance relationships.
  *
  * @author 林创科技
  * @since 2026-04-27

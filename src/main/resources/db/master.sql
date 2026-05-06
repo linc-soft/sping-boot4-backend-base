@@ -32,13 +32,14 @@ CREATE TABLE IF NOT EXISTS mst_user
 -- ============================================================
 -- mst_role table
 -- Records role information such as role name, role code, etc.
+-- Note: role_code is only used for base roles, custom roles may have NULL role_code
 -- ============================================================
 DROP TABLE IF EXISTS mst_role;
 CREATE TABLE IF NOT EXISTS mst_role
 (
   id          BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
   role_name   VARCHAR(64)  DEFAULT NULL COMMENT 'Role name',
-  role_code   VARCHAR(64)  DEFAULT NULL COMMENT 'Role code',
+  role_code   VARCHAR(64)  DEFAULT NULL COMMENT 'Role code (only for base roles)',
   description VARCHAR(255) DEFAULT NULL COMMENT 'Description',
   create_by   VARCHAR(20) COMMENT 'Creator',
   create_at   DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
@@ -46,8 +47,7 @@ CREATE TABLE IF NOT EXISTS mst_role
   update_at   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
   version     INT          DEFAULT 0 COMMENT 'Optimistic lock version',
   deleted     TINYINT(1)   DEFAULT 0 COMMENT 'Logical delete flag',
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_role_role_code (role_code)
+  PRIMARY KEY (id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Role table';

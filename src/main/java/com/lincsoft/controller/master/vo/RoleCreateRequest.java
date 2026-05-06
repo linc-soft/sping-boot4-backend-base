@@ -2,12 +2,14 @@ package com.lincsoft.controller.master.vo;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 
 /**
  * Role create request VO.
  *
  * @param roleName Role name
  * @param description Role description
+ * @param parentRoleIds Parent role IDs (optional, for role inheritance)
  * @author 林创科技
  * @since 2026-04-14
  */
@@ -15,4 +17,5 @@ public record RoleCreateRequest(
     @NotBlank(message = "Role name is required")
         @Size(max = 64, message = "Role name must be at most 64 characters")
         String roleName,
-    @Size(max = 255, message = "Description must be at most 255 characters") String description) {}
+    @Size(max = 255, message = "Description must be at most 255 characters") String description,
+    List<Long> parentRoleIds) {}

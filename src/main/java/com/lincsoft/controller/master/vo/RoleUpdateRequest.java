@@ -3,6 +3,7 @@ package com.lincsoft.controller.master.vo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 
 /**
  * Role update request VO.
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.Size;
  * @param id Role ID
  * @param roleName Role name
  * @param description Role description
+ * @param parentRoleIds Parent role IDs (optional, for role inheritance)
  * @param version Version for optimistic locking
  * @author 林创科技
  * @since 2026-04-15
@@ -20,4 +22,5 @@ public record RoleUpdateRequest(
         @Size(max = 64, message = "Role name must be at most 64 characters")
         String roleName,
     @Size(max = 255, message = "Description must be at most 255 characters") String description,
+    List<Long> parentRoleIds,
     @NotNull(message = "Version is required") Integer version) {}
