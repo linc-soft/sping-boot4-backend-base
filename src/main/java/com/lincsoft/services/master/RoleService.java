@@ -137,6 +137,20 @@ public class RoleService {
   }
 
   /**
+   * Get role with its direct parent role IDs by ID.
+   *
+   * <p>Loads the role entity together with the IDs of all roles it directly inherits from.
+   *
+   * @param id Role ID
+   * @return Role paired with its direct parent role IDs
+   * @throws BusinessException if the role is not found
+   */
+  public RoleWithParents getRoleWithParentsById(Long id) {
+    MstRole role = getRoleById(id);
+    return new RoleWithParents(role, getParentRoleIds(id));
+  }
+
+  /**
    * Create a new role with inheritance relationships.
    *
    * <p>Checks for role code uniqueness before inserting. Throws an exception if the role code

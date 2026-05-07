@@ -42,7 +42,7 @@ public class RoleController {
   @GetMapping("/{id}")
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_VIEW.roleCode)")
   public RoleInfoResponse getRole(@PathVariable Long id) {
-    return roleMapper.toInfoResponse(roleService.getRoleById(id));
+    return roleMapper.toInfoResponse(roleService.getRoleWithParentsById(id));
   }
 
   /**

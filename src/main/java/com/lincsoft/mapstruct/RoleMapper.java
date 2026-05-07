@@ -53,12 +53,18 @@ public interface RoleMapper {
   MstRole toEntity(RoleUpdateRequest request);
 
   /**
-   * Convert MstRole to RoleInfoResponse.
+   * Convert a role bundled with its direct parent role IDs to a RoleInfoResponse.
    *
-   * @param entity MstRole entity
+   * @param dto Role together with its direct parent role IDs
    * @return RoleInfoResponse VO
    */
-  RoleInfoResponse toInfoResponse(MstRole entity);
+  @Mapping(target = "id", source = "role.id")
+  @Mapping(target = "roleName", source = "role.roleName")
+  @Mapping(target = "roleCode", source = "role.roleCode")
+  @Mapping(target = "description", source = "role.description")
+  @Mapping(target = "version", source = "role.version")
+  @Mapping(target = "parentRoleIds", source = "parentRoleIds")
+  RoleInfoResponse toInfoResponse(RoleWithParents dto);
 
   /**
    * Convert a role bundled with its direct parent role IDs to a RoleListResponseItem.
