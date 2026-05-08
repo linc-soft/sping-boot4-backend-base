@@ -45,7 +45,7 @@ public class UserController {
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_VIEW.roleCode)")
   @GetMapping("/{id}")
   public UserInfoResponse getUser(@PathVariable Long id) {
-    return userMapper.toInfoResponse(userService.getUserById(id));
+    return userMapper.toInfoResponse(userService.getUserWithRolesById(id));
   }
 
   /**
@@ -92,7 +92,7 @@ public class UserController {
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_EDIT.roleCode)")
   @PutMapping
   public void updateUser(@Valid @RequestBody UserUpdateRequest request) {
-    userService.updateUser(userMapper.toEntity(request));
+    userService.updateUser(userMapper.toEntity(request), request.roleIds());
   }
 
   /**

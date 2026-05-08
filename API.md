@@ -116,7 +116,7 @@ Deletes a role after validating it is not assigned to any user and not inherited
 | **Endpoint** | `GET /api/users/{id}`           |
 | **Auth**     | Requires `USER_VIEW` permission |
 
-Retrieves a single user by ID. Returns user details including ID, username, status, and version. Throws 404 if not found.
+Retrieves a single user by ID. Returns user details including ID, username, status, version, and the list of directly assigned role IDs (`roleIds`, never null; empty when the user has no roles). Throws 404 if not found.
 
 ---
 
@@ -162,7 +162,16 @@ Creates a new user with username uniqueness validation. Password is encrypted vi
 | **Endpoint** | `PUT /api/users`                |
 | **Auth**     | Requires `USER_EDIT` permission |
 
-Updates user information. Username cannot be modified. Password is encrypted if provided, otherwise kept unchanged. Uses optimistic locking via version field. Evicts UserDetails cache after update.
+Updates user information. Username cannot be modified. Password is encrypted if provided, otherwise kept unchanged. Uses optimistic locking via version field. When `roleIds` is provided, synchronizes the user's role assignments against the list (adds missing, revokes extra); when omitted (null), existing roles remain unchanged. Evicts UserDetails cache after update.
+
+**Request Body:**
+
+- `id` (required): User ID
+- `username` (optional): Username (read-only, must equal current value)
+- `password` (optional): New password; omit to keep unchanged
+- `status` (optional): User status (`0` inactive / `1` active)
+- `roleIds` (optional): Target role ID list; omit to keep current roles, pass `[]` to revoke all
+- `version` (required): Version for optimistic locking
 
 ---
 
@@ -323,7 +332,7 @@ Returns select option list for frontend dropdown/select components. Provider imp
 | **接口地址** | `GET /api/users/{id}` |
 | **权限**     | 需要 `USER_VIEW` 权限 |
 
-根据 ID 获取单个用户。返回用户详情，包括 ID、用户名、状态和版本号。未找到时抛出 404 异常。
+根据 ID 获取单个用户。返回用户详情，包括 ID、用户名、状态、版本号，以及直接分配的角色 ID 列表（`roleIds`，不为 null；用户无角色时为空数组）。未找到时抛出 404 异常。
 
 ---
 
@@ -369,7 +378,16 @@ Returns select option list for frontend dropdown/select components. Provider imp
 | **接口地址** | `PUT /api/users`      |
 | **权限**     | 需要 `USER_EDIT` 权限 |
 
-更新用户信息。用户名不可修改。如果提供密码则加密存储，否则保持不变。通过版本字段使用乐观锁。更新后清除 UserDetails 缓存。
+更新用户信息。用户名不可修改。如果提供密码则加密存储，否则保持不变。通过版本字段使用乐观锁。当传入 `roleIds` 时，按列表同步用户的角色分配（新增缺失的、移除多余的）；未传入（null）时保持现有角色不变。更新后清除 UserDetails 缓存。
+
+**请求体：**
+
+- `id`（必填）：用户 ID
+- `username`（可选）：用户名（只读，需与当前值一致）
+- `password`（可选）：新密码；未传则保持不变
+- `status`（可选）：用户状态（`0` 禁用 / `1` 启用）
+- `roleIds`（可选）：目标角色 ID 列表；未传保持现有角色，传 `[]` 将移除所有角色
+- `version`（必填）：版本号，用于乐观锁
 
 ---
 
@@ -530,7 +548,7 @@ ID でデータベースから単一のロールを取得します。ID、名前
 | **エンドポイント** | `GET /api/users/{id}`  |
 | **認可**           | `USER_VIEW` 権限が必要 |
 
-ID でユーザーを取得します。ID、ユーザー名、ステータス、バージョンを含むユーザー詳細を返します。見つからない場合は 404 例外をスローします。
+ID でユーザーを取得します。ID、ユーザー名、ステータス、バージョン、および直接割り当てられたロール ID リスト（`roleIds`、null にならず、ロールがない場合は空配列）を含むユーザー詳細を返します。見つからない場合は 404 例外をスローします。
 
 ---
 
@@ -576,7 +594,16 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | **エンドポイント** | `PUT /api/users`       |
 | **認可**           | `USER_EDIT` 権限が必要 |
 
-ユーザー情報を更新します。ユーザー名は変更できません。パスワードが提供された場合は暗号化して保存し、そうでなければ変更しません。バージョンフィールドによる楽観的ロックを使用します。更新後に UserDetails キャッシュを無効化します。
+ユーザー情報を更新します。ユーザー名は変更できません。パスワードが提供された場合は暗号化して保存し、そうでなければ変更しません。バージョンフィールドによる楽観的ロックを使用します。`roleIds` が指定された場合、ユーザーのロール割り当てをそのリストに同期します（不足分を追加、余分を削除）。省略（null）の場合は既存ロールをそのままとします。更新後に UserDetails キャッシュを無効化します。
+
+**リクエストボディ：**
+
+- `id`（必須）：ユーザー ID
+- `username`（任意）：ユーザー名（読み取り専用、現在の値と同じである必要）
+- `password`（任意）：新しいパスワード。省略時は変更されません
+- `status`（任意）：ユーザーステータス（`0` 無効 / `1` 有効）
+- `roleIds`（任意）：目標ロール ID リスト。省略時は現在のロールを維持、`[]` を渡すと全て削除
+- `version`（必須）：楽観的ロック用のバージョン
 
 ---
 

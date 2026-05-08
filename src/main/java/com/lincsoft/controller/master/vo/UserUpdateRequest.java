@@ -3,6 +3,7 @@ package com.lincsoft.controller.master.vo;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 
 /**
  * User update request VO.
@@ -11,6 +12,8 @@ import jakarta.validation.constraints.Size;
  * @param username Username
  * @param password Password (optional, only update if provided)
  * @param status User status
+ * @param roleIds Role IDs (optional, if provided will replace existing role assignments; null means
+ *     keep current roles unchanged)
  * @param version Version for optimistic locking
  * @author 林创科技
  * @since 2026-04-15
@@ -26,4 +29,5 @@ public record UserUpdateRequest(
         String password,
     @Pattern(regexp = "^[01]$", message = "Status must be 0 (inactive) or 1 (active)")
         String status,
+    List<Integer> roleIds,
     @NotNull(message = "Version is required") Integer version) {}

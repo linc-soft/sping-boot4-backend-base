@@ -3,6 +3,7 @@ package com.lincsoft.mapstruct;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lincsoft.controller.master.vo.*;
 import com.lincsoft.entity.master.MstUser;
+import com.lincsoft.services.master.UserWithRoles;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -50,12 +51,17 @@ public interface UserMapper {
   MstUser toEntity(UserUpdateRequest request);
 
   /**
-   * Convert MstUser to UserInfoResponse.
+   * Convert a user bundled with its directly assigned role IDs to a UserInfoResponse.
    *
-   * @param entity MstUser entity
+   * @param dto User together with its directly assigned role IDs
    * @return UserInfoResponse VO
    */
-  UserInfoResponse toInfoResponse(MstUser entity);
+  @Mapping(target = "id", source = "user.id")
+  @Mapping(target = "username", source = "user.username")
+  @Mapping(target = "status", source = "user.status")
+  @Mapping(target = "version", source = "user.version")
+  @Mapping(target = "roleIds", source = "roleIds")
+  UserInfoResponse toInfoResponse(UserWithRoles dto);
 
   /**
    * Convert MstUser to UserListResponseItem.

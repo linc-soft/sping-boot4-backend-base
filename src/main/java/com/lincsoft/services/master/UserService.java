@@ -17,8 +17,10 @@ import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.mapper.master.MstUserMapper;
 import com.lincsoft.mapper.master.MstUserRoleMapper;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
@@ -235,17 +237,31 @@ public class UserService implements UserDetailsService {
    * @return MstUser entity
    * @throws BusinessException if the user is not found
    */
-  @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
-      type = OperationType.QUERY,
-      description = "Query user #{#result.username}")
   public MstUser getUserById(Long id) {
     MstUser user = userMapper.selectById(id);
     if (user == null) {
       throw new BusinessException(MessageEnums.NOT_FOUND, "user");
     }
     return user;
+  }
+
+  /**
+   * Get user with its directly assigned role IDs by ID.
+   *
+   * <p>Loads the user entity together with the IDs of all roles directly assigned to the user (not
+   * including inherited roles).
+   *
+   * @param id User ID
+   * @return User paired with its directly assigned role IDs
+   * @throws BusinessException if the user is not found
+   */
+  public UserWithRoles getUserWithRolesById(Long id) {
+    MstUser user = getUserById(id);
+    QueryWrapper<MstUserRole> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("user_id", id);
+    List<Long> roleIds =
+        userRoleMapper.selectList(queryWrapper).stream().map(MstUserRole::getRoleId).toList();
+    return new UserWithRoles(user, roleIds);
   }
 
   /**
@@ -299,6 +315,9 @@ public class UserService implements UserDetailsService {
    * username already exists or if the user was modified by another transaction.
    *
    * @param user MstUser entity with updated values
+   * @param roleIds Role IDs to assign to the user (optional). When non-null, synchronizes the
+   *     user's role assignments to match exactly this list (adds missing, removes extra). When
+   *     null, role assignments remain unchanged.
    * @throws BusinessException if the username is duplicate or optimistic lock fails
    */
   @OperationLog(
@@ -307,9 +326,9 @@ public class UserService implements UserDetailsService {
       type = OperationType.UPDATE,
       description = "User updated: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
-  public void updateUser(MstUser user) {
+  public void updateUser(MstUser user, List<Integer> roleIds) {
     // Get existing user for cache eviction
-    MstUser existingUser = self.getUserById(user.getId());
+    MstUser existingUser = getUserById(user.getId());
 
     // username can't be updated
     if (!existingUser.getUsername().equals(user.getUsername())) {
@@ -330,8 +349,60 @@ public class UserService implements UserDetailsService {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "user");
     }
 
+    // Synchronize user-role assignments if roleIds is provided
+    if (roleIds != null) {
+      syncUserRoles(existingUser, roleIds);
+    }
+
     // Evict UserDetails cache
     evictUserDetailsCache(existingUser.getUsername());
+  }
+
+  /**
+   * Synchronize the user's role assignments with the given role ID list.
+   *
+   * <p>Compares the user's current role assignments against the target list. Roles present in the
+   * target but not currently assigned are added; roles currently assigned but absent from the
+   * target are revoked. Roles present in both sets are left untouched.
+   *
+   * @param user The user whose role assignments will be synchronized
+   * @param roleIds Target list of role IDs (an empty list will revoke all existing roles)
+   */
+  private void syncUserRoles(MstUser user, List<Integer> roleIds) {
+    // Load current role IDs from mst_user_role
+    QueryWrapper<MstUserRole> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("user_id", user.getId());
+    Set<Long> currentRoleIds =
+        userRoleMapper.selectList(queryWrapper).stream()
+            .map(MstUserRole::getRoleId)
+            .collect(Collectors.toSet());
+
+    // Normalize target role IDs to Long for comparison
+    Set<Long> targetRoleIds = roleIds.stream().map(Integer::longValue).collect(Collectors.toSet());
+
+    // Compute diff: roles to add / roles to revoke
+    Set<Long> toAdd = new HashSet<>(targetRoleIds);
+    toAdd.removeAll(currentRoleIds);
+    Set<Long> toRemove = new HashSet<>(currentRoleIds);
+    toRemove.removeAll(targetRoleIds);
+
+    // Assign newly added roles
+    if (!toAdd.isEmpty()) {
+      List<Integer> addRoleIds = toAdd.stream().map(Long::intValue).toList();
+      List<MstRole> addRoles = roleService.getRolesByIds(addRoleIds);
+      for (MstRole role : addRoles) {
+        self.assignRoleToUser(user, role);
+      }
+    }
+
+    // Revoke removed roles
+    if (!toRemove.isEmpty()) {
+      List<Integer> removeRoleIds = toRemove.stream().map(Long::intValue).toList();
+      List<MstRole> removeRoles = roleService.getRolesByIds(removeRoleIds);
+      for (MstRole role : removeRoles) {
+        self.revokeRoleFromUser(user, role);
+      }
+    }
   }
 
   /**
@@ -352,7 +423,7 @@ public class UserService implements UserDetailsService {
   @Transactional(rollbackFor = Exception.class)
   public void deleteUser(Long id, Integer version) {
     // Get user for logging and cache eviction
-    MstUser user = self.getUserById(id);
+    MstUser user = getUserById(id);
 
     // Set version for optimistic locking
     user.setVersion(version);
@@ -385,6 +456,26 @@ public class UserService implements UserDetailsService {
     userRole.setUserId(user.getId());
     userRole.setRoleId(role.getId());
     userRoleMapper.insert(userRole);
+  }
+
+  /**
+   * Revoke a role from a user.
+   *
+   * <p>Deletes the user-role association record identified by user ID and role ID. Each invocation
+   * generates one operation log entry.
+   *
+   * @param user The user to revoke the role from
+   * @param role The role to revoke
+   */
+  @OperationLog(
+      module = "Master",
+      subModule = "User Manager",
+      type = OperationType.DELETE,
+      description = "Revoked role #{#role.roleName} from user: #{#user.username}")
+  public void revokeRoleFromUser(MstUser user, MstRole role) {
+    QueryWrapper<MstUserRole> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("user_id", user.getId()).eq("role_id", role.getId());
+    userRoleMapper.delete(queryWrapper);
   }
 
   /**
