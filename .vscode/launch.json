@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run Application",
+      "request": "launch",
+      "mainClass": "com.lincsoft.Application",
+      "projectName": "spring-boot-backend-base",
+      "envFile": "${workspaceFolder}/.env.local"
+    },
+    {
+      "type": "java",
+      "name": "Debug Application (JDWP 5005)",
+      "request": "launch",
+      "mainClass": "com.lincsoft.Application",
+      "projectName": "spring-boot-backend-base",
+      "envFile": "${workspaceFolder}/.env.local",
+      "vmArgs": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    }
+  ]
+}

@@ -23,3 +23,7 @@ target/
 .qoder
 .kiro
 doc
+
+### Local env files (do NOT commit real credentials)
+.env.local
+*.env.local

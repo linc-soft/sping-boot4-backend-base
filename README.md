@@ -24,6 +24,36 @@ This is an enterprise-grade backend framework built on **Spring Boot 4 + Java 25
 - **Security Protection**: CSRF protection, CORS configuration, and password encryption
 - **Multi-Environment Support**: Development, Testing, and Production environments
 
+### Local Development: Run & Debug
+
+Runtime settings (DB credentials, Redis, JWT secret) are injected via environment variables. See the placeholders in [`application.yml`](src/main/resources/application.yml) (e.g. `${DB_HOST}`, `${JWT_SECRET}`).
+
+The repo ships a `.env.example` template. Each developer must create their own `.env.local` (already gitignored) with real values.
+
+#### Step 1 — Create your local env file
+
+```bash
+# *nix / macOS
+cp .env.example .env.local
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env.local
+```
+
+Fill in the values. `JWT_SECRET` must be at least **32 characters** long.
+
+#### Step 2 — Run/Debug from VSCode
+
+1. Install the **Extension Pack for Java** (includes `vscjava.vscode-java-debug`).
+2. Open the _Run and Debug_ panel.
+3. Pick `Run Application` (normal run) or `Debug Application (JDWP 5005)` (exposes 5005 for external attach).
+
+The bundled [`.vscode/launch.json`](.vscode/launch.json) already references `${workspaceFolder}/.env.local` via the `envFile` field.
+
+> `.env.local` is gitignored. Never commit real credentials. When you add a new environment variable, update `.env.example` at the same time so teammates know to fill it in.
+
 ### Deployment: Reverse Proxy Configuration (Important)
 
 This project uses `X-Forwarded-For` and other proxy headers to identify the real client IP address. This affects both **rate limiting** (`RateLimitFilter`) and **access logging** (`AccessLogInterceptor`).
@@ -376,6 +406,36 @@ The stored procedures `sp_create_monthly_partitions` / `sp_create_yearly_partiti
 - **安全防护**: CSRF 保护、CORS 配置、密码加密
 - **多环境支持**: 支持开发、测试、生产等多环境配置
 
+### 本地开发：运行与调试
+
+运行期配置（数据库连接、Redis、JWT 密钥）通过环境变量注入，占位符见 [`application.yml`](src/main/resources/application.yml)（如 `${DB_HOST}`、`${JWT_SECRET}`）。
+
+仓库提供 `.env.example` 模板，每位开发者需自行创建 `.env.local`（已 gitignore）并填写真实值。
+
+#### 步骤 1 — 创建本地环境变量文件
+
+```bash
+# *nix / macOS
+cp .env.example .env.local
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env.local
+```
+
+填写真实值，其中 `JWT_SECRET` 长度至少 **32 个字符**。
+
+#### 步骤 2 — 在 VSCode 中运行/调试
+
+1. 安装 **Extension Pack for Java**（内含 `vscjava.vscode-java-debug`）。
+2. 打开 _Run and Debug_ 面板。
+3. 选择 `Run Application`（常规运行）或 `Debug Application (JDWP 5005)`（额外开启 5005 端口供外部工具 attach）。
+
+项目自带的 [`.vscode/launch.json`](.vscode/launch.json) 已通过 `envFile` 字段引用 `${workspaceFolder}/.env.local`。
+
+> `.env.local` 已在 gitignore，严禁提交真实凭据。新增环境变量时请同步更新 `.env.example`，方便团队成员知晓。
+
 ### 部署须知：反向代理配置（重要）
 
 本项目通过 `X-Forwarded-For` 等代理头获取真实客户端 IP，影响范围包括**限流**（`RateLimitFilter`）和**访问日志**（`AccessLogInterceptor`）。
@@ -723,6 +783,36 @@ ALTER TABLE sys_operation_log DROP PRIMARY KEY, ADD PRIMARY KEY (id, create_time
 - **非同期ログ書き込み**: 非同期ログ書き込みによりシステムパフォーマンスを確保
 - **セキュリティ保護**: CSRF 保護、CORS 設定、パスワード暗号化
 - **マルチ環境サポート**: 開発、テスト、本番環境のサポート
+
+### ローカル開発：実行とデバッグ
+
+実行時設定（DB 接続情報、Redis、JWT シークレット）は環境変数経由で注入されます。プレースホルダーは [`application.yml`](src/main/resources/application.yml) を参照（例：`${DB_HOST}`、`${JWT_SECRET}`）。
+
+リポジトリには `.env.example` テンプレートが含まれています。各開発者は `.env.local`（gitignore 済み）を作成し、実際の値を記入する必要があります。
+
+#### ステップ 1 — ローカル環境変数ファイルを作成
+
+```bash
+# *nix / macOS
+cp .env.example .env.local
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env.local
+```
+
+値を記入してください。`JWT_SECRET` は **32 文字以上** 必要です。
+
+#### ステップ 2 — VSCode で実行/デバッグ
+
+1. **Extension Pack for Java**（`vscjava.vscode-java-debug` を含む）をインストール。
+2. _Run and Debug_ パネルを開く。
+3. `Run Application`（通常実行）または `Debug Application (JDWP 5005)`（外部ツールから attach 可能なポート 5005 を公開）を選択。
+
+同梱の [`.vscode/launch.json`](.vscode/launch.json) は `envFile` フィールドで `${workspaceFolder}/.env.local` を参照済みです。
+
+> `.env.local` は gitignore 済みです。実際の認証情報は絶対にコミットしないでください。新しい環境変数を追加する際は、チームメンバーが把握できるよう `.env.example` も同時に更新してください。
 
 ### デプロイ時の注意事項：リバースプロキシ設定（重要）
 
