@@ -1,6 +1,7 @@
 package com.lincsoft.services.master;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lincsoft.annotation.OperationLog;
@@ -425,11 +426,12 @@ public class UserService implements UserDetailsService {
     // Get user for logging and cache eviction
     MstUser user = getUserById(id);
 
-    // Set version for optimistic locking
-    user.setVersion(version);
-
-    // Delete user (optimistic locking handled by @Version annotation)
-    int deleted = userMapper.deleteById(user);
+    // Delete user with optimistic locking via explicit version condition
+    // Note: deleteById does NOT apply @Version check for logical delete,
+    // so we use delete(wrapper) with an explicit version condition.
+    LambdaUpdateWrapper<MstUser> deleteWrapper = new LambdaUpdateWrapper<>();
+    deleteWrapper.eq(MstUser::getId, id).eq(MstUser::getVersion, version);
+    int deleted = userMapper.delete(deleteWrapper);
     if (deleted == 0) {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "user");
     }

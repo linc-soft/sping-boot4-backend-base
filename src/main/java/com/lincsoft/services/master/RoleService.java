@@ -1,6 +1,7 @@
 package com.lincsoft.services.master;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.MessageEnums;
@@ -230,20 +231,18 @@ public class RoleService {
       description = "Role deleted: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
   public void deleteRole(Long id, Integer version) {
-    // Get role for logging and validation
-    MstRole role = self.getRoleById(id);
-
     // Check if role is in use
     validateRoleNotInUse(id);
 
     // Check if role is inherited by other roles (as parent)
     validateRoleNotInherited(id);
 
-    // Set version for optimistic locking
-    role.setVersion(version);
-
-    // Delete role (optimistic locking handled by @Version annotation)
-    int deleted = roleMapper.deleteById(role);
+    // Delete role with optimistic locking via explicit version condition
+    // Note: deleteById does NOT apply @Version check for logical delete,
+    // so we use delete(wrapper) with an explicit version condition.
+    LambdaUpdateWrapper<MstRole> deleteWrapper = new LambdaUpdateWrapper<>();
+    deleteWrapper.eq(MstRole::getId, id).eq(MstRole::getVersion, version);
+    int deleted = roleMapper.delete(deleteWrapper);
     if (deleted == 0) {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
     }
