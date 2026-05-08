@@ -56,7 +56,7 @@ Retrieves a single role by ID from the database. Returns role details including 
 | **Auth**     | Requires `ROLE_VIEW` permission                                                      |
 | **Params**   | `roleName` (partial match), `roleCode` (prefix match), `description` (partial match) |
 
-Queries roles by optional conditions (name partial match, code prefix match, description partial match). Returns a list of roles with their direct parent role IDs, resolved in a single batch query to avoid N+1 problems. Results ordered by update time descending.
+Queries roles by optional conditions (name partial match, code prefix match, description partial match). Returns a list of roles with their direct parent role IDs and version (for optimistic locking on delete), resolved in a single batch query to avoid N+1 problems. Results ordered by update time descending.
 
 ---
 
@@ -128,7 +128,7 @@ Retrieves a single user by ID. Returns user details including ID, username, stat
 | **Auth**     | Requires `USER_VIEW` permission                    |
 | **Params**   | `username` (partial match), `status` (exact match) |
 
-Queries users by optional conditions (username partial match, status exact match). Returns a list ordered by update time descending.
+Queries users by optional conditions (username partial match, status exact match). Returns a list with version (for optimistic locking on delete/update), ordered by update time descending.
 
 ---
 
@@ -140,7 +140,7 @@ Queries users by optional conditions (username partial match, status exact match
 | **Auth**     | Requires `USER_VIEW` permission                                    |
 | **Params**   | `page`, `size`, `username` (partial match), `status` (exact match) |
 
-Queries users with pagination support. Accepts page number, page size, and optional filter conditions. Returns paged results with total count.
+Queries users with pagination support. Accepts page number, page size, and optional filter conditions. Returns paged results with total count. Each item includes version for optimistic locking on delete/update.
 
 ---
 
@@ -272,7 +272,7 @@ Returns select option list for frontend dropdown/select components. Provider imp
 | **权限**     | 需要 `ROLE_VIEW` 权限                                                     |
 | **参数**     | `roleName`（模糊匹配）、`roleCode`（前缀匹配）、`description`（模糊匹配） |
 
-根据可选条件查询角色（名称模糊匹配、代码前缀匹配、描述模糊匹配）。返回角色列表，包含各角色的直接父角色 ID，通过单次批量查询解析以避免 N+1 问题。结果按更新时间降序排列。
+根据可选条件查询角色（名称模糊匹配、代码前缀匹配、描述模糊匹配）。返回角色列表，包含各角色的直接父角色 ID 和版本号（用于删除时的乐观锁），通过单次批量查询解析以避免 N+1 问题。结果按更新时间降序排列。
 
 ---
 
@@ -344,7 +344,7 @@ Returns select option list for frontend dropdown/select components. Provider imp
 | **权限**     | 需要 `USER_VIEW` 权限                        |
 | **参数**     | `username`（模糊匹配）、`status`（精确匹配） |
 
-根据可选条件查询用户（用户名模糊匹配、状态精确匹配）。返回按更新时间降序排列的列表。
+根据可选条件查询用户（用户名模糊匹配、状态精确匹配）。返回按更新时间降序排列的列表，每项包含版本号（用于删除/更新时的乐观锁）。
 
 ---
 
@@ -356,7 +356,7 @@ Returns select option list for frontend dropdown/select components. Provider imp
 | **权限**     | 需要 `USER_VIEW` 权限                                        |
 | **参数**     | `page`、`size`、`username`（模糊匹配）、`status`（精确匹配） |
 
-支持分页查询用户。接受页码、页大小和可选过滤条件。返回带有总数的分页结果。
+支持分页查询用户。接受页码、页大小和可选过滤条件。返回带有总数的分页结果，每项包含版本号（用于删除/更新时的乐观锁）。
 
 ---
 
@@ -488,7 +488,7 @@ ID でデータベースから単一のロールを取得します。ID、名前
 | **認可**           | `ROLE_VIEW` 権限が必要                                                    |
 | **パラメータ**     | `roleName`（部分一致）、`roleCode`（前方一致）、`description`（部分一致） |
 
-オプション条件（名前部分一致、コード前方一致、説明部分一致）でロールを検索します。各ロールの直接親ロール ID を含むリストを返し、N+1 問題を回避するため単一バッチクエリで解決します。結果は更新日時の降順で並べられます。
+オプション条件（名前部分一致、コード前方一致、説明部分一致）でロールを検索します。各ロールの直接親ロール ID とバージョン（削除時の楽観的ロック用）を含むリストを返し、N+1 問題を回避するため単一バッチクエリで解決します。結果は更新日時の降順で並べられます。
 
 ---
 
@@ -560,7 +560,7 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | **認可**           | `USER_VIEW` 権限が必要                       |
 | **パラメータ**     | `username`（部分一致）、`status`（完全一致） |
 
-オプション条件（ユーザー名部分一致、ステータス完全一致）でユーザーを検索します。更新日時の降順でリストを返します。
+オプション条件（ユーザー名部分一致、ステータス完全一致）でユーザーを検索します。各項目にバージョン（削除・更新時の楽観的ロック用）を含み、更新日時の降順でリストを返します。
 
 ---
 
@@ -572,7 +572,7 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | **認可**           | `USER_VIEW` 権限が必要                                       |
 | **パラメータ**     | `page`、`size`、`username`（部分一致）、`status`（完全一致） |
 
-ページネーション付きでユーザーを検索します。ページ番号、ページサイズ、オプションのフィルター条件を受け付けます。総数を含むページング結果を返します。
+ページネーション付きでユーザーを検索します。ページ番号、ページサイズ、オプションのフィルター条件を受け付けます。各項目にバージョン（削除・更新時の楽観的ロック用）を含み、総数を含むページング結果を返します。
 
 ---
 

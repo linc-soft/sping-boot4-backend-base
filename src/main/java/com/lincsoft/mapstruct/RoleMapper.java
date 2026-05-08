@@ -78,6 +78,7 @@ public interface RoleMapper {
   @Mapping(target = "description", source = "role.description")
   @Mapping(target = "updateBy", source = "role.updateBy")
   @Mapping(target = "updateAt", source = "role.updateAt")
+  @Mapping(target = "version", source = "role.version")
   @Mapping(target = "parentRoleIds", source = "parentRoleIds")
   RoleListResponseItem toListResponseItem(RoleWithParents dto);
 

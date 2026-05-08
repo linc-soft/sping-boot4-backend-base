@@ -23,4 +23,5 @@ public record RoleListResponseItem(
     String description,
     List<Long> parentRoleIds,
     String updateBy,
-    LocalDateTime updateAt) {}
+    LocalDateTime updateAt,
+    Integer version) {}

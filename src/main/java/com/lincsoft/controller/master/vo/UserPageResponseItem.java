@@ -14,4 +14,9 @@ import java.time.LocalDateTime;
  * @since 2026-04-15
  */
 public record UserPageResponseItem(
-    Long id, String username, String status, String updateBy, LocalDateTime updateAt) {}
+    Long id,
+    String username,
+    String status,
+    String updateBy,
+    LocalDateTime updateAt,
+    Integer version) {}
