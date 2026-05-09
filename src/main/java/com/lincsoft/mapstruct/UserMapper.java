@@ -2,8 +2,8 @@ package com.lincsoft.mapstruct;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lincsoft.controller.master.vo.*;
+import com.lincsoft.dto.master.UserWithRoles;
 import com.lincsoft.entity.master.MstUser;
-import com.lincsoft.services.master.UserWithRoles;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

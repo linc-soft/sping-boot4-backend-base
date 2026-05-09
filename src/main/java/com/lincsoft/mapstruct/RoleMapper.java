@@ -1,8 +1,8 @@
 package com.lincsoft.mapstruct;
 
 import com.lincsoft.controller.master.vo.*;
+import com.lincsoft.dto.master.RoleWithParents;
 import com.lincsoft.entity.master.MstRole;
-import com.lincsoft.services.master.RoleWithParents;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

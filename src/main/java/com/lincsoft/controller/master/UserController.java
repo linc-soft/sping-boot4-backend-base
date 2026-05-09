@@ -103,6 +103,6 @@ public class UserController {
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_DEL.roleCode)")
   @DeleteMapping
   public void deleteUser(@Valid @RequestBody UserDeleteRequest request) {
-    userService.deleteUser(request.id(), request.version());
+    userService.deleteUser(userService.getUserById(request.id()), request.version());
   }
 }

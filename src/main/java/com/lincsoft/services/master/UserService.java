@@ -10,6 +10,7 @@ import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.OperationType;
 import com.lincsoft.controller.master.vo.UserPageRequest;
 import com.lincsoft.dto.CacheableUserDetails;
+import com.lincsoft.dto.master.UserWithRoles;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.entity.master.MstUserRole;
@@ -173,11 +174,6 @@ public class UserService implements UserDetailsService {
    * @param status User status
    * @return List of users
    */
-  @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
-      type = OperationType.QUERY,
-      description = "Query users, return #{#result.size()} users")
   public List<MstUser> getUserList(String username, String status) {
     QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
 
@@ -203,11 +199,6 @@ public class UserService implements UserDetailsService {
    * @param request Page request with pagination parameters and query conditions
    * @return IPage of users
    */
-  @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
-      type = OperationType.QUERY,
-      description = "Query users page, return #{#result.total} total records")
   public IPage<MstUser> getUserPage(UserPageRequest request) {
     // Build page object
     Page<MstUser> page = new Page<>(request.getPage(), request.getSize());
@@ -295,7 +286,10 @@ public class UserService implements UserDetailsService {
     }
 
     // Insert user
-    userMapper.insert(user);
+    int inserted = userMapper.insert(user);
+    if (inserted == 0) {
+      throw new BusinessException(MessageEnums.INSERT_FAILED, "user");
+    }
 
     // Assign roles to user if roleIds is provided
     if (roleIds != null && !roleIds.isEmpty()) {
@@ -412,7 +406,7 @@ public class UserService implements UserDetailsService {
    * <p>Uses optimistic locking via version field. Throws an exception if the user was modified by
    * another transaction.
    *
-   * @param id User ID
+   * @param user MstUser entity to be deleted
    * @param version Version for optimistic locking
    * @throws BusinessException if the user is not found or optimistic lock fails
    */
@@ -422,15 +416,17 @@ public class UserService implements UserDetailsService {
       type = OperationType.DELETE,
       description = "User deleted: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
-  public void deleteUser(Long id, Integer version) {
-    // Get user for logging and cache eviction
-    MstUser user = getUserById(id);
+  public void deleteUser(MstUser user, Integer version) {
+    // Check if user not found
+    if (user == null) {
+      throw new BusinessException(MessageEnums.NOT_FOUND, "user");
+    }
 
     // Delete user with optimistic locking via explicit version condition
     // Note: deleteById does NOT apply @Version check for logical delete,
     // so we use delete(wrapper) with an explicit version condition.
     LambdaUpdateWrapper<MstUser> deleteWrapper = new LambdaUpdateWrapper<>();
-    deleteWrapper.eq(MstUser::getId, id).eq(MstUser::getVersion, version);
+    deleteWrapper.eq(MstUser::getId, user.getId()).eq(MstUser::getVersion, version);
     int deleted = userMapper.delete(deleteWrapper);
     if (deleted == 0) {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "user");

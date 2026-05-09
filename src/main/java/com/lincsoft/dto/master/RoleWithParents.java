@@ -1,4 +1,4 @@
-package com.lincsoft.services.master;
+package com.lincsoft.dto.master;
 
 import com.lincsoft.entity.master.MstRole;
 import java.util.List;

@@ -25,6 +25,7 @@ public enum MessageEnums {
   FORBIDDEN(403, "Forbidden"),
   NOT_FOUND(404, "%s Not Found"),
   UNIQUE_CONSTRAINT_VIOLATION(409, "The %s already exists. Please use a different value."),
+  INSERT_FAILED(411, "The %s insertion failed. Please check the data and try again."),
   OPTIMISTIC_LOCK_FAILED(
       412, "The %s has been modified by another user. Please refresh and try again."),
   RESOURCE_IS_USED(423, "The %s is used by other resources. Please check and try again."),

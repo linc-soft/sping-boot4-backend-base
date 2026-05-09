@@ -89,6 +89,6 @@ public class RoleController {
   @DeleteMapping
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_DEL.roleCode)")
   public void deleteRole(@Valid @RequestBody RoleDeleteRequest request) {
-    roleService.deleteRole(request.id(), request.version());
+    roleService.deleteRole(roleService.getRoleById(request.id()), request.version());
   }
 }

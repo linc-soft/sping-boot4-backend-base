@@ -6,6 +6,7 @@ import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.OperationType;
+import com.lincsoft.dto.master.RoleWithParents;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstRoleInheritance;
 import com.lincsoft.entity.master.MstUserRole;
@@ -16,7 +17,6 @@ import com.lincsoft.mapper.master.MstUserRoleMapper;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +40,6 @@ public class RoleService {
   /** Role inheritance mapper for managing role hierarchy. */
   private final MstRoleInheritanceMapper roleInheritanceMapper;
 
-  /** Self reference for lazy initialization. */
-  @Lazy private final RoleService self;
-
   /**
    * Get roles by ID list.
    *
@@ -61,11 +58,6 @@ public class RoleService {
    * @param userId User ID
    * @return List of roles
    */
-  @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
-      type = OperationType.QUERY,
-      description = "Query roles by user ID: #{#userId}, return #{#result.size()} roles")
   public List<MstRole> getRoleListByUserId(Long userId) {
     return roleMapper.selectJoinList(
         MstRole.class,
@@ -86,11 +78,6 @@ public class RoleService {
    * @param description Description (partial match)
    * @return List of roles with their direct parent role IDs
    */
-  @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
-      type = OperationType.QUERY,
-      description = "Query roles, return #{#result.size()} roles")
   public List<RoleWithParents> getRoleList(String roleName, String roleCode, String description) {
     QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
 
@@ -124,11 +111,6 @@ public class RoleService {
    * @return MstRole entity
    * @throws BusinessException if the role is not found
    */
-  @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
-      type = OperationType.QUERY,
-      description = "Query role #{#result.roleName}")
   public MstRole getRoleById(Long id) {
     MstRole role = roleMapper.selectById(id);
     if (role == null) {
@@ -219,7 +201,7 @@ public class RoleService {
    * After successful deletion, cleans up all inheritance relationships where this role is a child.
    * Uses optimistic locking via version field.
    *
-   * @param id Role ID
+   * @param role MstRole entity to be deleted
    * @param version Version for optimistic locking
    * @throws BusinessException if the role is in use, inherited by other roles, not found, or
    *     optimistic lock fails
@@ -230,25 +212,30 @@ public class RoleService {
       type = OperationType.DELETE,
       description = "Role deleted: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
-  public void deleteRole(Long id, Integer version) {
+  public void deleteRole(MstRole role, Integer version) {
+    // Check if role not found
+    if (role == null) {
+      throw new BusinessException(MessageEnums.NOT_FOUND, "role");
+    }
+
     // Check if role is in use
-    validateRoleNotInUse(id);
+    validateRoleNotInUse(role.getId());
 
     // Check if role is inherited by other roles (as parent)
-    validateRoleNotInherited(id);
+    validateRoleNotInherited(role.getId());
 
     // Delete role with optimistic locking via explicit version condition
     // Note: deleteById does NOT apply @Version check for logical delete,
     // so we use delete(wrapper) with an explicit version condition.
     LambdaUpdateWrapper<MstRole> deleteWrapper = new LambdaUpdateWrapper<>();
-    deleteWrapper.eq(MstRole::getId, id).eq(MstRole::getVersion, version);
+    deleteWrapper.eq(MstRole::getId, role.getId()).eq(MstRole::getVersion, version);
     int deleted = roleMapper.delete(deleteWrapper);
     if (deleted == 0) {
       throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
     }
 
     // Clean up inheritance relationships where this role is a child
-    deleteChildRoleInheritances(id);
+    deleteChildRoleInheritances(role.getId());
   }
 
   // ========== Role Inheritance Management ==========
@@ -313,8 +300,8 @@ public class RoleService {
     }
 
     // Validate both roles exist
-    self.getRoleById(childRoleId);
-    self.getRoleById(parentRoleId);
+    getRoleById(childRoleId);
+    getRoleById(parentRoleId);
 
     // Check for circular dependency: if parentRoleId's ancestors include childRoleId
     validateNoCircularDependency(childRoleId, parentRoleId);
@@ -334,11 +321,7 @@ public class RoleService {
    * @param childRoleId Child role ID
    * @param parentRoleId Parent role ID
    */
-  @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
-      type = OperationType.DELETE,
-      description = "Removed role inheritance: child=#{#childRoleId}, parent=#{#parentRoleId}")
+  @Transactional(rollbackFor = Exception.class)
   public void removeRoleInheritance(Long childRoleId, Long parentRoleId) {
     QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
     qw.eq("child_role_id", childRoleId).eq("parent_role_id", parentRoleId);
