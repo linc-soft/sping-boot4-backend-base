@@ -73,8 +73,12 @@ public class RoleService {
    * <p>Each returned item is bundled with the direct parent role IDs of that role (batch-resolved
    * to avoid N+1 queries).
    *
+   * <p>The roleCode filter performs a recursive search: it first finds roles whose own role_code
+   * matches (prefix match), then traverses the inheritance graph downward to include all descendant
+   * roles that inherit from those matched roles.
+   *
    * @param roleName Role name (partial match)
-   * @param roleCode Role code (prefix match, only for base roles)
+   * @param roleCode Role code (prefix match, recursive through inheritance)
    * @param description Description (partial match)
    * @return List of roles with their direct parent role IDs
    */
@@ -86,11 +90,14 @@ public class RoleService {
       queryWrapper.like("role_name", roleName);
     }
 
-    // Prefix match for role code (only for base roles, custom roles may have null role_code)
+    // Recursive match for role code: find roles that directly or via inheritance have matching code
     if (roleCode != null && !roleCode.isBlank()) {
-      // Use OR condition to include roles with null role_code when searching
-      queryWrapper.and(
-          wrapper -> wrapper.likeRight("role_code", roleCode).or().isNull("role_code"));
+      Set<Long> matchedRoleIds = roleMapper.selectRoleIdsRecursiveByRoleCode(roleCode);
+      if (matchedRoleIds.isEmpty()) {
+        // No roles match the given code, return empty result
+        return List.of();
+      }
+      queryWrapper.in("id", matchedRoleIds);
     }
 
     // Partial match for description
@@ -366,39 +373,6 @@ public class RoleService {
     for (Long parentId : toRemove) {
       removeRoleInheritance(childRoleId, parentId);
     }
-  }
-
-  /**
-   * Get parent roles for a given role ID.
-   *
-   * @param roleId Child role ID
-   * @return List of parent roles with their own direct parent role IDs
-   */
-  public List<RoleWithParents> getParentRoles(Long roleId) {
-    List<Long> parentIds = getParentRoleIds(roleId);
-    if (parentIds.isEmpty()) {
-      return List.of();
-    }
-    return attachParentRoleIds(roleMapper.selectByIds(parentIds));
-  }
-
-  /**
-   * Get child roles for a given role ID.
-   *
-   * @param roleId Parent role ID
-   * @return List of child roles with their own direct parent role IDs
-   */
-  public List<RoleWithParents> getChildRoles(Long roleId) {
-    QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
-    qw.eq("parent_role_id", roleId);
-    List<Long> childIds =
-        roleInheritanceMapper.selectList(qw).stream()
-            .map(MstRoleInheritance::getChildRoleId)
-            .toList();
-    if (childIds.isEmpty()) {
-      return List.of();
-    }
-    return attachParentRoleIds(roleMapper.selectByIds(childIds));
   }
 
   /**
