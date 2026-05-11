@@ -68,6 +68,8 @@ app:
       - /actuator/**
       - /favicon.ico
       - /error
+      - /api/auth/refresh
+      - /api/logs/**
     batch-size: 100
     flush-interval-ms: 5000
     max-batches-per-flush: 20
