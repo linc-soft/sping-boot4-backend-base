@@ -24,6 +24,6 @@ public abstract class PageRequest {
 
   /** Get MyBatis-Plus pagination object */
   public <T> Page<T> toPage() {
-    return new Page<>(page, size / 5);
+    return new Page<>(page, size);
   }
 }

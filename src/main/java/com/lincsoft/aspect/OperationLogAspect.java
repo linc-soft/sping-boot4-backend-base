@@ -3,7 +3,7 @@ package com.lincsoft.aspect;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.entity.system.SysOperationLog;
-import com.lincsoft.services.system.OperationLogAsyncService;
+import com.lincsoft.services.system.OperationLogService;
 import com.lincsoft.util.LogUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -35,7 +35,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  *   <li>Extracts module, subModule, type, and description from the annotation
  *   <li>Retrieves traceId from MDC for the current request
  *   <li>Calculates method execution duration (milliseconds)
- *   <li>Builds {@link SysOperationLog} entity and delegates to {@link OperationLogAsyncService} for
+ *   <li>Builds {@link SysOperationLog} entity and delegates to {@link OperationLogService} for
  *       asynchronous persistence
  *   <li>Transaction-aware: persists log after transaction commit, skips on rollback
  *   <li>Records log even on exception, then rethrows the original exception
@@ -50,7 +50,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 public class OperationLogAspect {
 
-  private final OperationLogAsyncService operationLogAsyncService;
+  private final OperationLogService operationLogService;
 
   /**
    * Around advice: intercepts methods annotated with {@link OperationLog}.
@@ -92,11 +92,11 @@ public class OperationLogAspect {
             new TransactionSynchronization() {
               @Override
               public void afterCommit() {
-                operationLogAsyncService.saveOperationLog(logEntity);
+                operationLogService.save(logEntity);
               }
             });
       } else {
-        operationLogAsyncService.saveOperationLog(logEntity);
+        operationLogService.save(logEntity);
       }
     } catch (Exception e) {
       log.error(

@@ -4,7 +4,7 @@ import com.lincsoft.common.Result;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.entity.system.SysErrorLog;
-import com.lincsoft.services.system.ErrorLogAsyncService;
+import com.lincsoft.services.system.ErrorLogService;
 import com.lincsoft.util.LogUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
@@ -25,7 +25,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  *
  * <p>all exceptions and return an appropriate {@link Result} response.Set error codes and messages
  * according to each exception type, and save error logs asynchronously through {@link
- * ErrorLogAsyncService}.
+ * ErrorLogService}.
  *
  * @author 林创科技
  * @since 2026-04-08
@@ -34,7 +34,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RestControllerAdvice
 @AllArgsConstructor
 public class GlobalExceptionHandler {
-  private final ErrorLogAsyncService errorLogAsyncService;
+  private final ErrorLogService errorLogService;
 
   /**
    * Handle business exceptions.
@@ -157,7 +157,7 @@ public class GlobalExceptionHandler {
       }
 
       // Save error logs asynchronously.
-      errorLogAsyncService.saveErrorLog(errorLog);
+      errorLogService.save(errorLog);
     } catch (Exception ex) {
       // Exceptions thrown during the error log saving process itself will be logged and will not
       // affect the main flow.

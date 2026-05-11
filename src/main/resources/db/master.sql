@@ -125,7 +125,9 @@ VALUES (1, 'Administrator', 'ADMIN', 'Administrator', 'system', 'system'),
        (6, 'User Viewer', 'USER_VIEW', 'Can view users', 'system', 'system'),
        (7, 'User Creator', 'USER_NEW', 'Can create new users', 'system', 'system'),
        (8, 'User Editor', 'USER_EDIT', 'Can edit users', 'system', 'system'),
-       (9, 'User Deleter', 'USER_DEL', 'Can delete users', 'system', 'system');
+       (9, 'User Deleter', 'USER_DEL', 'Can delete users', 'system', 'system'),
+       (10, 'Log Viewer', 'LOG_VIEW', 'Can view logs', 'system', 'system'),
+       (11, 'Log Exporter', 'LOG_EXPORT', 'Can export logs', 'system', 'system');
 
 -- ============================================================
 -- Initial Data: role inheritance relationship
@@ -138,7 +140,9 @@ VALUES (1, 2, 'system', 'system'),
        (1, 6, 'system', 'system'),
        (1, 7, 'system', 'system'),
        (1, 8, 'system', 'system'),
-       (1, 9, 'system', 'system');
+       (1, 9, 'system', 'system'),
+       (1, 10, 'system', 'system'),
+       (1, 11, 'system', 'system');
 
 -- ============================================================
 -- Initial Data: user-role relationship

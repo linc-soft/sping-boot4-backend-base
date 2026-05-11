@@ -2,7 +2,7 @@ package com.lincsoft.interceptor;
 
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.entity.system.SysAccessLog;
-import com.lincsoft.services.system.AccessLogAsyncService;
+import com.lincsoft.services.system.AccessLogService;
 import com.lincsoft.util.LogUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +21,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  *
  * <p>{@link HandlerInterceptor} implementation that records access logs for all HTTP requests.
  * Records the request start time in {@code preHandle}, and collects request/response information in
- * {@code afterCompletion} for asynchronous persistence via {@link AccessLogAsyncService}.
+ * {@code afterCompletion} for asynchronous persistence via {@link AccessLogService}.
  *
  * <p>Key features:
  *
@@ -45,8 +45,8 @@ public class AccessLogInterceptor implements HandlerInterceptor {
   /** Request attribute key for storing the request start time */
   private static final String START_TIME_ATTR = "accessLog_startTime";
 
-  /** Access log asynchronous persistence service */
-  private final AccessLogAsyncService accessLogAsyncService;
+  /** Access log service */
+  private final AccessLogService accessLogService;
 
   /**
    * Pre-request processing: records the start time.
@@ -73,8 +73,8 @@ public class AccessLogInterceptor implements HandlerInterceptor {
    * Post-request processing: builds and asynchronously persists the access log.
    *
    * <p>Collects all request/response information to build a {@link SysAccessLog} object, applies
-   * sensitive data masking, and persists asynchronously via {@link AccessLogAsyncService}. Wrapped
-   * in try-catch to ensure exceptions do not affect the request response.
+   * sensitive data masking, and persists asynchronously via {@link AccessLogService}. Wrapped in
+   * try-catch to ensure exceptions do not affect the request response.
    *
    * @param request the HTTP request
    * @param response the HTTP response
@@ -122,7 +122,7 @@ public class AccessLogInterceptor implements HandlerInterceptor {
       accessLog.setCreateTime(LocalDateTime.now());
 
       // Asynchronously persist access log
-      accessLogAsyncService.saveAccessLog(accessLog);
+      accessLogService.save(accessLog);
 
     } catch (Exception e) {
       // Ensure access log recording failure does not affect request response
