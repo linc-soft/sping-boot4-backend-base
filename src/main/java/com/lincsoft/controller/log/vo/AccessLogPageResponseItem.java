@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  * @param username Username
  * @param method HTTP method
  * @param path API path
- * @param statusCode Status code
+ * @param statusCode Business status code (from response body `code` field)
  * @param duration Processing duration (milliseconds)
  * @param clientIp Client IP
  * @param createdAt Created at

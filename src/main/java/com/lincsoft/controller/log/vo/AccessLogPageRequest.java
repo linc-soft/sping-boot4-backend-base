@@ -27,7 +27,7 @@ public class AccessLogPageRequest extends PageRequest {
   /** API path (partial match) */
   private String path;
 
-  /** Status code */
+  /** Status code (business code from response body) */
   private Integer statusCode;
 
   /** Start time */

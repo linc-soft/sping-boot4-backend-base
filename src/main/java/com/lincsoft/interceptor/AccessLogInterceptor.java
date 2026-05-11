@@ -105,9 +105,10 @@ public class AccessLogInterceptor implements HandlerInterceptor {
       accessLog.setRequestBody(LogUtil.extractRequestBody(request));
 
       // Set response information
-      accessLog.setResponseStatus(response.getStatus());
+      String responseBody = extractResponseBody(response);
+      accessLog.setResponseStatus(extractBusinessCode(responseBody));
       accessLog.setResponseHeaders(LogUtil.buildResponseHeaders(response));
-      accessLog.setResponseBody(extractResponseBody(response));
+      accessLog.setResponseBody(responseBody);
 
       // Set client information
       accessLog.setClientIp(LogUtil.getClientIp(request));
@@ -164,6 +165,51 @@ public class AccessLogInterceptor implements HandlerInterceptor {
         // Mask sensitive fields and truncate to maximum length
         return LogUtil.truncate(LogUtil.sanitizeBody(body), CommonConstants.MAX_TEXT_LENGTH);
       }
+    }
+    return null;
+  }
+
+  /**
+   * Extracts the business code from response body.
+   *
+   * <p>Parses the JSON response body and extracts the {@code code} field. Returns null if the body
+   * is null, empty, or cannot be parsed.
+   *
+   * @param responseBody the response body string
+   * @return the business code, or null if it cannot be extracted
+   */
+  private Integer extractBusinessCode(String responseBody) {
+    if (responseBody == null || responseBody.isBlank()) {
+      return null;
+    }
+    try {
+      // Simple JSON parsing to extract "code" field
+      int codeStart = responseBody.indexOf("\"code\"");
+      if (codeStart == -1) {
+        return null;
+      }
+      int colonIndex = responseBody.indexOf(':', codeStart);
+      if (colonIndex == -1) {
+        return null;
+      }
+      int valueStart = colonIndex + 1;
+      // Skip whitespace
+      while (valueStart < responseBody.length()
+          && Character.isWhitespace(responseBody.charAt(valueStart))) {
+        valueStart++;
+      }
+      // Find the end of the number
+      int valueEnd = valueStart;
+      while (valueEnd < responseBody.length()
+          && (Character.isDigit(responseBody.charAt(valueEnd))
+              || responseBody.charAt(valueEnd) == '-')) {
+        valueEnd++;
+      }
+      if (valueEnd > valueStart) {
+        return Integer.parseInt(responseBody.substring(valueStart, valueEnd));
+      }
+    } catch (Exception e) {
+      log.debug("Failed to extract business code from response body: {}", e.getMessage());
     }
     return null;
   }

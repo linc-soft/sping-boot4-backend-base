@@ -41,7 +41,7 @@ public class SysAccessLog implements Serializable {
   /** Request Body (JSON format) */
   private String requestBody;
 
-  /** Response Status Code */
+  /** Response Business Code (from response body `code` field) */
   private Integer responseStatus;
 
   /** Response Headers (JSON format) */
