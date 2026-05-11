@@ -1,5 +1,6 @@
 package com.lincsoft.common;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
@@ -20,4 +21,9 @@ public abstract class PageRequest {
   @Min(value = 10, message = "Page size must be greater than or equal to 10")
   @Max(value = 100, message = "Page size must be less than or equal to 100")
   private int size;
+
+  /** Get MyBatis-Plus pagination object */
+  public <T> Page<T> toPage() {
+    return new Page<>(page, size / 5);
+  }
 }

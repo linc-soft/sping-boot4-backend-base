@@ -3,7 +3,6 @@ package com.lincsoft.services.master;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
@@ -200,9 +199,6 @@ public class UserService implements UserDetailsService {
    * @return IPage of users
    */
   public IPage<MstUser> getUserPage(UserPageRequest request) {
-    // Build page object
-    Page<MstUser> page = new Page<>(request.getPage(), request.getSize());
-
     // Build query conditions
     QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
 
@@ -219,7 +215,7 @@ public class UserService implements UserDetailsService {
     // Order by update time descending
     queryWrapper.orderByDesc("update_at");
 
-    return userMapper.selectPage(page, queryWrapper);
+    return userMapper.selectPage(request.toPage(), queryWrapper);
   }
 
   /**
