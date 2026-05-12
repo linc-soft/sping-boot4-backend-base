@@ -1,5 +1,6 @@
 package com.lincsoft.controller.auth;
 
+import com.lincsoft.common.Result;
 import com.lincsoft.controller.auth.vo.LoginRequest;
 import com.lincsoft.controller.auth.vo.LoginResponse;
 import com.lincsoft.controller.auth.vo.RefreshResponse;
@@ -77,7 +78,8 @@ public class AuthController {
    * @param response the HTTP response for clearing the refresh token cookie
    */
   @PostMapping("/logout")
-  public void logout(HttpServletRequest request, HttpServletResponse response) {
+  public Result<?> logout(HttpServletRequest request, HttpServletResponse response) {
     authService.logout(request, response);
+    return Result.success();
   }
 }
