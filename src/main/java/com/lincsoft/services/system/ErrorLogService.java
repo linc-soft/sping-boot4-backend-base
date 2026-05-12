@@ -100,8 +100,23 @@ public class ErrorLogService {
       queryWrapper.eq("trace_id", request.getTraceId());
     }
 
-    if (request.getErrorType() != null && !request.getErrorType().isBlank()) {
-      queryWrapper.like("exception_class", request.getErrorType());
+    // Keyword fuzzy search across multiple fields (OR condition)
+    if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
+      String keyword = request.getKeyword();
+      queryWrapper.and(
+          wrapper ->
+              wrapper
+                  .like("exception_file", keyword)
+                  .or()
+                  .like("exception_class", keyword)
+                  .or()
+                  .like("exception_method", keyword)
+                  .or()
+                  .like("exception_message", keyword)
+                  .or()
+                  .like("root_cause_message", keyword)
+                  .or()
+                  .like("stack_trace", keyword));
     }
 
     if (request.getUsername() != null && !request.getUsername().isBlank()) {

@@ -18,8 +18,13 @@ public class ErrorLogPageRequest extends PageRequest {
   /** Trace ID (exact match) */
   private String traceId;
 
-  /** Error type (partial match) */
-  private String errorType;
+  /**
+   * Keyword for fuzzy search across multiple fields.
+   *
+   * <p>Searches in: exception_file, exception_class, exception_method, exception_message,
+   * root_cause_message, stack_trace (OR condition).
+   */
+  private String keyword;
 
   /** Username (partial match) */
   private String username;
