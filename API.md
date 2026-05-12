@@ -212,6 +212,149 @@ Returns select option list for frontend dropdown/select components. Provider imp
 
 ---
 
+## Log System
+
+### Get Access Log Page
+
+| Item         | Detail                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Endpoint** | `GET /api/logs/access/page`                                                                                                                 |
+| **Auth**     | Requires `LOG_VIEW` permission                                                                                                              |
+| **Params**   | `page`, `size`, `traceId` (exact match), `username` (partial match), `method`, `path` (partial match), `statusCode`, `startTime`, `endTime` |
+
+Queries access logs with pagination support. Results ordered by creation time descending. Each item includes: `id`, `traceId`, `username`, `method`, `path`, `statusCode`, `duration`, `clientIp`, `createdAt`.
+
+---
+
+### Get Access Log Detail
+
+| Item         | Detail                         |
+| ------------ | ------------------------------ |
+| **Endpoint** | `GET /api/logs/access/{id}`    |
+| **Auth**     | Requires `LOG_VIEW` permission |
+
+Retrieves complete access log information by ID. Returns: `id`, `traceId`, `username`, `method`, `path`, `queryString`, `requestBody`, `responseBody`, `statusCode`, `duration`, `clientIp`, `userAgent`, `createdAt`. Throws 404 if not found.
+
+---
+
+### Get Access Log by TraceId
+
+| Item         | Detail                                 |
+| ------------ | -------------------------------------- |
+| **Endpoint** | `GET /api/logs/access/trace/{traceId}` |
+| **Auth**     | Requires `LOG_VIEW` permission         |
+
+Retrieves access log by trace ID. Useful for debugging request chains. Throws 404 if not found.
+
+---
+
+### Export Access Logs
+
+| Item         | Detail                           |
+| ------------ | -------------------------------- |
+| **Endpoint** | `GET /api/logs/access/export`    |
+| **Auth**     | Requires `LOG_EXPORT` permission |
+
+Exports access logs matching the query conditions as a CSV file. Limited to 10,000 records to avoid memory issues. Returns `text/csv` content type with UTF-8 BOM for Excel compatibility.
+
+---
+
+### Get Error Log Page
+
+| Item         | Detail                                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| **Endpoint** | `GET /api/logs/error/page`                                                                                               |
+| **Auth**     | Requires `LOG_VIEW` permission                                                                                           |
+| **Params**   | `page`, `size`, `traceId` (exact match), `errorType` (partial match), `username` (partial match), `startTime`, `endTime` |
+
+Queries error logs with pagination support. Results ordered by creation time descending. Each item includes: `id`, `traceId`, `errorType`, `message`, `username`, `createdAt`.
+
+---
+
+### Get Error Log Detail
+
+| Item         | Detail                         |
+| ------------ | ------------------------------ |
+| **Endpoint** | `GET /api/logs/error/{id}`     |
+| **Auth**     | Requires `LOG_VIEW` permission |
+
+Retrieves complete error log information by ID. Returns: `id`, `traceId`, `errorType`, `message`, `stackTrace`, `username`, `requestMethod`, `requestPath`, `requestBody`, `createdAt`. Throws 404 if not found.
+
+---
+
+### Get Error Log by TraceId
+
+| Item         | Detail                                |
+| ------------ | ------------------------------------- |
+| **Endpoint** | `GET /api/logs/error/trace/{traceId}` |
+| **Auth**     | Requires `LOG_VIEW` permission        |
+
+Retrieves error log by trace ID. Returns null if no error occurred during the request.
+
+---
+
+### Get Operation Log Page
+
+| Item         | Detail                                                                                                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Endpoint** | `GET /api/logs/operation/page`                                                                                                                                      |
+| **Auth**     | Requires `LOG_VIEW` permission                                                                                                                                      |
+| **Params**   | `page`, `size`, `traceId` (exact match), `operationType`, `module` (partial match), `subModule` (partial match), `username` (partial match), `startTime`, `endTime` |
+
+Queries operation logs with pagination support. Results ordered by creation time descending. Each item includes: `id`, `traceId`, `module`, `subModule`, `operationType`, `description`, `duration`, `username`, `createdAt`.
+
+---
+
+### Get Operation Log Detail
+
+| Item         | Detail                         |
+| ------------ | ------------------------------ |
+| **Endpoint** | `GET /api/logs/operation/{id}` |
+| **Auth**     | Requires `LOG_VIEW` permission |
+
+Retrieves complete operation log information by ID. Returns: `id`, `traceId`, `module`, `subModule`, `operationType`, `description`, `duration`, `requestMethod`, `requestUrl`, `clientIp`, `username`, `createdAt`. Throws 404 if not found.
+
+---
+
+### Get Operation Logs by TraceId
+
+| Item         | Detail                                    |
+| ------------ | ----------------------------------------- |
+| **Endpoint** | `GET /api/logs/operation/trace/{traceId}` |
+| **Auth**     | Requires `LOG_VIEW` permission            |
+
+Retrieves all operation logs for a specific trace ID. Results ordered by creation time ascending (chronological order). Useful for viewing the operation sequence within a single request.
+
+---
+
+### Get Module List
+
+| Item         | Detail                            |
+| ------------ | --------------------------------- |
+| **Endpoint** | `GET /api/logs/operation/modules` |
+| **Auth**     | Requires `LOG_VIEW` permission    |
+
+Returns distinct module names for filtering dropdown. Only includes modules that have at least one operation log entry.
+
+---
+
+### Get Trace Detail
+
+| Item         | Detail                          |
+| ------------ | ------------------------------- |
+| **Endpoint** | `GET /api/logs/trace/{traceId}` |
+| **Auth**     | Requires `LOG_VIEW` permission  |
+
+Retrieves complete trace information by trace ID. Combines:
+
+- **Access Log**: The original request details
+- **Error Log**: Error information if the request failed (null otherwise)
+- **Operation Logs**: List of all operations performed during this request
+
+This endpoint provides a complete view of a request's lifecycle for debugging and auditing purposes.
+
+---
+
 ---
 
 # API 参考文档
@@ -428,6 +571,149 @@ Returns select option list for frontend dropdown/select components. Provider imp
 
 ---
 
+## 日志系统
+
+### 获取访问日志分页
+
+| 项目         | 详情                                                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **接口地址** | `GET /api/logs/access/page`                                                                                                       |
+| **权限**     | 需要 `LOG_VIEW` 权限                                                                                                              |
+| **参数**     | `page`、`size`、`traceId`（精确匹配）、`username`（模糊匹配）、`method`、`path`（模糊匹配）、`statusCode`、`startTime`、`endTime` |
+
+分页查询访问日志。结果按创建时间降序排列。每项包含：`id`、`traceId`、`username`、`method`、`path`、`statusCode`、`duration`、`clientIp`、`createdAt`。
+
+---
+
+### 获取访问日志详情
+
+| 项目         | 详情                        |
+| ------------ | --------------------------- |
+| **接口地址** | `GET /api/logs/access/{id}` |
+| **权限**     | 需要 `LOG_VIEW` 权限        |
+
+根据 ID 获取访问日志完整信息。返回：`id`、`traceId`、`username`、`method`、`path`、`queryString`、`requestBody`、`responseBody`、`statusCode`、`duration`、`clientIp`、`userAgent`、`createdAt`。未找到时抛出 404 异常。
+
+---
+
+### 按 TraceId 获取访问日志
+
+| 项目         | 详情                                   |
+| ------------ | -------------------------------------- |
+| **接口地址** | `GET /api/logs/access/trace/{traceId}` |
+| **权限**     | 需要 `LOG_VIEW` 权限                   |
+
+根据链路追踪 ID 获取访问日志。用于调试请求链路。未找到时抛出 404 异常。
+
+---
+
+### 导出访问日志
+
+| 项目         | 详情                          |
+| ------------ | ----------------------------- |
+| **接口地址** | `GET /api/logs/access/export` |
+| **权限**     | 需要 `LOG_EXPORT` 权限        |
+
+导出符合条件的访问日志为 CSV 文件。限制最多 10,000 条记录以避免内存问题。返回 `text/csv` 内容类型，包含 UTF-8 BOM 以兼容 Excel。
+
+---
+
+### 获取错误日志分页
+
+| 项目         | 详情                                                                                                           |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| **接口地址** | `GET /api/logs/error/page`                                                                                     |
+| **权限**     | 需要 `LOG_VIEW` 权限                                                                                           |
+| **参数**     | `page`、`size`、`traceId`（精确匹配）、`errorType`（模糊匹配）、`username`（模糊匹配）、`startTime`、`endTime` |
+
+分页查询错误日志。结果按创建时间降序排列。每项包含：`id`、`traceId`、`errorType`、`message`、`username`、`createdAt`。
+
+---
+
+### 获取错误日志详情
+
+| 项目         | 详情                       |
+| ------------ | -------------------------- |
+| **接口地址** | `GET /api/logs/error/{id}` |
+| **权限**     | 需要 `LOG_VIEW` 权限       |
+
+根据 ID 获取错误日志完整信息。返回：`id`、`traceId`、`errorType`、`message`、`stackTrace`、`username`、`requestMethod`、`requestPath`、`requestBody`、`createdAt`。未找到时抛出 404 异常。
+
+---
+
+### 按 TraceId 获取错误日志
+
+| 项目         | 详情                                  |
+| ------------ | ------------------------------------- |
+| **接口地址** | `GET /api/logs/error/trace/{traceId}` |
+| **权限**     | 需要 `LOG_VIEW` 权限                  |
+
+根据链路追踪 ID 获取错误日志。如果请求未出错则返回 null。
+
+---
+
+### 获取操作日志分页
+
+| 项目         | 详情                                                                                                                                                  |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **接口地址** | `GET /api/logs/operation/page`                                                                                                                        |
+| **权限**     | 需要 `LOG_VIEW` 权限                                                                                                                                  |
+| **参数**     | `page`、`size`、`traceId`（精确匹配）、`operationType`、`module`（模糊匹配）、`subModule`（模糊匹配）、`username`（模糊匹配）、`startTime`、`endTime` |
+
+分页查询操作日志。结果按创建时间降序排列。每项包含：`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`username`、`createdAt`。
+
+---
+
+### 获取操作日志详情
+
+| 项目         | 详情                           |
+| ------------ | ------------------------------ |
+| **接口地址** | `GET /api/logs/operation/{id}` |
+| **权限**     | 需要 `LOG_VIEW` 权限           |
+
+根据 ID 获取操作日志完整信息。返回：`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`requestMethod`、`requestUrl`、`clientIp`、`username`、`createdAt`。未找到时抛出 404 异常。
+
+---
+
+### 按 TraceId 获取操作日志列表
+
+| 项目         | 详情                                      |
+| ------------ | ----------------------------------------- |
+| **接口地址** | `GET /api/logs/operation/trace/{traceId}` |
+| **权限**     | 需要 `LOG_VIEW` 权限                      |
+
+根据链路追踪 ID 获取所有操作日志。结果按创建时间升序排列（时间顺序）。用于查看单次请求内的操作序列。
+
+---
+
+### 获取模块列表
+
+| 项目         | 详情                              |
+| ------------ | --------------------------------- |
+| **接口地址** | `GET /api/logs/operation/modules` |
+| **权限**     | 需要 `LOG_VIEW` 权限              |
+
+返回去重的模块名称列表，用于筛选下拉框。仅包含有操作日志记录的模块。
+
+---
+
+### 获取链路追踪详情
+
+| 项目         | 详情                            |
+| ------------ | ------------------------------- |
+| **接口地址** | `GET /api/logs/trace/{traceId}` |
+| **权限**     | 需要 `LOG_VIEW` 权限            |
+
+根据链路追踪 ID 获取完整的链路信息。组合返回：
+
+- **访问日志**：原始请求详情
+- **错误日志**：请求失败时的错误信息（成功则为 null）
+- **操作日志列表**：该请求期间执行的所有操作
+
+此接口提供请求生命周期的完整视图，用于调试和审计。
+
+---
+
 ---
 
 # API リファレンス
@@ -641,3 +927,146 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | **パラメータ**     | `type` — `SelectOptionProvider` 実装により動的登録（例：`role`、`user`） |
 
 フロントエンドのドロップダウン/セレクトコンポーネント用のオプションリストを返します。Provider 実装は Spring DI により自動検出されます。新しいタイプを追加するには、新しい `SelectOptionProvider` Bean を作成するだけで、コントローラーの変更は不要です。各オプションには `value` と `label` が含まれます。
+
+---
+
+## ログシステム
+
+### アクセスログページング取得
+
+| 項目               | 詳細                                                                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **エンドポイント** | `GET /api/logs/access/page`                                                                                                       |
+| **認可**           | `LOG_VIEW` 権限が必要                                                                                                             |
+| **パラメータ**     | `page`、`size`、`traceId`（完全一致）、`username`（部分一致）、`method`、`path`（部分一致）、`statusCode`、`startTime`、`endTime` |
+
+ページネーション付きでアクセスログを検索します。結果は作成日時の降順で並べられます。各項目には `id`、`traceId`、`username`、`method`、`path`、`statusCode`、`duration`、`clientIp`、`createdAt` が含まれます。
+
+---
+
+### アクセスログ詳細取得
+
+| 項目               | 詳細                        |
+| ------------------ | --------------------------- |
+| **エンドポイント** | `GET /api/logs/access/{id}` |
+| **認可**           | `LOG_VIEW` 権限が必要       |
+
+ID でアクセスログの完全な情報を取得します。`id`、`traceId`、`username`、`method`、`path`、`queryString`、`requestBody`、`responseBody`、`statusCode`、`duration`、`clientIp`、`userAgent`、`createdAt` を返します。見つからない場合は 404 例外をスローします。
+
+---
+
+### TraceId でアクセスログ取得
+
+| 項目               | 詳細                                   |
+| ------------------ | -------------------------------------- |
+| **エンドポイント** | `GET /api/logs/access/trace/{traceId}` |
+| **認可**           | `LOG_VIEW` 権限が必要                  |
+
+トレース ID でアクセスログを取得します。リクエストチェーンのデバッグに使用します。見つからない場合は 404 例外をスローします。
+
+---
+
+### アクセスログエクスポート
+
+| 項目               | 詳細                          |
+| ------------------ | ----------------------------- |
+| **エンドポイント** | `GET /api/logs/access/export` |
+| **認可**           | `LOG_EXPORT` 権限が必要       |
+
+条件に一致するアクセスログを CSV ファイルとしてエクスポートします。メモリ問題を避けるため最大 10,000 件に制限されます。Excel 互換性のため UTF-8 BOM 付きの `text/csv` コンテンツタイプを返します。
+
+---
+
+### エラーログページング取得
+
+| 項目               | 詳細                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **エンドポイント** | `GET /api/logs/error/page`                                                                                     |
+| **認可**           | `LOG_VIEW` 権限が必要                                                                                          |
+| **パラメータ**     | `page`、`size`、`traceId`（完全一致）、`errorType`（部分一致）、`username`（部分一致）、`startTime`、`endTime` |
+
+ページネーション付きでエラーログを検索します。結果は作成日時の降順で並べられます。各項目には `id`、`traceId`、`errorType`、`message`、`username`、`createdAt` が含まれます。
+
+---
+
+### エラーログ詳細取得
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `GET /api/logs/error/{id}` |
+| **認可**           | `LOG_VIEW` 権限が必要      |
+
+ID でエラーログの完全な情報を取得します。`id`、`traceId`、`errorType`、`message`、`stackTrace`、`username`、`requestMethod`、`requestPath`、`requestBody`、`createdAt` を返します。見つからない場合は 404 例外をスローします。
+
+---
+
+### TraceId でエラーログ取得
+
+| 項目               | 詳細                                  |
+| ------------------ | ------------------------------------- |
+| **エンドポイント** | `GET /api/logs/error/trace/{traceId}` |
+| **認可**           | `LOG_VIEW` 権限が必要                 |
+
+トレース ID でエラーログを取得します。リクエストがエラーで終了しなかった場合は null を返します。
+
+---
+
+### 操作ログページング取得
+
+| 項目               | 詳細                                                                                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **エンドポイント** | `GET /api/logs/operation/page`                                                                                                                        |
+| **認可**           | `LOG_VIEW` 権限が必要                                                                                                                                 |
+| **パラメータ**     | `page`、`size`、`traceId`（完全一致）、`operationType`、`module`（部分一致）、`subModule`（部分一致）、`username`（部分一致）、`startTime`、`endTime` |
+
+ページネーション付きで操作ログを検索します。結果は作成日時の降順で並べられます。各項目には `id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`username`、`createdAt` が含まれます。
+
+---
+
+### 操作ログ詳細取得
+
+| 項目               | 詳細                           |
+| ------------------ | ------------------------------ |
+| **エンドポイント** | `GET /api/logs/operation/{id}` |
+| **認可**           | `LOG_VIEW` 権限が必要          |
+
+ID で操作ログの完全な情報を取得します。`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`requestMethod`、`requestUrl`、`clientIp`、`username`、`createdAt` を返します。見つからない場合は 404 例外をスローします。
+
+---
+
+### TraceId で操作ログリスト取得
+
+| 項目               | 詳細                                      |
+| ------------------ | ----------------------------------------- |
+| **エンドポイント** | `GET /api/logs/operation/trace/{traceId}` |
+| **認可**           | `LOG_VIEW` 権限が必要                     |
+
+トレース ID ですべての操作ログを取得します。結果は作成日時の昇順（時系列順）で並べられます。単一リクエスト内の操作シーケンスを表示するために使用します。
+
+---
+
+### モジュールリスト取得
+
+| 項目               | 詳細                              |
+| ------------------ | --------------------------------- |
+| **エンドポイント** | `GET /api/logs/operation/modules` |
+| **認可**           | `LOG_VIEW` 権限が必要             |
+
+フィルタリング用ドロップダウンのための重複排除されたモジュール名リストを返します。操作ログレコードが存在するモジュールのみが含まれます。
+
+---
+
+### トレース詳細取得
+
+| 項目               | 詳細                            |
+| ------------------ | ------------------------------- |
+| **エンドポイント** | `GET /api/logs/trace/{traceId}` |
+| **認可**           | `LOG_VIEW` 権限が必要           |
+
+トレース ID で完全なトレース情報を取得します。以下を組み合わせて返します：
+
+- **アクセスログ**：元のリクエスト詳細
+- **エラーログ**：リクエスト失敗時のエラー情報（成功時は null）
+- **操作ログリスト**：このリクエスト中に実行されたすべての操作
+
+このエンドポイントは、デバッグおよび監査目的でリクエストのライフサイクルの完全なビューを提供します。
