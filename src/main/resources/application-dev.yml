@@ -67,6 +67,8 @@ app:
       - /actuator/**
       - /favicon.ico
       - /error
+      - /api/auth/refresh
+      - /api/logs/**
       - /v3/api-docs
       - /v3/api-docs/**
       - /swagger-ui/**
