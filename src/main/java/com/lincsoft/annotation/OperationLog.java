@@ -1,6 +1,8 @@
 package com.lincsoft.annotation;
 
+import com.lincsoft.constant.Module;
 import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.SubModule;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,18 +21,18 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OperationLog {
   /**
-   * Gets the module name.
+   * Gets the module.
    *
-   * @return the module name, empty string if not specified
+   * @return the module enum, default is MASTER
    */
-  String module() default "";
+  Module module() default Module.MASTER;
 
   /**
-   * Gets the submodule name.
+   * Gets the submodule.
    *
-   * @return the submodule name, empty string if not specified
+   * @return the submodule enum, default is ROLE_MANAGER
    */
-  String subModule() default "";
+  SubModule subModule() default SubModule.ROLE_MANAGER;
 
   /**
    * Gets the operation type.

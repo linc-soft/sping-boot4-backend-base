@@ -1,6 +1,8 @@
 package com.lincsoft.controller.common;
 
+import com.lincsoft.constant.Module;
 import com.lincsoft.constant.RoleCodeEnums;
+import com.lincsoft.constant.SubModule;
 import com.lincsoft.constant.UserStatusEnum;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,8 @@ public class EnumController {
     return switch (type) {
       case "user-status" -> UserStatusEnum.getList();
       case "role-code" -> RoleCodeEnums.getList();
+      case "module" -> Module.getList();
+      case "sub-module" -> SubModule.getList();
       default -> throw new IllegalArgumentException("Unsupported enum type: " + type);
     };
   }

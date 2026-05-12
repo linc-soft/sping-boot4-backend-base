@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.constant.Module;
 import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.SubModule;
 import com.lincsoft.controller.master.vo.UserPageRequest;
 import com.lincsoft.dto.CacheableUserDetails;
 import com.lincsoft.dto.master.UserWithRoles;
@@ -262,8 +264,8 @@ public class UserService implements UserDetailsService {
    * @return The created user ID
    */
   @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
+      module = Module.MASTER,
+      subModule = SubModule.USER_MANAGER,
       type = OperationType.CREATE,
       description = "User created: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
@@ -312,8 +314,8 @@ public class UserService implements UserDetailsService {
    * @throws BusinessException if the username is duplicate or optimistic lock fails
    */
   @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
+      module = Module.MASTER,
+      subModule = SubModule.USER_MANAGER,
       type = OperationType.UPDATE,
       description = "User updated: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
@@ -407,8 +409,8 @@ public class UserService implements UserDetailsService {
    * @throws BusinessException if the user is not found or optimistic lock fails
    */
   @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
+      module = Module.MASTER,
+      subModule = SubModule.USER_MANAGER,
       type = OperationType.DELETE,
       description = "User deleted: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
@@ -441,8 +443,8 @@ public class UserService implements UserDetailsService {
    * @param role The role to assign
    */
   @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
+      module = Module.MASTER,
+      subModule = SubModule.USER_MANAGER,
       type = OperationType.CREATE,
       description = "Assigned role #{#role.roleName} to user: #{#user.username}")
   public void assignRoleToUser(MstUser user, MstRole role) {
@@ -462,8 +464,8 @@ public class UserService implements UserDetailsService {
    * @param role The role to revoke
    */
   @OperationLog(
-      module = "Master",
-      subModule = "User Manager",
+      module = Module.MASTER,
+      subModule = SubModule.USER_MANAGER,
       type = OperationType.DELETE,
       description = "Revoked role #{#role.roleName} from user: #{#user.username}")
   public void revokeRoleFromUser(MstUser user, MstRole role) {

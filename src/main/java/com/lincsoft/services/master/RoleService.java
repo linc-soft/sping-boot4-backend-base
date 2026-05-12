@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.constant.Module;
 import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.SubModule;
 import com.lincsoft.dto.master.RoleWithParents;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstRoleInheritance;
@@ -151,8 +153,8 @@ public class RoleService {
    * @return The created role ID
    */
   @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
+      module = Module.MASTER,
+      subModule = SubModule.ROLE_MANAGER,
       type = OperationType.CREATE,
       description = "Role created: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
@@ -182,8 +184,8 @@ public class RoleService {
    * @throws BusinessException if the role code is duplicate or optimistic lock fails
    */
   @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
+      module = Module.MASTER,
+      subModule = SubModule.ROLE_MANAGER,
       type = OperationType.UPDATE,
       description = "Role updated: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
@@ -214,8 +216,8 @@ public class RoleService {
    *     optimistic lock fails
    */
   @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
+      module = Module.MASTER,
+      subModule = SubModule.ROLE_MANAGER,
       type = OperationType.DELETE,
       description = "Role deleted: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
@@ -295,8 +297,8 @@ public class RoleService {
    * @param parentRoleId Parent role ID (the role being inherited)
    */
   @OperationLog(
-      module = "Master",
-      subModule = "Role Manager",
+      module = Module.MASTER,
+      subModule = SubModule.ROLE_MANAGER,
       type = OperationType.CREATE,
       description = "Added role inheritance: child=#{#childRoleId}, parent=#{#parentRoleId}")
   @Transactional(rollbackFor = Exception.class)
