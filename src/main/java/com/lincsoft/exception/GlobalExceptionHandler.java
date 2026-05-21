@@ -46,11 +46,14 @@ public class GlobalExceptionHandler {
   public Result<Void> handleBusinessException(BusinessException e) {
     // Log the stack trace of the business exception.
     log.error(
-        "A business exception has occurred: code={}, message={}", e.getCode(), e.getMessage(), e);
+        "A business exception has occurred: code={}, messageKey={}",
+        e.getCode(),
+        e.getMessageKey(),
+        e);
     // Save error logs asynchronously.
     saveErrorLog(e);
-    // Return a custom error code and message.
-    return Result.error(e.getCode(), e.getMessage());
+    // Return a custom error code and message key with args.
+    return Result.error(e.getCode(), e.getMessageKey(), e.getMessageArgs());
   }
 
   /**

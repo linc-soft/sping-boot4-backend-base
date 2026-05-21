@@ -1,5 +1,7 @@
 package com.lincsoft.config;
 
+import com.lincsoft.i18n.LanguageContext;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -69,17 +71,21 @@ public class AsyncConfig implements AsyncConfigurer {
     // Shutdown wait time in seconds
     executor.setAwaitTerminationSeconds(asyncProps.getAwaitTerminationSeconds());
     // MDC context propagation: copy traceId, username etc. from caller thread to async thread
+    // Also propagate Locale from LanguageContext for i18n support
     executor.setTaskDecorator(
         runnable -> {
           Map<String, String> contextMap = MDC.getCopyOfContextMap();
+          Locale locale = LanguageContext.getLocale();
           return () -> {
             try {
               if (contextMap != null) {
                 MDC.setContextMap(contextMap);
               }
+              LanguageContext.setLocale(locale);
               runnable.run();
             } finally {
               MDC.clear();
+              LanguageContext.clear();
             }
           };
         });

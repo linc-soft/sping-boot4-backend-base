@@ -10,7 +10,7 @@ import lombok.Data;
 /**
  * Result class for unified response format
  *
- * @param <T>
+ * @param <T> data type
  * @author 林创科技
  * @since 2026-04-07
  */
@@ -19,44 +19,41 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Result<T> implements Serializable {
   @Serial private static final long serialVersionUID = 1L;
-  /* Status code */
+
+  /** status code */
   private Integer code;
-  /* Status message */
+
+  /** Message key */
+  private String messageKey;
+
+  /** Format parameters */
+  private Object[] messageArgs;
+
+  /** message text */
   private String message;
-  /* Data */
+
+  /** data */
   private T data;
 
-  /* Success */
+  // ========== Static factory method ==========
+
+  /** Successful response (no data) */
   public static <T> Result<T> success() {
-    return new Result<>(MessageEnums.SUCCESS.getCode(), null, null);
+    return new Result<>(MessageEnums.SUCCESS.getCode(), null, null, null, null);
   }
 
-  /* Success with message */
-  public static <T> Result<T> success(String message) {
-    return new Result<>(MessageEnums.SUCCESS.getCode(), message, null);
-  }
-
-  /* Success with data */
+  /** Successful response (with data) */
   public static <T> Result<T> success(T data) {
-    return new Result<>(MessageEnums.SUCCESS.getCode(), null, data);
+    return new Result<>(MessageEnums.SUCCESS.getCode(), null, null, null, data);
   }
 
-  /* Success with message and data */
-  public static <T> Result<T> success(String message, T data) {
-    return new Result<>(MessageEnums.SUCCESS.getCode(), message, data);
+  /** Error response (with status code, message key, and formatting parameters) */
+  public static <T> Result<T> error(int code, String messageKey, Object... args) {
+    return new Result<>(code, messageKey, args, null, null);
   }
 
-  /* Error with code */
-  public static <T> Result<T> error(int code) {
-    return new Result<>(code, null, null);
-  }
-
-  public static <T> Result<T> error(int code, String message) {
-    return new Result<>(code, message, null);
-  }
-
-  /* Error with code and message */
-  public static <T> Result<T> error(MessageEnums message) {
-    return new Result<>(message.getCode(), message.getMessage(), null);
+  /** Error response (based on Messages) */
+  public static <T> Result<T> error(MessageEnums messageEnum) {
+    return new Result<>(messageEnum.getCode(), messageEnum.getMessageKey(), null, null, null);
   }
 }

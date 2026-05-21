@@ -81,6 +81,13 @@ public class AppProperties {
   private Async async = new Async();
 
   /**
+   * I18n internationalization configuration settings.
+   *
+   * <p>Defines default locale and supported locales for internationalization.
+   */
+  private I18n i18n = new I18n();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -99,6 +106,8 @@ public class AppProperties {
     }
     // Validate CORS allowed origins
     validateCorsOrigins();
+    // Validate I18n configuration
+    validateI18nConfig();
   }
 
   /**
@@ -152,6 +161,34 @@ public class AppProperties {
               + "'");
     }
     return trimmedOrigin;
+  }
+
+  /**
+   * Validates I18n configuration.
+   *
+   * <p>Ensures that the default locale is included in the supported locales list.
+   *
+   * @throws IllegalStateException if defaultLocale is not in supportedLocales
+   */
+  private void validateI18nConfig() {
+    String defaultLocale = i18n.getDefaultLocale();
+    List<String> supportedLocales = i18n.getSupportedLocales();
+
+    if (defaultLocale == null || defaultLocale.isBlank()) {
+      throw new IllegalStateException("app.i18n.default-locale must not be blank.");
+    }
+
+    if (supportedLocales == null || supportedLocales.isEmpty()) {
+      throw new IllegalStateException("app.i18n.supported-locales must not be empty.");
+    }
+
+    if (!supportedLocales.contains(defaultLocale)) {
+      throw new IllegalStateException(
+          "app.i18n.default-locale ('"
+              + defaultLocale
+              + "') must be in the supported-locales list: "
+              + supportedLocales);
+    }
   }
 
   /**
@@ -584,5 +621,34 @@ public class AppProperties {
      * <p>Default: 20
      */
     private int maxBatchesPerFlush = 20;
+  }
+
+  /**
+   * I18n internationalization configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.i18n} prefix from configuration files. Defines default
+   * locale and supported locales for internationalization.
+   */
+  @Data
+  public static class I18n {
+    /**
+     * Default locale for the application.
+     *
+     * <p>This locale is used when no locale is specified by the client. Must be included in the
+     * {@link #supportedLocales} list.
+     *
+     * <p>Default: "en"
+     */
+    private String defaultLocale = "en";
+
+    /**
+     * List of supported locales for internationalization.
+     *
+     * <p>These locales are available for clients to use. The {@link #defaultLocale} must be
+     * included in this list.
+     *
+     * <p>Default: ["en", "zh", "ja"]
+     */
+    private List<String> supportedLocales = List.of("en", "zh", "ja");
   }
 }

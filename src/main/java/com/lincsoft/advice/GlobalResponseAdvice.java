@@ -2,6 +2,7 @@ package com.lincsoft.advice;
 
 import com.lincsoft.annotation.IgnoreResultWrapper;
 import com.lincsoft.common.Result;
+import com.lincsoft.i18n.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -23,14 +24,18 @@ import tools.jackson.databind.ObjectMapper;
  * all successful responses with the {@link Result} class and returns them. For return values of
  * type String, they are converted to a JSON string before being returned.
  *
+ * <p>Support multilingual message parsing, parsing messageKey to the corresponding language message
+ * based on LanguageContext when serializing responses.
+ *
  * @author 林创科技
  * @since 2026-04-07
  */
 @Slf4j
-@RestControllerAdvice(basePackages = "com.lincsoft.controller")
+@RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
   private final ObjectMapper objectMapper;
+  private final MessageService messageService;
 
   @Override
   public boolean supports(
@@ -43,14 +48,11 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
     if (returnType.hasMethodAnnotation(IgnoreResultWrapper.class)) {
       return false;
     }
-    // If the return value is already of type Result, it will not be wrapped.
-    if (Result.class.isAssignableFrom(returnType.getParameterType())) {
-      return false;
-    }
     // If the return type is HttpEntity used by Spring WebFlux, it will not be wrapped.
     if (org.springframework.http.HttpEntity.class.isAssignableFrom(returnType.getParameterType())) {
       return false;
     }
+    // Process all types (including Result) to fill the message field
     return true;
   }
 
@@ -62,9 +64,10 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
       @NonNull Class<? extends HttpMessageConverter<?>> selectedConverterType,
       @NonNull ServerHttpRequest request,
       @NonNull ServerHttpResponse response) {
-    // If the return value is already of type Result, it will not be wrapped.
-    if (body instanceof Result) {
-      return body;
+    // If the return value is already of type Result, resolve messageKey to localized message
+    if (body instanceof Result<?> result) {
+      resolveAndSetMessage(result);
+      return result;
     }
 
     /*
@@ -85,5 +88,20 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
     }
     // If the return value is null, it will be wrapped with Result.success(null).
     return Result.success(body);
+  }
+
+  /**
+   * Resolve the messageKey in the Result to the message in the corresponding language and set it to
+   * the message field.
+   *
+   * @param result The Result object to be processed
+   */
+  private void resolveAndSetMessage(Result<?> result) {
+    String messageKey = result.getMessageKey();
+    if (messageKey != null && !messageKey.isBlank()) {
+      String resolvedMessage = messageService.getMessage(messageKey, result.getMessageArgs());
+      result.setMessage(resolvedMessage);
+      log.debug("Resolved message: {} for messageKey: {}", resolvedMessage, messageKey);
+    }
   }
 }
