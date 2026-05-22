@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Spring Boot 4.0.5 Parent Project -->
@@ -9,7 +9,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>4.0.5</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>com.lincsoft</groupId>
@@ -180,6 +180,15 @@
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
 
+    <!-- ========== PDF Generation ========== -->
+
+    <!-- OpenPDF (PDF generation library, LGPL/MPL licensed) -->
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>2.0.3</version>
+    </dependency>
+
     <!-- ========== Utility ========== -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -209,6 +218,14 @@
       <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- Apache PDFBox (PDF testing and verification) -->
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>3.0.4</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -229,6 +246,7 @@
         <includes>
           <include>application-*.yml</include>
           <include>i18n/**</include>
+          <include>fonts/**</include>
         </includes>
       </resource>
     </resources>
@@ -306,13 +324,13 @@
               <target>
                 <!-- Set git core.hooksPath to .git/hooks -->
                 <exec executable="git" failonerror="false">
-                  <arg value="config" />
-                  <arg value="core.hooksPath" />
-                  <arg value=".githooks" />
+                  <arg value="config"/>
+                  <arg value="core.hooksPath"/>
+                  <arg value=".githooks"/>
                 </exec>
                 <!-- macOS / Linux: Grant execution permissions to pre-commit -->
                 <chmod file="${project.basedir}/.githooks/pre-commit" perm="755"
-                  failonerror="false" />
+                       failonerror="false"/>
               </target>
             </configuration>
           </execution>

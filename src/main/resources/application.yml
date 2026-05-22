@@ -104,3 +104,40 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+# ========================================
+# PDF generation settings
+# ========================================
+pdf:
+  template:
+    # Page configuration (dimensions in mm)
+    page:
+      width: 210
+      height: 297
+      margin-left: 20
+      margin-right: 20
+      margin-top: 25
+      margin-bottom: 25
+    # Font configuration
+    font:
+      paths:
+        # Chinese font path (environment variable override supported)
+        chinese: ${PDF_CHINESE_FONT_PATH:}
+        # Japanese font path (environment variable override supported)
+        japanese: ${PDF_JAPANESE_FONT_PATH:}
+      # Font sizes (in pt)
+      default-size: 10
+      title-size: 16
+      header-size: 10
+    # Table configuration
+    table:
+      border-width: 0.5
+      border-style: solid
+    # Header configuration
+    header:
+      height: 15
+    # Footer configuration
+    footer:
+      height: 15
+      show-page-number: true
+      page-format: "{current}/{total}"

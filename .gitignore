@@ -21,7 +21,6 @@ target/
 .idea
 
 .qoder
-.kiro
 doc
 
 ### Local env files (do NOT commit real credentials)
