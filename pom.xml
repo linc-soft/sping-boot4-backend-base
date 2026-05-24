@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Spring Boot 4.0.5 Parent Project -->
@@ -9,7 +9,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>4.0.5</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>com.lincsoft</groupId>
@@ -47,6 +47,8 @@
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
     <!-- FMT Maven Plugin Version -->
     <fmt-maven-plugin.version>2.29</fmt-maven-plugin.version>
+    <!-- OpenHTMLToPDF Version -->
+    <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
     <!-- Active Profile -->
     <active.profile>dev</active.profile>
   </properties>
@@ -174,6 +176,37 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <!-- ========== Template Engine ========== -->
+
+    <!-- Thymeleaf Template Engine (for report HTML template rendering) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+
+    <!-- ========== PDF Generation ========== -->
+
+    <!-- OpenHTMLToPDF Core (HTML to PDF rendering engine) -->
+    <dependency>
+      <groupId>com.openhtmltopdf</groupId>
+      <artifactId>openhtmltopdf-core</artifactId>
+      <version>${openhtmltopdf.version}</version>
+    </dependency>
+
+    <!-- OpenHTMLToPDF PDFBox (PDF output via Apache PDFBox) -->
+    <dependency>
+      <groupId>com.openhtmltopdf</groupId>
+      <artifactId>openhtmltopdf-pdfbox</artifactId>
+      <version>${openhtmltopdf.version}</version>
+    </dependency>
+
+    <!-- OpenHTMLToPDF SVG Support (SVG rendering in PDF) -->
+    <dependency>
+      <groupId>com.openhtmltopdf</groupId>
+      <artifactId>openhtmltopdf-svg-support</artifactId>
+      <version>${openhtmltopdf.version}</version>
+    </dependency>
+
     <!-- Micrometer Prometheus Registry (exports metrics in Prometheus format) -->
     <dependency>
       <groupId>io.micrometer</groupId>
@@ -229,6 +262,8 @@
         <includes>
           <include>application-*.yml</include>
           <include>i18n/**</include>
+          <include>fonts/*.ttf</include>
+          <include>templates/**</include>
         </includes>
       </resource>
     </resources>
@@ -306,13 +341,13 @@
               <target>
                 <!-- Set git core.hooksPath to .git/hooks -->
                 <exec executable="git" failonerror="false">
-                  <arg value="config" />
-                  <arg value="core.hooksPath" />
-                  <arg value=".githooks" />
+                  <arg value="config"/>
+                  <arg value="core.hooksPath"/>
+                  <arg value=".githooks"/>
                 </exec>
                 <!-- macOS / Linux: Grant execution permissions to pre-commit -->
                 <chmod file="${project.basedir}/.githooks/pre-commit" perm="755"
-                  failonerror="false" />
+                       failonerror="false"/>
               </target>
             </configuration>
           </execution>

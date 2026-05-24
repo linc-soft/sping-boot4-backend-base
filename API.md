@@ -186,6 +186,24 @@ Deletes a user with optimistic locking. Evicts UserDetails cache after deletion 
 
 ---
 
+### Generate User List Report
+
+| Item         | Detail                                              |
+| ------------ | --------------------------------------------------- |
+| **Endpoint** | `GET /api/users/report`                             |
+| **Auth**     | Requires `REPORT_EXPORT` permission                |
+| **Params**   | `username` (partial match), `groupBy` (optional)    |
+
+Generates a PDF report of users matching the username filter. The `groupBy` parameter controls how users are grouped in the report:
+
+- **null or blank** — No grouping; all matching users are listed in a single table.
+- **`role`** — Groups users by their directly assigned roles. A user with multiple roles appears in each role's group, and each group starts on a new page.
+- **`baseRole`** — Groups users by base roles (ancestor roles in the inheritance chain). For each user, all ancestor roles of the user's direct roles are collected. A user with multiple base roles appears in each base role's group, and each group starts on a new page. If a direct role has no ancestors, the user appears under that direct role's group.
+
+Returns a PDF file with `Content-Type: application/pdf` and `Content-Disposition: attachment` header. Report labels are automatically localized based on the client's `Accept-Language` header. The maximum number of exported records is limited by configuration (`app.report.max-export-records`, default 10,000).
+
+---
+
 ## Common
 
 ### Get Enum List
@@ -545,6 +563,24 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 ---
 
+### 生成用户列表报表
+
+| 项目         | 详情                                                    |
+| ------------ | ------------------------------------------------------- |
+| **接口地址** | `GET /api/users/report`                                 |
+| **权限**     | 需要 `REPORT_EXPORT` 权限                               |
+| **参数**     | `username`（模糊匹配）、`groupBy`（可选）               |
+
+根据用户名筛选条件生成用户列表 PDF 报表。`groupBy` 参数控制报表中用户的分组方式：
+
+- **null 或空** — 无分组；所有匹配用户以单一表格列出。
+- **`role`** — 按用户直接分配的角色分组。拥有多个角色的用户会出现在每个角色分组中，每个分组从新页开始。
+- **`baseRole`** — 按基础角色（继承链中的祖先角色）分组。对于每个用户，收集其直接角色的所有祖先角色，用户会出现在每个基础角色分组中，每个分组从新页开始。如果直接角色没有祖先角色，则用户出现在该直接角色的分组中。
+
+返回 PDF 文件，`Content-Type` 为 `application/pdf`，附带 `Content-Disposition: attachment` 头。报表标签根据客户端 `Accept-Language` 请求头自动本地化。导出记录数上限由配置控制（`app.report.max-export-records`，默认 10,000）。
+
+---
+
 ## 公共接口
 
 ### 获取枚举列表
@@ -901,6 +937,24 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | **認可**           | `USER_DEL` 権限が必要 |
 
 楽観的ロックを使用してユーザーを削除します。削除後に UserDetails キャッシュを無効化して整合性を確保します。
+
+---
+
+### ユーザー一覧レポート生成
+
+| 項目               | 詳細                                                      |
+| ------------------ | --------------------------------------------------------- |
+| **エンドポイント** | `GET /api/users/report`                                   |
+| **認可**           | `REPORT_EXPORT` 権限が必要                                |
+| **パラメータ**     | `username`（部分一致）、`groupBy`（オプション）           |
+
+ユーザー名フィルタに一致するユーザーの PDF レポートを生成します。`groupBy` パラメータはレポート内のグループ化方法を制御します：
+
+- **null または空白** — グループ化なし。一致する全ユーザーを単一テーブルで表示します。
+- **`role`** — ユーザーの直接割り当てロールでグループ化します。複数ロールを持つユーザーは各ロールグループに表示され、各グループは改ページから開始します。
+- **`baseRole`** — ベースロール（継承チェーンの祖先ロール）でグループ化します。各ユーザーの直接ロールの全祖先ロールを収集し、ユーザーは各ベースロールグループに表示されます。各グループは改ページから開始します。直接ロールに祖先がない場合、ユーザーはその直接ロールのグループに表示されます。
+
+`Content-Type: application/pdf` および `Content-Disposition: attachment` ヘッダー付きの PDF ファイルを返します。レポートラベルはクライアントの `Accept-Language` ヘッダーに基づいて自動的にローカライズされます。エクスポートレコード数の上限は設定で制御されます（`app.report.max-export-records`、デフォルト 10,000）。
 
 ---
 

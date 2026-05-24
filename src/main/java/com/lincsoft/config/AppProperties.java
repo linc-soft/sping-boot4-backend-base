@@ -88,6 +88,13 @@ public class AppProperties {
   private I18n i18n = new I18n();
 
   /**
+   * Report configuration settings.
+   *
+   * <p>Defines PDF report generation parameters including font paths and export limits.
+   */
+  private Report report = new Report();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -650,5 +657,47 @@ public class AppProperties {
      * <p>Default: ["en", "zh", "ja"]
      */
     private List<String> supportedLocales = List.of("en", "zh", "ja");
+  }
+
+  /**
+   * Report configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.report} prefix. Defines font paths and export limits
+   * for PDF report generation.
+   */
+  @Data
+  public static class Report {
+    /**
+     * Comma-separated list of font file paths for PDF generation.
+     *
+     * <p>Supports both classpath resources (e.g., {@code classpath:/fonts/}) and filesystem paths
+     * (e.g., {@code /opt/fonts/}). All {@code .ttf} and {@code .otf} files in the specified
+     * classpath directory will be auto-discovered and registered.
+     *
+     * <p>For CJ (Chinese/Japanese) support, download Noto Sans fonts and place them in the font
+     * directory. Recommended fonts:
+     *
+     * <ul>
+     *   <li>NotoSansSC-Regular.ttf (Simplified Chinese + Latin)
+     *   <li>NotoSansSC-Bold.ttf (Simplified Chinese Bold)
+     *   <li>NotoSansJP-Regular.ttf (Japanese + Latin)
+     *   <li>NotoSansJP-Bold.ttf (Japanese Bold)
+     * </ul>
+     *
+     * <p>Download from: https://fonts.google.com/noto
+     *
+     * <p>Default: {@code classpath:/fonts/}
+     */
+    private String fontPath = "classpath:/fonts/";
+
+    /**
+     * Maximum number of records allowed in a single PDF report export.
+     *
+     * <p>Prevents excessive memory usage and long generation times for very large datasets. When
+     * the query result exceeds this limit, only the first N records are included in the report.
+     *
+     * <p>Default: 10000
+     */
+    private int maxExportRecords = 10000;
   }
 }

@@ -1,19 +1,28 @@
 package com.lincsoft.controller.master;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.lincsoft.annotation.IgnoreResultWrapper;
 import com.lincsoft.controller.master.vo.UserCreateRequest;
 import com.lincsoft.controller.master.vo.UserDeleteRequest;
 import com.lincsoft.controller.master.vo.UserInfoResponse;
+import com.lincsoft.controller.master.vo.UserListReportRequest;
 import com.lincsoft.controller.master.vo.UserListRequest;
 import com.lincsoft.controller.master.vo.UserListResponseItem;
 import com.lincsoft.controller.master.vo.UserPageRequest;
 import com.lincsoft.controller.master.vo.UserPageResponseItem;
 import com.lincsoft.controller.master.vo.UserUpdateRequest;
+import com.lincsoft.i18n.LanguageContext;
 import com.lincsoft.mapstruct.UserMapper;
 import com.lincsoft.services.master.UserService;
+import com.lincsoft.services.report.ReportService;
 import jakarta.validation.Valid;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +41,9 @@ public class UserController {
 
   /** User service */
   private final UserService userService;
+
+  /** Report service for PDF generation. */
+  private final ReportService reportService;
 
   /** User mapper for converting between VO and entity. */
   private final UserMapper userMapper;
@@ -93,6 +105,36 @@ public class UserController {
   @PutMapping
   public void updateUser(@Valid @RequestBody UserUpdateRequest request) {
     userService.updateUser(userMapper.toEntity(request), request.roleIds());
+  }
+
+  /**
+   * Generate and download a user list PDF report.
+   *
+   * <p>Generates a PDF report of users matching the specified username filter. Supports optional
+   * grouping by role or base role (ancestor roles in the inheritance chain). When grouping is
+   * enabled, each group starts on a new page in the PDF.
+   *
+   * <p>The report labels are automatically localized based on the client's {@code Accept-Language}
+   * header.
+   *
+   * @param request report query filters and optional grouping field
+   * @return PDF document as a binary response
+   */
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_VIEW.roleCode)")
+  @IgnoreResultWrapper
+  @GetMapping("/report")
+  public ResponseEntity<byte[]> generateUserListReport(UserListReportRequest request) {
+    byte[] pdfData = reportService.generateUserListReport(request, LanguageContext.getLocale());
+
+    String filename =
+        URLEncoder.encode(
+            "user_list_report_" + System.currentTimeMillis() + ".pdf", StandardCharsets.UTF_8);
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+        .header("filename", filename)
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(pdfData);
   }
 
   /**

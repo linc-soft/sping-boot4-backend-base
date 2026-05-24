@@ -247,6 +247,43 @@ public class RoleService {
     deleteChildRoleInheritances(role.getId());
   }
 
+  /**
+   * Resolve all ancestor (parent) roles for a given list of direct role IDs.
+   *
+   * <p>Traverses the role inheritance graph upward from each direct role using BFS, collecting all
+   * ancestor role IDs. Direct roles themselves are excluded from the result.
+   *
+   * <p>For example, if role A inherits from B, and B inherits from C, then resolving [A] returns
+   * roles B and C.
+   *
+   * @param directRoleIds direct role IDs to resolve ancestors for
+   * @return set of all ancestor role IDs (excluding the direct role IDs themselves); empty if no
+   *     ancestors exist
+   */
+  public Set<Long> resolveAncestorRoleIds(List<Long> directRoleIds) {
+    if (directRoleIds == null || directRoleIds.isEmpty()) {
+      return Set.of();
+    }
+
+    Set<Long> directIdSet = new HashSet<>(directRoleIds);
+    Set<Long> ancestorIds = new LinkedHashSet<>();
+    Set<Long> visited = new HashSet<>(directRoleIds);
+    Queue<Long> queue = new LinkedList<>(directRoleIds);
+
+    while (!queue.isEmpty()) {
+      Long currentId = queue.poll();
+      List<Long> parentIds = getParentRoleIds(currentId);
+      for (Long parentId : parentIds) {
+        if (visited.add(parentId)) {
+          ancestorIds.add(parentId);
+          queue.add(parentId);
+        }
+      }
+    }
+
+    return ancestorIds;
+  }
+
   // ========== Role Inheritance Management ==========
 
   /**

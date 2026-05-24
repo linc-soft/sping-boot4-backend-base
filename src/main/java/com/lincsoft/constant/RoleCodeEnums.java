@@ -29,7 +29,9 @@ public enum RoleCodeEnums implements BaseEnum<String> {
   USER_EDIT("USER_EDIT", "User Editor"),
   USER_DEL("USER_DEL", "User Deleter"),
   LOG_VIEW("LOG_VIEW", "Log Viewer"),
-  LOG_EXPORT("LOG_EXPORT", "Log Exporter");
+  LOG_EXPORT("LOG_EXPORT", "Log Exporter"),
+  REPORT_VIEW("REPORT_VIEW", "Report Viewer"),
+  REPORT_EXPORT("REPORT_EXPORT", "Report Exporter");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{report.user_list.title}">User List Report</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.5cm 2cm 2cm 2cm;
+      @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: #666;
+      }
+      @top-right {
+        content: element(report-header-right);
+        font-size: 8pt;
+        color: #999;
+      }
+    }
+
+    @page :first {
+      @top-right {
+        content: none;
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', 'Noto Sans JP', 'Noto Sans', sans-serif;
+      font-size: 10pt;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .report-header-right {
+      position: running(report-header-right);
+      text-align: right;
+    }
+
+    .report-title {
+      font-size: 18pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 6pt;
+    }
+
+    .report-meta {
+      display: table;
+      width: 100%;
+      margin-bottom: 12pt;
+      padding-bottom: 8pt;
+      border-bottom: 2px solid #2c5aa0;
+    }
+
+    .report-meta-left {
+      display: table-cell;
+      font-size: 9pt;
+      color: #666;
+      vertical-align: top;
+    }
+
+    .report-meta-left span {
+      display: block;
+      margin-bottom: 2pt;
+    }
+
+    .report-summary {
+      display: table-cell;
+      font-size: 9pt;
+      color: #666;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    .report-summary span {
+      display: block;
+    }
+
+    .group-header {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #2c5aa0;
+      margin-top: 16pt;
+      margin-bottom: 6pt;
+      padding: 4pt 8pt;
+      background-color: #e8f0fe;
+      border-left: 4px solid #2c5aa0;
+    }
+
+    .group-summary {
+      font-size: 9pt;
+      color: #666;
+      margin-bottom: 8pt;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12pt;
+      font-size: 9pt;
+    }
+
+    thead th {
+      background-color: #2c5aa0;
+      color: #ffffff;
+      padding: 5pt 6pt;
+      text-align: left;
+      font-weight: 600;
+      font-size: 8.5pt;
+      border: 1px solid #1e3d73;
+    }
+
+    tbody td {
+      padding: 4pt 6pt;
+      border: 1px solid #d0d0d0;
+      font-size: 8.5pt;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f7f9fc;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    .cell-no { width: 40px; text-align: right; }
+    .cell-id { width: 50px; text-align: right; }
+    .cell-username { width: 100px; }
+    .cell-status { width: 65px; text-align: center; }
+    .cell-roles { word-wrap: break-word; }
+    .cell-time { width: 110px; }
+
+    .status-active {
+      display: inline-block;
+      padding: 1pt 5pt;
+      border-radius: 2pt;
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: #ffffff;
+      background-color: #4caf50;
+    }
+
+    .status-inactive {
+      display: inline-block;
+      padding: 1pt 5pt;
+      border-radius: 2pt;
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: #ffffff;
+      background-color: #f44336;
+    }
+
+    .role-tag {
+      display: inline-block;
+      padding: 1pt 5pt;
+      margin: 1pt 2pt;
+      border-radius: 2pt;
+      font-size: 7.5pt;
+      background-color: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .no-break {
+      page-break-inside: avoid;
+    }
+
+    .footer-info {
+      font-size: 8pt;
+      color: #999;
+      margin-top: 12pt;
+      text-align: center;
+    }
+
+    .empty-data {
+      text-align: center;
+      padding: 40pt 0;
+      color: #999;
+      font-size: 12pt;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="report-header-right" style="display: none;">
+    <span th:text="#{report.user_list.title}">User List Report</span>
+  </div>
+
+  <div class="report-title" th:text="#{report.user_list.title}">User List Report</div>
+
+  <div class="report-meta">
+    <div class="report-meta-left">
+      <span th:text="#{report.generated_at} + ': ' + ${generatedAt}">Generated at: 2026-05-24 10:00:00</span>
+    </div>
+    <div class="report-summary">
+      <span th:text="#{report.total_records} + ': ' + ${totalRecords}">Total Records: 0</span>
+    </div>
+  </div>
+
+  <!-- ==================== Grouped (by role or baseRole) ==================== -->
+  <th:block th:if="${groupBy == 'role' or groupBy == 'baseRole'}">
+    <th:block th:each="group : ${groups}">
+      <div class="page-break" th:if="${groupStat.index > 0}"></div>
+      <div class="no-break">
+        <div class="group-header">
+          <span th:if="${groupBy == 'role'}" th:text="#{report.user_list.group_role}">Role</span>
+          <span th:if="${groupBy == 'baseRole'}" th:text="#{report.user_list.group_base_role}">Base Role</span>:
+          <span th:text="${group.role.roleName}">Administrator</span>
+          <span style="font-weight: 400; font-size: 9pt; color: #888;"
+                th:text="'(' + ${group.role.roleCode != null ? group.role.roleCode : '-'} + ')'">(ADMIN)</span>
+        </div>
+        <div class="group-summary">
+          <span th:text="#{report.total_records} + ': ' + ${#lists.size(group.users)}">Total Records: 0</span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th class="cell-no" th:text="#{report.user_list.no}">No</th>
+            <th class="cell-id" th:text="#{report.user_list.id}">ID</th>
+            <th class="cell-username" th:text="#{report.user_list.username}">Username</th>
+            <th class="cell-status" th:text="#{report.user_list.status}">Status</th>
+            <th class="cell-roles" th:text="#{report.user_list.roles}">Roles</th>
+            <th class="cell-time" th:text="#{report.user_list.created_at}">Created At</th>
+            <th class="cell-time" th:text="#{report.user_list.updated_at}">Updated At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="user,iterStat : ${group.users}">
+            <td class="cell-no" th:text="${iterStat.count}">1</td>
+            <td class="cell-id" th:text="${user.id}">1</td>
+            <td class="cell-username" th:text="${user.username}">admin</td>
+            <td class="cell-status">
+              <span th:if="${user.status == '1'}" class="status-active"
+                    th:text="#{report.user_list.status_active}">Active</span>
+              <span th:if="${user.status != '1'}" class="status-inactive"
+                    th:text="#{report.user_list.status_inactive}">Inactive</span>
+            </td>
+            <td class="cell-roles">
+              <th:block th:each="role : ${user.roles}">
+                <span class="role-tag" th:text="${role.roleName}">Admin</span>
+              </th:block>
+            </td>
+            <td class="cell-time"
+                th:text="${#temporals.format(user.createAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
+            <td class="cell-time"
+                th:text="${#temporals.format(user.updateAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
+          </tr>
+        </tbody>
+      </table>
+    </th:block>
+  </th:block>
+
+  <!-- ==================== No Grouping ==================== -->
+  <th:block th:if="${groupBy == null or groupBy.isEmpty()}">
+    <div class="empty-data" th:if="${#lists.isEmpty(users)}" th:text="#{report.no_data}">No data found</div>
+    <table th:if="${!#lists.isEmpty(users)}">
+      <thead>
+        <tr>
+          <th class="cell-no" th:text="#{report.user_list.no}">No</th>
+          <th class="cell-id" th:text="#{report.user_list.id}">ID</th>
+          <th class="cell-username" th:text="#{report.user_list.username}">Username</th>
+          <th class="cell-status" th:text="#{report.user_list.status}">Status</th>
+          <th class="cell-roles" th:text="#{report.user_list.roles}">Roles</th>
+          <th class="cell-time" th:text="#{report.user_list.created_at}">Created At</th>
+          <th class="cell-time" th:text="#{report.user_list.updated_at}">Updated At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="user,iterStat : ${users}">
+          <td class="cell-no" th:text="${iterStat.count}">1</td>
+          <td class="cell-id" th:text="${user.id}">1</td>
+          <td class="cell-username" th:text="${user.username}">admin</td>
+          <td class="cell-status">
+            <span th:if="${user.status == '1'}" class="status-active"
+                  th:text="#{report.user_list.status_active}">Active</span>
+            <span th:if="${user.status != '1'}" class="status-inactive"
+                  th:text="#{report.user_list.status_inactive}">Inactive</span>
+          </td>
+          <td class="cell-roles">
+            <th:block th:each="role : ${user.roles}">
+              <span class="role-tag" th:text="${role.roleName}">Admin</span>
+            </th:block>
+          </td>
+          <td class="cell-time"
+              th:text="${#temporals.format(user.createAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
+          <td class="cell-time"
+              th:text="${#temporals.format(user.updateAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
+        </tr>
+      </tbody>
+    </table>
+  </th:block>
+
+  <div class="footer-info">
+    <span th:text="#{report.user_list.title}">User List Report</span>
+  </div>
+
+</body>
+</html>

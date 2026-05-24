@@ -54,6 +54,13 @@ app:
     thread-name-prefix: "async-log-"
     wait-for-tasks-to-complete-on-shutdown: true
     await-termination-seconds: 30
+  # Report settings
+  report:
+    # Font directory for PDF generation (classpath or filesystem path)
+    # Download Noto Sans fonts from https://fonts.google.com/noto and place in this directory
+    font-path: classpath:/fonts/
+    # Maximum records per PDF report export
+    max-export-records: 10000
   security:
     # Public endpoints bypass authentication and CSRF protection
     public-endpoints:
