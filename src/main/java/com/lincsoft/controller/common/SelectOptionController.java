@@ -101,7 +101,8 @@ public class SelectOptionController {
             .map(GrantedAuthority::getAuthority)
             .anyMatch(
                 authority ->
-                    authority.equals(requiredPermission)
+                    authority.equals("ROLE_ADMIN")
+                        || authority.equals(requiredPermission)
                         || authority.equals("ROLE_" + requiredPermission));
 
     if (!hasPermission) {
