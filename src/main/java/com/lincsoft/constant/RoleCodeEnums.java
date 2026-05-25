@@ -20,18 +20,16 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RoleCodeEnums implements BaseEnum<String> {
   ADMIN("ADMIN", "Administrator"),
-  ROLE_VIEW("ROLE_VIEW", "Role Viewer"),
-  ROLE_NEW("ROLE_NEW", "Role Creator"),
-  ROLE_EDIT("ROLE_EDIT", "Role Editor"),
-  ROLE_DEL("ROLE_DEL", "Role Deleter"),
-  USER_VIEW("USER_VIEW", "User Viewer"),
-  USER_NEW("USER_NEW", "User Creator"),
-  USER_EDIT("USER_EDIT", "User Editor"),
-  USER_DEL("USER_DEL", "User Deleter"),
-  LOG_VIEW("LOG_VIEW", "Log Viewer"),
-  LOG_EXPORT("LOG_EXPORT", "Log Exporter"),
-  REPORT_VIEW("REPORT_VIEW", "Report Viewer"),
-  REPORT_EXPORT("REPORT_EXPORT", "Report Exporter");
+  ROLE_READ("ROLE_READ", "Role Reader"),
+  ROLE_WRITE("ROLE_WRITE", "Role Writer"),
+  ROLE_DELETE("ROLE_DELETE", "Role Deleter"),
+  ROLE_EXPORT("ROLE_EXPORT", "Role Exporter"),
+  USER_READ("USER_READ", "User Reader"),
+  USER_WRITE("USER_WRITE", "User Writer"),
+  USER_DELETE("USER_DELETE", "User Deleter"),
+  USER_EXPORT("USER_EXPORT", "User Exporter"),
+  LOG_READ("LOG_READ", "Log Reader"),
+  LOG_EXPORT("LOG_EXPORT", "Log Exporter");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;

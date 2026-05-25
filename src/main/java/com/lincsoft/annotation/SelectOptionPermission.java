@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  *
  * <pre>{@code
  * @Component
- * @SelectOptionPermission("USER_VIEW")
+ * @SelectOptionPermission("USER_READ")
  * public class RoleSelectOptionProvider implements SelectOptionProvider {
  *     // ...
  * }
@@ -36,7 +36,7 @@ public @interface SelectOptionPermission {
    * <p>Empty string means no permission check is required (public access).
    *
    * <p>Permission codes should match the role codes defined in {@link
-   * com.lincsoft.constant.RoleCodeEnums}, such as "USER_VIEW", "ROLE_VIEW", etc.
+   * com.lincsoft.constant.RoleCodeEnums}, such as "USER_READ", "ROLE_READ", etc.
    *
    * @return the permission code, empty string for no permission check
    */

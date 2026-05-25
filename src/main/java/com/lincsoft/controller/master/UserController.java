@@ -58,7 +58,7 @@ public class UserController {
    * @param id User ID
    * @return User info response
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_VIEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_READ.roleCode)")
   @GetMapping("/{id}")
   public UserInfoResponse getUser(@PathVariable Long id) {
     return userMapper.toInfoResponse(userService.getUserWithRolesById(id));
@@ -70,7 +70,7 @@ public class UserController {
    * @param request Query parameters (username, status)
    * @return List of user items
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_VIEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_READ.roleCode)")
   @GetMapping
   public List<UserListResponseItem> getUserList(UserListRequest request) {
     return userMapper.toListResponse(userService.getUserList(request.username(), request.status()));
@@ -82,7 +82,7 @@ public class UserController {
    * @param request Page request with pagination parameters and query conditions
    * @return IPage of user items
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_VIEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_READ.roleCode)")
   @GetMapping("/page")
   public IPage<UserPageResponseItem> getUserPage(UserPageRequest request) {
     return userMapper.toPageResponse(userService.getUserPage(request));
@@ -94,7 +94,7 @@ public class UserController {
    * @param request User create request
    * @return created user ID
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_NEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_WRITE.roleCode)")
   @PostMapping
   public Long createUser(@Valid @RequestBody UserCreateRequest request) {
     return userService.createUser(userMapper.toEntity(request), request.roleIds());
@@ -105,7 +105,7 @@ public class UserController {
    *
    * @param request User update request
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_EDIT.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_WRITE.roleCode)")
   @PutMapping
   public void updateUser(@Valid @RequestBody UserUpdateRequest request) {
     userService.updateUser(userMapper.toEntity(request), request.roleIds());
@@ -124,7 +124,7 @@ public class UserController {
    * @param request report query filters and optional grouping field
    * @return PDF document as a binary response
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_VIEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_EXPORT.roleCode)")
   @IgnoreResultWrapper
   @GetMapping("/report")
   public ResponseEntity<byte[]> generateUserListReport(UserListReportRequest request) {
@@ -148,7 +148,7 @@ public class UserController {
    *
    * @param request User delete request
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_DEL.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).USER_DELETE.roleCode)")
   @DeleteMapping
   public void deleteUser(@Valid @RequestBody UserDeleteRequest request) {
     userService.deleteUser(userService.getUserById(request.id()), request.version());

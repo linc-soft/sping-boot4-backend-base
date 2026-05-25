@@ -44,7 +44,7 @@ public class AccessLogController {
   @Operation(
       summary = "Get access log page",
       description = "Query access logs with pagination, sorted by time descending")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_VIEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
   @GetMapping("/page")
   public IPage<AccessLogPageResponseItem> getPage(@Valid AccessLogPageRequest request) {
     return accessLogMapper.toPageResponse(accessLogService.getPage(request));
@@ -59,7 +59,7 @@ public class AccessLogController {
   @Operation(
       summary = "Get access log detail",
       description = "Retrieve complete access log information by ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_VIEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
   @GetMapping("/{id}")
   public AccessLogDetailResponse getById(@Parameter(description = "Log ID") @PathVariable Long id) {
     return accessLogMapper.toDetailResponse(accessLogService.getById(id));
@@ -72,7 +72,7 @@ public class AccessLogController {
    * @return Access log detail response
    */
   @Operation(summary = "Get access log by TraceId", description = "Retrieve access log by trace ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_VIEW.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
   @GetMapping("/trace/{traceId}")
   public AccessLogDetailResponse getByTraceId(
       @Parameter(description = "Trace ID") @PathVariable String traceId) {
