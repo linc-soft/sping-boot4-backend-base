@@ -45,7 +45,8 @@ public enum MessageEnums {
   USER_NOT_FOUND(200_001, "error.user_not_found"),
   USER_INACTIVE(200_002, "error.user_inactive"),
   USERNAME_CANNOT_BE_UPDATED(200_003, "error.username_cannot_be_updated"),
-  CIRCULAR_DEPENDENCY(200_004, "error.circular_dependency");
+  CIRCULAR_DEPENDENCY(200_004, "error.circular_dependency"),
+  BASE_ROLE_CANNOT_BE_DELETED(200_005, "error.base_role_cannot_be_deleted");
 
   @Getter private final int code;
 

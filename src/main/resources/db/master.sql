@@ -130,21 +130,6 @@ VALUES (1, 'Administrator', 'ADMIN', 'Administrator', 'system', 'system'),
        (11, 'Log Exporter', 'LOG_EXPORT', 'Can export logs', 'system', 'system');
 
 -- ============================================================
--- Initial Data: role inheritance relationship
--- ============================================================
-INSERT INTO mst_role_inheritance (child_role_id, parent_role_id, create_by, update_by)
-VALUES (1, 2, 'system', 'system'),
-       (1, 3, 'system', 'system'),
-       (1, 4, 'system', 'system'),
-       (1, 5, 'system', 'system'),
-       (1, 6, 'system', 'system'),
-       (1, 7, 'system', 'system'),
-       (1, 8, 'system', 'system'),
-       (1, 9, 'system', 'system'),
-       (1, 10, 'system', 'system'),
-       (1, 11, 'system', 'system');
-
--- ============================================================
 -- Initial Data: user-role relationship
 -- ============================================================
 INSERT INTO mst_user_role (user_id, role_id, create_by, update_by)

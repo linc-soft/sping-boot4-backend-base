@@ -227,6 +227,11 @@ public class RoleService {
       throw new BusinessException(MessageEnums.NOT_FOUND, "role");
     }
 
+    // Check if role is a base role (base roles cannot be deleted)
+    if (role.getRoleCode() != null && !role.getRoleCode().isBlank()) {
+      throw new BusinessException(MessageEnums.BASE_ROLE_CANNOT_BE_DELETED);
+    }
+
     // Check if role is in use
     validateRoleNotInUse(role.getId());
 
