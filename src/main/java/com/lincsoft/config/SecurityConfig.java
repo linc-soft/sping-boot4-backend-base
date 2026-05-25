@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -426,6 +427,20 @@ public class SecurityConfig {
     provider.setPasswordEncoder(passwordEncoder());
     provider.setPreAuthenticationChecks(preAuthenticationChecks);
     return provider;
+  }
+
+  /**
+   * Custom MethodSecurityExpressionHandler Bean.
+   *
+   * <p>Replaces the default handler with {@link CustomMethodSecurityExpressionHandler} so that
+   * users with the ADMIN role automatically pass all {@code @PreAuthorize("hasRole(...)")} checks
+   * without modifying existing annotations.
+   *
+   * @return the custom MethodSecurityExpressionHandler instance
+   */
+  @Bean
+  public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+    return new CustomMethodSecurityExpressionHandler();
   }
 
   /**
