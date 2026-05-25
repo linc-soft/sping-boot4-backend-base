@@ -214,8 +214,11 @@ public class UserService implements UserDetailsService {
       queryWrapper.eq("status", request.getStatus());
     }
 
-    // Order by update time descending
-    queryWrapper.orderByDesc("update_at");
+    // Apply dynamic sorting with column whitelist
+    request.applySorting(
+        queryWrapper,
+        Set.of("id", "username", "status", "create_by", "create_at", "update_by", "update_at"),
+        "update_at");
 
     return userMapper.selectPage(request.toPage(), queryWrapper);
   }
