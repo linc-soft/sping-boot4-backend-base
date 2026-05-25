@@ -106,7 +106,8 @@ public class AccessLogInterceptor implements HandlerInterceptor {
 
       // Set response information
       String responseBody = extractResponseBody(response);
-      accessLog.setResponseStatus(extractBusinessCode(responseBody));
+      Integer businessCode = extractBusinessCode(responseBody);
+      accessLog.setResponseStatus(businessCode != null ? businessCode : response.getStatus());
       accessLog.setResponseHeaders(LogUtil.buildResponseHeaders(response));
       accessLog.setResponseBody(responseBody);
 

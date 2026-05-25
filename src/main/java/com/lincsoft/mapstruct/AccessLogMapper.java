@@ -23,7 +23,9 @@ public interface AccessLogMapper {
    */
   @Mapping(target = "method", source = "requestMethod")
   @Mapping(target = "path", source = "requestUrl")
-  @Mapping(target = "statusCode", source = "responseStatus")
+  @Mapping(
+      target = "statusCode",
+      expression = "java(entity.getResponseStatus() != null ? entity.getResponseStatus() : 0)")
   @Mapping(target = "createdAt", source = "createTime")
   AccessLogPageResponseItem toPageResponseItem(SysAccessLog entity);
 
@@ -46,7 +48,9 @@ public interface AccessLogMapper {
   @Mapping(target = "method", source = "requestMethod")
   @Mapping(target = "path", source = "requestUrl")
   @Mapping(target = "queryString", source = "requestParams")
-  @Mapping(target = "statusCode", source = "responseStatus")
+  @Mapping(
+      target = "statusCode",
+      expression = "java(entity.getResponseStatus() != null ? entity.getResponseStatus() : 0)")
   @Mapping(target = "createdAt", source = "createTime")
   AccessLogDetailResponse toDetailResponse(SysAccessLog entity);
 }

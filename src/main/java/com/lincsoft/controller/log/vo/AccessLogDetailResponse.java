@@ -30,7 +30,7 @@ public record AccessLogDetailResponse(
     String queryString,
     String requestBody,
     String responseBody,
-    Integer statusCode,
+    int statusCode,
     Long duration,
     String clientIp,
     String userAgent,

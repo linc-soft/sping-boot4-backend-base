@@ -23,7 +23,7 @@ public record AccessLogPageResponseItem(
     String username,
     String method,
     String path,
-    Integer statusCode,
+    int statusCode,
     Long duration,
     String clientIp,
     LocalDateTime createdAt) {}
