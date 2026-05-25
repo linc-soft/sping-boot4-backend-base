@@ -17,6 +17,14 @@
       "projectName": "spring-boot-backend-base",
       "envFile": "${workspaceFolder}/.env.local",
       "vmArgs": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    },
+    {
+      "type": "java",
+      "name": "Attach to JDWP 5005",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "projectName": "spring-boot-backend-base"
     }
   ]
 }
