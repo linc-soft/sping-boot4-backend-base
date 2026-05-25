@@ -1,37 +1,44 @@
 package com.lincsoft.dto.master;
 
-import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Data;
 
 /**
  * User report item DTO for PDF template rendering.
  *
- * <p>Carries user data together with the user's directly assigned roles for use in Thymeleaf PDF
- * templates. Excludes sensitive fields (e.g., password) from the entity.
+ * <p>Carries a subset of user fields for use in Thymeleaf PDF templates. Role data is no longer
+ * included here; role grouping is handled separately via {@link
+ * com.lincsoft.dto.report.UserReportRow} and the grouping logic in report data fetchers.
+ *
+ * <p>Excludes sensitive fields (e.g., password) from the entity.
  *
  * @author 林创科技
  * @since 2026-05-24
  */
 @Data
 public class UserReportItem {
-  private Long id;
   private String username;
   private String status;
-  private List<MstRole> roles;
   private LocalDateTime createAt;
   private LocalDateTime updateAt;
+  private String createBy;
+  private String updateBy;
 
-  public static UserReportItem from(MstUser user, List<MstRole> roles) {
+  /**
+   * Creates a report item from a user entity, copying only the display-safe fields.
+   *
+   * @param user the user entity to copy from
+   * @return a new UserReportItem with fields populated from the entity
+   */
+  public static UserReportItem from(MstUser user) {
     UserReportItem item = new UserReportItem();
-    item.setId(user.getId());
     item.setUsername(user.getUsername());
     item.setStatus(user.getStatus());
-    item.setRoles(roles);
     item.setCreateAt(user.getCreateAt());
     item.setUpdateAt(user.getUpdateAt());
+    item.setCreateBy(user.getCreateBy());
+    item.setUpdateBy(user.getUpdateBy());
     return item;
   }
 }

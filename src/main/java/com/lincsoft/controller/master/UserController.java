@@ -15,6 +15,7 @@ import com.lincsoft.i18n.LanguageContext;
 import com.lincsoft.mapstruct.UserMapper;
 import com.lincsoft.services.master.UserService;
 import com.lincsoft.services.report.ReportService;
+import com.lincsoft.services.report.user.UserListReportDataFetcher;
 import jakarta.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -44,6 +45,9 @@ public class UserController {
 
   /** Report service for PDF generation. */
   private final ReportService reportService;
+
+  /** Data fetcher for user list report. */
+  private final UserListReportDataFetcher userListReportDataFetcher;
 
   /** User mapper for converting between VO and entity. */
   private final UserMapper userMapper;
@@ -124,7 +128,9 @@ public class UserController {
   @IgnoreResultWrapper
   @GetMapping("/report")
   public ResponseEntity<byte[]> generateUserListReport(UserListReportRequest request) {
-    byte[] pdfData = reportService.generateUserListReport(request, LanguageContext.getLocale());
+    byte[] pdfData =
+        reportService.generateReport(
+            userListReportDataFetcher, request, LanguageContext.getLocale());
 
     String filename =
         URLEncoder.encode(

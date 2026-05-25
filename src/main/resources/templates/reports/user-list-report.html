@@ -131,12 +131,31 @@
       background-color: #ffffff;
     }
 
-    .cell-no { width: 40px; text-align: right; }
-    .cell-id { width: 50px; text-align: right; }
-    .cell-username { width: 100px; }
-    .cell-status { width: 65px; text-align: center; }
-    .cell-roles { word-wrap: break-word; }
-    .cell-time { width: 110px; }
+    .cell-no {
+      width: 60px;
+      text-align: right;
+    }
+
+    .cell-username {
+      width: 200px;
+    }
+
+    .cell-status {
+      width: 60px;
+      text-align: center;
+    }
+
+    .cell-time {
+      width: 200px;
+    }
+
+    .cell-created-by {
+      width: 60px;
+    }
+
+    .cell-updated-by {
+      width: 60px;
+    }
 
     .status-active {
       display: inline-block;
@@ -156,17 +175,6 @@
       font-weight: 600;
       color: #ffffff;
       background-color: #f44336;
-    }
-
-    .role-tag {
-      display: inline-block;
-      padding: 1pt 5pt;
-      margin: 1pt 2pt;
-      border-radius: 2pt;
-      font-size: 7.5pt;
-      background-color: #e3f2fd;
-      color: #1565c0;
-      border: 1px solid #90caf9;
     }
 
     .page-break {
@@ -194,118 +202,114 @@
 </head>
 <body>
 
-  <div class="report-header-right" style="display: none;">
-    <span th:text="#{report.user_list.title}">User List Report</span>
+<div class="report-header-right" style="display: none;">
+  <span th:text="#{report.user_list.title}">User List Report</span>
+</div>
+
+<div class="report-title" th:text="#{report.user_list.title}">User List Report</div>
+
+<div class="report-meta">
+  <div class="report-meta-left">
+    <span th:text="#{report.generated_at} + ': ' + ${generatedAt}">Generated at: 2026-05-24 10:00:00</span>
   </div>
-
-  <div class="report-title" th:text="#{report.user_list.title}">User List Report</div>
-
-  <div class="report-meta">
-    <div class="report-meta-left">
-      <span th:text="#{report.generated_at} + ': ' + ${generatedAt}">Generated at: 2026-05-24 10:00:00</span>
-    </div>
-    <div class="report-summary">
-      <span th:text="#{report.total_records} + ': ' + ${totalRecords}">Total Records: 0</span>
-    </div>
+  <div class="report-summary">
+    <span th:text="#{report.total_records} + ': ' + ${totalRecords}">Total Records: 0</span>
   </div>
+</div>
 
-  <!-- ==================== Grouped (by role or baseRole) ==================== -->
-  <th:block th:if="${groupBy == 'role' or groupBy == 'baseRole'}">
-    <th:block th:each="group : ${groups}">
-      <div class="page-break" th:if="${groupStat.index > 0}"></div>
-      <div class="no-break">
-        <div class="group-header">
-          <span th:if="${groupBy == 'role'}" th:text="#{report.user_list.group_role}">Role</span>
-          <span th:if="${groupBy == 'baseRole'}" th:text="#{report.user_list.group_base_role}">Base Role</span>:
-          <span th:text="${group.role.roleName}">Administrator</span>
-          <span style="font-weight: 400; font-size: 9pt; color: #888;"
-                th:text="'(' + ${group.role.roleCode != null ? group.role.roleCode : '-'} + ')'">(ADMIN)</span>
-        </div>
-        <div class="group-summary">
-          <span th:text="#{report.total_records} + ': ' + ${#lists.size(group.users)}">Total Records: 0</span>
-        </div>
+<!-- ==================== Grouped (by role or baseRole) ==================== -->
+<th:block th:if="${groupBy == 'role' or groupBy == 'baseRole'}">
+  <th:block th:each="group : ${groups}">
+    <div class="page-break" th:if="${groupStat.index > 0}"></div>
+    <div class="no-break">
+      <div class="group-header">
+        <span th:if="${groupBy == 'role'}" th:text="#{report.user_list.group_role}">Role</span>
+        <span th:if="${groupBy == 'baseRole'}" th:text="#{report.user_list.group_base_role}">Base Role</span>:
+        <span th:text="${group.role.roleName}">Administrator</span>
+        <span style="font-weight: 400; font-size: 9pt; color: #888;"
+              th:text="'(' + ${group.role.roleCode != null ? group.role.roleCode : '-'} + ')'">(ADMIN)</span>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th class="cell-no" th:text="#{report.user_list.no}">No</th>
-            <th class="cell-id" th:text="#{report.user_list.id}">ID</th>
-            <th class="cell-username" th:text="#{report.user_list.username}">Username</th>
-            <th class="cell-status" th:text="#{report.user_list.status}">Status</th>
-            <th class="cell-roles" th:text="#{report.user_list.roles}">Roles</th>
-            <th class="cell-time" th:text="#{report.user_list.created_at}">Created At</th>
-            <th class="cell-time" th:text="#{report.user_list.updated_at}">Updated At</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="user,iterStat : ${group.users}">
-            <td class="cell-no" th:text="${iterStat.count}">1</td>
-            <td class="cell-id" th:text="${user.id}">1</td>
-            <td class="cell-username" th:text="${user.username}">admin</td>
-            <td class="cell-status">
-              <span th:if="${user.status == '1'}" class="status-active"
-                    th:text="#{report.user_list.status_active}">Active</span>
-              <span th:if="${user.status != '1'}" class="status-inactive"
-                    th:text="#{report.user_list.status_inactive}">Inactive</span>
-            </td>
-            <td class="cell-roles">
-              <th:block th:each="role : ${user.roles}">
-                <span class="role-tag" th:text="${role.roleName}">Admin</span>
-              </th:block>
-            </td>
-            <td class="cell-time"
-                th:text="${#temporals.format(user.createAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
-            <td class="cell-time"
-                th:text="${#temporals.format(user.updateAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
-          </tr>
-        </tbody>
-      </table>
-    </th:block>
-  </th:block>
-
-  <!-- ==================== No Grouping ==================== -->
-  <th:block th:if="${groupBy == null or groupBy.isEmpty()}">
-    <div class="empty-data" th:if="${#lists.isEmpty(users)}" th:text="#{report.no_data}">No data found</div>
-    <table th:if="${!#lists.isEmpty(users)}">
+      <div class="group-summary">
+        <span th:text="#{report.total_records} + ': ' + ${#lists.size(group.users)}">Total Records: 0</span>
+      </div>
+    </div>
+    <table>
       <thead>
-        <tr>
-          <th class="cell-no" th:text="#{report.user_list.no}">No</th>
-          <th class="cell-id" th:text="#{report.user_list.id}">ID</th>
-          <th class="cell-username" th:text="#{report.user_list.username}">Username</th>
-          <th class="cell-status" th:text="#{report.user_list.status}">Status</th>
-          <th class="cell-roles" th:text="#{report.user_list.roles}">Roles</th>
-          <th class="cell-time" th:text="#{report.user_list.created_at}">Created At</th>
-          <th class="cell-time" th:text="#{report.user_list.updated_at}">Updated At</th>
-        </tr>
+      <tr>
+        <th class="cell-no" th:text="#{report.user_list.no}">No</th>
+        <th class="cell-username" th:text="#{report.user_list.username}">Username</th>
+        <th class="cell-status" th:text="#{report.user_list.status}">Status</th>
+        <th class="cell-time" th:text="#{report.user_list.created_at}">Created At</th>
+        <th class="cell-time" th:text="#{report.user_list.updated_at}">Updated At</th>
+        <th class="cell-created-by" th:text="#{report.user_list.created_by}">Created By</th>
+        <th class="cell-updated-by" th:text="#{report.user_list.updated_by}">Updated By</th>
+      </tr>
       </thead>
       <tbody>
-        <tr th:each="user,iterStat : ${users}">
-          <td class="cell-no" th:text="${iterStat.count}">1</td>
-          <td class="cell-id" th:text="${user.id}">1</td>
-          <td class="cell-username" th:text="${user.username}">admin</td>
-          <td class="cell-status">
-            <span th:if="${user.status == '1'}" class="status-active"
-                  th:text="#{report.user_list.status_active}">Active</span>
-            <span th:if="${user.status != '1'}" class="status-inactive"
-                  th:text="#{report.user_list.status_inactive}">Inactive</span>
-          </td>
-          <td class="cell-roles">
-            <th:block th:each="role : ${user.roles}">
-              <span class="role-tag" th:text="${role.roleName}">Admin</span>
-            </th:block>
-          </td>
-          <td class="cell-time"
-              th:text="${#temporals.format(user.createAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
-          <td class="cell-time"
-              th:text="${#temporals.format(user.updateAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00</td>
-        </tr>
+      <tr th:each="user,iterStat : ${group.users}">
+        <td class="cell-no" th:text="${iterStat.count}">1</td>
+        <td class="cell-username" th:text="${user.username}">admin</td>
+        <td class="cell-status">
+              <span th:if="${user.status == '1'}" class="status-active"
+                    th:text="#{report.user_list.status_active}">Active</span>
+          <span th:if="${user.status != '1'}" class="status-inactive"
+                th:text="#{report.user_list.status_inactive}">Inactive</span>
+        </td>
+        <td class="cell-time"
+            th:text="${#temporals.format(user.createAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00
+        </td>
+        <td class="cell-time"
+            th:text="${#temporals.format(user.updateAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00
+        </td>
+        <td class="cell-created-by" th:text="${user.createBy}">admin</td>
+        <td class="cell-updated-by" th:text="${user.updateBy}">admin</td>
+      </tr>
       </tbody>
     </table>
   </th:block>
+</th:block>
 
-  <div class="footer-info">
-    <span th:text="#{report.user_list.title}">User List Report</span>
-  </div>
+<!-- ==================== No Grouping ==================== -->
+<th:block th:if="${groupBy == null or groupBy.isEmpty()}">
+  <div class="empty-data" th:if="${#lists.isEmpty(users)}" th:text="#{report.no_data}">No data found</div>
+  <table th:if="${!#lists.isEmpty(users)}">
+    <thead>
+    <tr>
+      <th class="cell-no" th:text="#{report.user_list.no}">No</th>
+      <th class="cell-username" th:text="#{report.user_list.username}">Username</th>
+      <th class="cell-status" th:text="#{report.user_list.status}">Status</th>
+      <th class="cell-created-by" th:text="#{report.user_list.created_by}">Created By</th>
+      <th class="cell-time" th:text="#{report.user_list.created_at}">Created At</th>
+      <th class="cell-updated-by" th:text="#{report.user_list.updated_by}">Updated By</th>
+      <th class="cell-time" th:text="#{report.user_list.updated_at}">Updated At</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user,iterStat : ${users}">
+      <td class="cell-no" th:text="${iterStat.count}">1</td>
+      <td class="cell-username" th:text="${user.username}">admin</td>
+      <td class="cell-status">
+            <span th:if="${user.status == '1'}" class="status-active"
+                  th:text="#{report.user_list.status_active}">Active</span>
+        <span th:if="${user.status != '1'}" class="status-inactive"
+              th:text="#{report.user_list.status_inactive}">Inactive</span>
+      </td>
+      <td class="cell-created-by" th:text="${user.createBy}">admin</td>
+      <td class="cell-time"
+          th:text="${#temporals.format(user.createAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00
+      </td>
+      <td class="cell-updated-by" th:text="${user.updateBy}">admin</td>
+      <td class="cell-time"
+          th:text="${#temporals.format(user.updateAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 00:00:00
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</th:block>
+
+<div class="footer-info">
+  <span th:text="#{report.user_list.title}">User List Report</span>
+</div>
 
 </body>
 </html>
