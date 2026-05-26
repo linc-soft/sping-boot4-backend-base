@@ -250,8 +250,21 @@ public class AccessLogService {
       queryWrapper.like("request_url", request.getPath());
     }
 
-    if (request.getStatusCode() != null) {
-      queryWrapper.eq("response_status", request.getStatusCode());
+    if (request.getStatusCode() != null && !request.getStatusCode().isBlank()) {
+      String sc = request.getStatusCode().toUpperCase();
+      if ("4XX".equals(sc)) {
+        // Match plain 400–499 and module-prefixed XXX_400–XXX_499
+        queryWrapper.apply("response_status % 1000 >= 400 AND response_status % 1000 < 500");
+      } else if ("5XX".equals(sc)) {
+        // Match plain 500–599 and module-prefixed XXX_500–XXX_599
+        queryWrapper.apply("response_status % 1000 >= 500 AND response_status % 1000 < 600");
+      } else {
+        try {
+          queryWrapper.eq("response_status", Integer.parseInt(sc));
+        } catch (NumberFormatException ignored) {
+          // invalid status code — skip filter
+        }
+      }
     }
 
     if (request.getStartTime() != null) {

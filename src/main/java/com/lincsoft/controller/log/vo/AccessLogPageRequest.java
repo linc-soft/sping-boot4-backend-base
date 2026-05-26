@@ -27,8 +27,12 @@ public class AccessLogPageRequest extends PageRequest {
   /** API path (partial match) */
   private String path;
 
-  /** Status code (business code from response body) */
-  private Integer statusCode;
+  /**
+   * Status code filter. Accepts exact match (e.g. "200") or range patterns: "4XX" — match status
+   * codes 400–499 and module-prefixed codes (XXX_400–XXX_499) "5XX" — match status codes 500–599
+   * and module-prefixed codes (XXX_500–XXX_599)
+   */
+  private String statusCode;
 
   /** Start time */
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
