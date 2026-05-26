@@ -7,6 +7,7 @@ import com.lincsoft.entity.system.SysOperationLog;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.system.SysOperationLogMapper;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -36,7 +37,22 @@ public class OperationLogService {
    */
   public IPage<SysOperationLog> getPage(OperationLogPageRequest request) {
     QueryWrapper<SysOperationLog> queryWrapper = buildQueryWrapper(request);
-    queryWrapper.orderByDesc("create_time");
+    request.applySorting(
+        queryWrapper,
+        Set.of(
+            "id",
+            "trace_id",
+            "module",
+            "sub_module",
+            "operation_type",
+            "description",
+            "duration",
+            "request_method",
+            "request_url",
+            "client_ip",
+            "username",
+            "create_time"),
+        "create_time");
     return operationLogMapper.selectPage(request.toPage(), queryWrapper);
   }
 

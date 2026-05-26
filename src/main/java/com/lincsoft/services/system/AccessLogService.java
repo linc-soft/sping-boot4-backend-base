@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +51,20 @@ public class AccessLogService {
    */
   public IPage<SysAccessLog> getPage(AccessLogPageRequest request) {
     QueryWrapper<SysAccessLog> queryWrapper = buildQueryWrapper(request);
-    queryWrapper.orderByDesc("create_time");
+    request.applySorting(
+        queryWrapper,
+        Set.of(
+            "id",
+            "trace_id",
+            "request_method",
+            "request_url",
+            "response_status",
+            "client_ip",
+            "user_agent",
+            "username",
+            "duration",
+            "create_time"),
+        "create_time");
     return accessLogMapper.selectPage(request.toPage(), queryWrapper);
   }
 
@@ -94,7 +108,20 @@ public class AccessLogService {
    */
   public byte[] export(AccessLogPageRequest request) {
     QueryWrapper<SysAccessLog> queryWrapper = buildQueryWrapper(request);
-    queryWrapper.orderByDesc("create_time");
+    request.applySorting(
+        queryWrapper,
+        Set.of(
+            "id",
+            "trace_id",
+            "request_method",
+            "request_url",
+            "response_status",
+            "client_ip",
+            "user_agent",
+            "username",
+            "duration",
+            "create_time"),
+        "create_time");
     // Limit export to 10000 records to avoid memory issues
     queryWrapper.last("LIMIT 10000");
     List<SysAccessLog> logs = accessLogMapper.selectList(queryWrapper);

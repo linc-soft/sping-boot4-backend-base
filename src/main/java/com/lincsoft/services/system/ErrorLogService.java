@@ -6,6 +6,7 @@ import com.lincsoft.controller.log.vo.ErrorLogPageRequest;
 import com.lincsoft.entity.system.SysErrorLog;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.system.SysErrorLogMapper;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -35,7 +36,21 @@ public class ErrorLogService {
    */
   public IPage<SysErrorLog> getPage(ErrorLogPageRequest request) {
     QueryWrapper<SysErrorLog> queryWrapper = buildQueryWrapper(request);
-    queryWrapper.orderByDesc("create_time");
+    request.applySorting(
+        queryWrapper,
+        Set.of(
+            "id",
+            "trace_id",
+            "exception_file",
+            "exception_class",
+            "exception_method",
+            "exception_line",
+            "request_method",
+            "request_url",
+            "client_ip",
+            "username",
+            "create_time"),
+        "create_time");
     return errorLogMapper.selectPage(request.toPage(), queryWrapper);
   }
 
