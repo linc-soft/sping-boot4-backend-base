@@ -19,6 +19,8 @@ import com.lincsoft.mapper.master.MstUserRoleMapper;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,15 @@ public class RoleService {
 
   /** Role inheritance mapper for managing role hierarchy. */
   private final MstRoleInheritanceMapper roleInheritanceMapper;
+
+  /**
+   * Self-reference for AOP proxy calls.
+   *
+   * <p>Injected lazily to break circular dependency. Used instead of direct method calls to ensure
+   * {@code @Transactional} and {@code @OperationLog} aspects are applied when calling {@link
+   * #addRoleInheritance} and {@link #removeRoleInheritance} internally.
+   */
+  @Autowired @Lazy private RoleService self;
 
   /**
    * Get roles by ID list.
@@ -165,7 +176,7 @@ public class RoleService {
     // Handle role inheritance if parentRoleIds are provided
     if (parentRoleIds != null && !parentRoleIds.isEmpty()) {
       for (Long parentRoleId : parentRoleIds) {
-        addRoleInheritance(role.getId(), parentRoleId);
+        self.addRoleInheritance(role.getId(), parentRoleId);
       }
     }
 
@@ -341,9 +352,9 @@ public class RoleService {
       module = Module.MASTER,
       subModule = SubModule.ROLE_MANAGER,
       type = OperationType.CREATE,
-      description = "Added role inheritance: child=#{#childRoleId}, parent=#{#parentRoleId}")
+      description = "Added role inheritance: #{#result.roleName}")
   @Transactional(rollbackFor = Exception.class)
-  public void addRoleInheritance(Long childRoleId, Long parentRoleId) {
+  public MstRole addRoleInheritance(Long childRoleId, Long parentRoleId) {
     // Cannot inherit self
     if (childRoleId.equals(parentRoleId)) {
       throw new BusinessException(MessageEnums.ROLE_CIRCULAR_DEPENDENCY);
@@ -351,7 +362,7 @@ public class RoleService {
 
     // Validate both roles exist
     getRoleById(childRoleId);
-    getRoleById(parentRoleId);
+    MstRole parentRole = getRoleById(parentRoleId);
 
     // Check for circular dependency: if parentRoleId's ancestors include childRoleId
     validateNoCircularDependency(childRoleId, parentRoleId);
@@ -363,6 +374,8 @@ public class RoleService {
     inheritance.setChildRoleId(childRoleId);
     inheritance.setParentRoleId(parentRoleId);
     roleInheritanceMapper.insert(inheritance);
+
+    return parentRole;
   }
 
   /**
@@ -371,14 +384,23 @@ public class RoleService {
    * @param childRoleId Child role ID
    * @param parentRoleId Parent role ID
    */
+  @OperationLog(
+      module = Module.MASTER,
+      subModule = SubModule.ROLE_MANAGER,
+      type = OperationType.DELETE,
+      description = "Delete role inheritance: #{#result.roleName}")
   @Transactional(rollbackFor = Exception.class)
-  public void removeRoleInheritance(Long childRoleId, Long parentRoleId) {
+  public MstRole removeRoleInheritance(Long childRoleId, Long parentRoleId) {
+    MstRole parentRole = getRoleById(parentRoleId);
+
     QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
     qw.eq("child_role_id", childRoleId).eq("parent_role_id", parentRoleId);
     int deleted = roleInheritanceMapper.delete(qw);
     if (deleted == 0) {
       throw new BusinessException(MessageEnums.ROLE_NOT_FOUND);
     }
+
+    return parentRole;
   }
 
   /**
@@ -409,12 +431,12 @@ public class RoleService {
 
     // Add new relationships
     for (Long parentId : toAdd) {
-      addRoleInheritance(childRoleId, parentId);
+      self.addRoleInheritance(childRoleId, parentId);
     }
 
     // Remove old relationships
     for (Long parentId : toRemove) {
-      removeRoleInheritance(childRoleId, parentId);
+      self.removeRoleInheritance(childRoleId, parentId);
     }
   }
 
