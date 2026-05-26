@@ -71,8 +71,8 @@ Creates a new role with the provided name, description, and optional parent role
 
 **Request Body:**
 
-- `roleName` (required): Role name
-- `description` (optional): Role description
+- `roleName` (required): Role name, max 64 characters
+- `description` (optional): Role description, max 255 characters
 - `parentRoleIds` (optional): List of parent role IDs for inheritance
 
 ---
@@ -89,8 +89,8 @@ Updates an existing role's name, description, and inheritance relationships. Use
 **Request Body:**
 
 - `id` (required): Role ID
-- `roleName` (required): Role name
-- `description` (optional): Role description
+- `roleName` (required): Role name, max 64 characters
+- `description` (optional): Role description, max 255 characters
 - `parentRoleIds` (optional): List of parent role IDs for inheritance (replaces existing relationships)
 - `version` (required): Version for optimistic locking
 
@@ -104,6 +104,11 @@ Updates an existing role's name, description, and inheritance relationships. Use
 | **Auth**     | Requires `ROLE_DELETE` permission |
 
 Deletes a role after validating it is not assigned to any user and not inherited by other roles. Uses optimistic locking. After deletion, cleans up all inheritance relationships where this role is a child.
+
+**Request Body:**
+
+- `id` (required): Role ID
+- `version` (required): Version for optimistic locking
 
 ---
 
@@ -153,6 +158,13 @@ Queries users with pagination support. Accepts page number, page size, and optio
 
 Creates a new user with username uniqueness validation. Password is encrypted via PasswordEncoder before storage. Supports simultaneous role assignment via roleIds. Returns the created user ID.
 
+**Request Body:**
+
+- `username` (required): Username, alphanumeric and underscore only (`^[a-zA-Z0-9_]+$`), max 64 characters
+- `password` (required): Password, 8–128 characters
+- `status` (required): User status (`0` inactive / `1` active), must be a valid `UserStatusEnum` value
+- `roleIds` (optional): List of role IDs to assign
+
 ---
 
 ### Update User
@@ -167,8 +179,8 @@ Updates user information. Username cannot be modified. Password is encrypted if 
 **Request Body:**
 
 - `id` (required): User ID
-- `username` (optional): Username (read-only, must equal current value)
-- `password` (optional): New password; omit to keep unchanged
+- `username` (optional): Username (read-only, must equal current value), alphanumeric and underscore only, max 64 characters
+- `password` (optional): New password, 8–128 characters; omit to keep unchanged
 - `status` (optional): User status (`0` inactive / `1` active)
 - `roleIds` (optional): Target role ID list; omit to keep current roles, pass `[]` to revoke all
 - `version` (required): Version for optimistic locking
@@ -183,6 +195,11 @@ Updates user information. Username cannot be modified. Password is encrypted if 
 | **Auth**     | Requires `USER_DELETE` permission |
 
 Deletes a user with optimistic locking. Evicts UserDetails cache after deletion to ensure consistency.
+
+**Request Body:**
+
+- `id` (required): User ID
+- `version` (required): Version for optimistic locking
 
 ---
 
@@ -212,9 +229,9 @@ Returns a PDF file with `Content-Type: application/pdf` and `Content-Disposition
 | ------------ | ----------------------------------------------------- |
 | **Endpoint** | `GET /api/common/enums`                               |
 | **Auth**     | Public (No authentication required)                   |
-| **Params**   | `type` — supported values: `user-status`, `role-code` |
+| **Params**   | `type` — supported values: `user-status`, `role-code`, `module`, `sub-module` |
 
-Returns enumeration data list by type. Supports `user-status` (user status options) and `role-code` (role code options). Each item contains `code` and `name` fields.
+Returns enumeration data list by type. Supports `user-status` (user status options), `role-code` (role code options), `module` (module options), and `sub-module` (sub-module options). Each item contains `code` and `name` fields.
 
 ---
 
@@ -223,10 +240,12 @@ Returns enumeration data list by type. Supports `user-status` (user status optio
 | Item         | Detail                                                                                            |
 | ------------ | ------------------------------------------------------------------------------------------------- |
 | **Endpoint** | `GET /api/common/select-options`                                                                  |
-| **Auth**     | Public (No authentication required)                                                               |
+| **Auth**     | Permission determined by `@SelectOptionPermission` annotation on each `SelectOptionProvider`     |
 | **Params**   | `type` — dynamically registered via `SelectOptionProvider` implementations (e.g., `role`, `user`) |
 
-Returns select option list for frontend dropdown/select components. Provider implementations are auto-discovered via Spring DI. To add a new type, simply create a new `SelectOptionProvider` bean — no controller modification required. Each option contains `value` and `label`.
+Returns select option list for frontend dropdown/select components. Provider implementations are auto-discovered via Spring DI. To add a new type, simply create a new `SelectOptionProvider` bean — no controller modification required. Each option contains `value`, `label`, and `description`.
+
+Permission is checked per provider: if the `SelectOptionProvider` class is annotated with `@SelectOptionPermission`, the user must have the specified authority (e.g., `role` type requires `ROLE_READ`, `user` type requires `USER_READ`); providers without the annotation are public.
 
 ---
 
@@ -448,8 +467,8 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 **请求体：**
 
-- `roleName`（必填）：角色名称
-- `description`（可选）：角色描述
+- `roleName`（必填）：角色名称，最长 64 字符
+- `description`（可选）：角色描述，最长 255 字符
 - `parentRoleIds`（可选）：父角色 ID 列表，用于继承关系
 
 ---
@@ -466,8 +485,8 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 **请求体：**
 
 - `id`（必填）：角色 ID
-- `roleName`（必填）：角色名称
-- `description`（可选）：角色描述
+- `roleName`（必填）：角色名称，最长 64 字符
+- `description`（可选）：角色描述，最长 255 字符
 - `parentRoleIds`（可选）：父角色 ID 列表，用于继承关系（替换现有关系）
 - `version`（必填）：版本号，用于乐观锁
 
@@ -481,6 +500,11 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 | **权限**     | 需要 `ROLE_DELETE` 权限 |
 
 验证角色未被任何用户使用且未被其他角色继承后删除角色。使用乐观锁。删除后清理该角色作为子角色的所有继承关系。
+
+**请求体：**
+
+- `id`（必填）：角色 ID
+- `version`（必填）：版本号，用于乐观锁
 
 ---
 
@@ -530,6 +554,13 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 创建新用户，验证用户名唯一性。密码通过 PasswordEncoder 加密后存储。支持通过 roleIds 同时分配角色。返回创建的用户 ID。
 
+**请求体：**
+
+- `username`（必填）：用户名，仅允许字母、数字和下划线（`^[a-zA-Z0-9_]+$`），最长 64 字符
+- `password`（必填）：密码，8–128 字符
+- `status`（必填）：用户状态（`0` 禁用 / `1` 启用），必须为合法的 `UserStatusEnum` 值
+- `roleIds`（可选）：要分配的角色 ID 列表
+
 ---
 
 ### 更新用户
@@ -544,8 +575,8 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 **请求体：**
 
 - `id`（必填）：用户 ID
-- `username`（可选）：用户名（只读，需与当前值一致）
-- `password`（可选）：新密码；未传则保持不变
+- `username`（可选）：用户名（只读，需与当前值一致），仅允许字母、数字和下划线，最长 64 字符
+- `password`（可选）：新密码，8–128 字符；未传则保持不变
 - `status`（可选）：用户状态（`0` 禁用 / `1` 启用）
 - `roleIds`（可选）：目标角色 ID 列表；未传保持现有角色，传 `[]` 将移除所有角色
 - `version`（必填）：版本号，用于乐观锁
@@ -560,6 +591,11 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 | **权限**     | 需要 `USER_DELETE` 权限 |
 
 使用乐观锁删除用户。删除后清除 UserDetails 缓存以确保一致性。
+
+**请求体：**
+
+- `id`（必填）：用户 ID
+- `version`（必填）：版本号，用于乐观锁
 
 ---
 
@@ -589,9 +625,9 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 | ------------ | ------------------------------------------- |
 | **接口地址** | `GET /api/common/enums`                     |
 | **权限**     | 公开（无需认证）                            |
-| **参数**     | `type` — 支持值：`user-status`、`role-code` |
+| **参数**     | `type` — 支持值：`user-status`、`role-code`、`module`、`sub-module` |
 
-根据类型返回枚举数据列表。支持 `user-status`（用户状态选项）和 `role-code`（角色代码选项）。每项包含 `code` 和 `name` 字段。
+根据类型返回枚举数据列表。支持 `user-status`（用户状态选项）、`role-code`（角色代码选项）、`module`（模块选项）和 `sub-module`（子模块选项）。每项包含 `code` 和 `name` 字段。
 
 ---
 
@@ -600,10 +636,12 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 | 项目         | 详情                                                                   |
 | ------------ | ---------------------------------------------------------------------- |
 | **接口地址** | `GET /api/common/select-options`                                       |
-| **权限**     | 公开（无需认证）                                                       |
+| **权限**     | 由各 `SelectOptionProvider` 上的 `@SelectOptionPermission` 注解决定     |
 | **参数**     | `type` — 通过 `SelectOptionProvider` 实现动态注册（如 `role`、`user`） |
 
-返回前端下拉/选择组件的选项列表。Provider 实现通过 Spring DI 自动发现。添加新类型只需创建新的 `SelectOptionProvider` Bean，无需修改控制器。每个选项包含 `value` 和 `label`。
+返回前端下拉/选择组件的选项列表。Provider 实现通过 Spring DI 自动发现。添加新类型只需创建新的 `SelectOptionProvider` Bean，无需修改控制器。每个选项包含 `value`、`label` 和 `description`。
+
+权限按 Provider 逐一检查：如果 `SelectOptionProvider` 类标注了 `@SelectOptionPermission`，则用户必须拥有指定权限（如 `role` 类型需要 `ROLE_READ`，`user` 类型需要 `USER_READ`）；未标注注解的 Provider 为公开访问。
 
 ---
 
@@ -825,8 +863,8 @@ ID でデータベースから単一のロールを取得します。ID、名前
 
 **リクエストボディ：**
 
-- `roleName`（必須）：ロール名
-- `description`（オプション）：ロールの説明
+- `roleName`（必須）：ロール名、最大 64 文字
+- `description`（オプション）：ロールの説明、最大 255 文字
 - `parentRoleIds`（オプション）：継承用の親ロール ID リスト
 
 ---
@@ -843,8 +881,8 @@ ID でデータベースから単一のロールを取得します。ID、名前
 **リクエストボディ：**
 
 - `id`（必須）：ロール ID
-- `roleName`（必須）：ロール名
-- `description`（オプション）：ロールの説明
+- `roleName`（必須）：ロール名、最大 64 文字
+- `description`（オプション）：ロールの説明、最大 255 文字
 - `parentRoleIds`（オプション）：継承用の親ロール ID リスト（既存の関係を置換）
 - `version`（必須）：楽観的ロック用のバージョン
 
@@ -858,6 +896,11 @@ ID でデータベースから単一のロールを取得します。ID、名前
 | **認可**           | `ROLE_DELETE` 権限が必要 |
 
 ロールがユーザーに割り当てられておらず、他のロールに継承されていないことを検証後に削除します。楽観的ロックを使用します。削除後、このロールが子ロールである全ての継承関係をクリーンアップします。
+
+**リクエストボディ：**
+
+- `id`（必須）：ロール ID
+- `version`（必須）：楽観的ロック用のバージョン
 
 ---
 
@@ -907,6 +950,13 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 
 ユーザー名の一意性を検証して新規ユーザーを作成します。パスワードは PasswordEncoder で暗号化して保存します。roleIds による同時ロール割り当てをサポートします。作成されたユーザー ID を返します。
 
+**リクエストボディ：**
+
+- `username`（必須）：ユーザー名、英数字とアンダースコアのみ（`^[a-zA-Z0-9_]+$`）、最大 64 文字
+- `password`（必須）：パスワード、8～128 文字
+- `status`（必須）：ユーザーステータス（`0` 無効 / `1` 有効）、有効な `UserStatusEnum` 値である必要があります
+- `roleIds`（任意）：割り当てるロール ID リスト
+
 ---
 
 ### ユーザー更新
@@ -921,8 +971,8 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 **リクエストボディ：**
 
 - `id`（必須）：ユーザー ID
-- `username`（任意）：ユーザー名（読み取り専用、現在の値と同じである必要）
-- `password`（任意）：新しいパスワード。省略時は変更されません
+- `username`（任意）：ユーザー名（読み取り専用、現在の値と同じである必要）、英数字とアンダースコアのみ、最大 64 文字
+- `password`（任意）：新しいパスワード、8～128 文字。省略時は変更されません
 - `status`（任意）：ユーザーステータス（`0` 無効 / `1` 有効）
 - `roleIds`（任意）：目標ロール ID リスト。省略時は現在のロールを維持、`[]` を渡すと全て削除
 - `version`（必須）：楽観的ロック用のバージョン
@@ -937,6 +987,11 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | **認可**           | `USER_DELETE` 権限が必要 |
 
 楽観的ロックを使用してユーザーを削除します。削除後に UserDetails キャッシュを無効化して整合性を確保します。
+
+**リクエストボディ：**
+
+- `id`（必須）：ユーザー ID
+- `version`（必須）：楽観的ロック用のバージョン
 
 ---
 
@@ -966,9 +1021,9 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | ------------------ | ----------------------------------------------- |
 | **エンドポイント** | `GET /api/common/enums`                         |
 | **認可**           | 公開（認証不要）                                |
-| **パラメータ**     | `type` — サポート値：`user-status`、`role-code` |
+| **パラメータ**     | `type` — サポート値：`user-status`、`role-code`、`module`、`sub-module` |
 
-タイプ別に列挙データリストを返します。`user-status`（ユーザーステータスオプション）と `role-code`（ロールコードオプション）をサポートします。各項目には `code` と `name` フィールドが含まれます。
+タイプ別に列挙データリストを返します。`user-status`（ユーザーステータスオプション）、`role-code`（ロールコードオプション）、`module`（モジュールオプション）、`sub-module`（サブモジュールオプション）をサポートします。各項目には `code` と `name` フィールドが含まれます。
 
 ---
 
@@ -977,10 +1032,12 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | 項目               | 詳細                                                                     |
 | ------------------ | ------------------------------------------------------------------------ |
 | **エンドポイント** | `GET /api/common/select-options`                                         |
-| **認可**           | 公開（認証不要）                                                         |
+| **認可**           | 各 `SelectOptionProvider` の `@SelectOptionPermission` 注記により決定   |
 | **パラメータ**     | `type` — `SelectOptionProvider` 実装により動的登録（例：`role`、`user`） |
 
-フロントエンドのドロップダウン/セレクトコンポーネント用のオプションリストを返します。Provider 実装は Spring DI により自動検出されます。新しいタイプを追加するには、新しい `SelectOptionProvider` Bean を作成するだけで、コントローラーの変更は不要です。各オプションには `value` と `label` が含まれます。
+フロントエンドのドロップダウン/セレクトコンポーネント用のオプションリストを返します。Provider 実装は Spring DI により自動検出されます。新しいタイプを追加するには、新しい `SelectOptionProvider` Bean を作成するだけで、コントローラーの変更は不要です。各オプションには `value`、`label`、`description` が含まれます。
+
+権限は Provider ごとにチェックされます。`SelectOptionProvider` クラスに `@SelectOptionPermission` が付与されている場合、ユーザーは指定された権限を持っている必要があります（例：`role` タイプには `ROLE_READ`、`user` タイプには `USER_READ`）。注記がない Provider は公開アクセスです。
 
 ---
 

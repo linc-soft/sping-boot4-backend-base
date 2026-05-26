@@ -138,7 +138,7 @@ public class AuthService {
       // UsernameNotFoundException, DisabledException) are mapped to the same INVALID_CREDENTIALS
       // error to prevent username enumeration — callers cannot distinguish between these cases.
       loginProtectionService.recordFailure(username, clientIp);
-      throw new BusinessException(MessageEnums.INVALID_CREDENTIALS);
+      throw new BusinessException(MessageEnums.SYS_INVALID_CREDENTIALS);
     }
   }
 
@@ -157,7 +157,7 @@ public class AuthService {
     // Extract refresh token from cookie
     String refreshToken = extractRefreshTokenFromCookie(request);
     if (refreshToken == null) {
-      throw new BusinessException(MessageEnums.INVALID_REFRESH_TOKEN);
+      throw new BusinessException(MessageEnums.SYS_INVALID_REFRESH_TOKEN);
     }
 
     Claims claims;
@@ -165,20 +165,20 @@ public class AuthService {
       claims = JwtUtil.parseToken(refreshToken, appProperties.getJwt().getSecret());
     } catch (JwtException e) {
       log.warn("Refresh token parsing failed: {}", e.getMessage());
-      throw new BusinessException(MessageEnums.INVALID_REFRESH_TOKEN);
+      throw new BusinessException(MessageEnums.SYS_INVALID_REFRESH_TOKEN);
     }
 
     // Verify token type is refresh
     String tokenType = claims.get(CommonConstants.JWT_CLAIM_TOKEN_TYPE_KEY, String.class);
     if (!CommonConstants.TOKEN_TYPE_REFRESH.equals(tokenType)) {
-      throw new BusinessException(MessageEnums.INVALID_REFRESH_TOKEN);
+      throw new BusinessException(MessageEnums.SYS_INVALID_REFRESH_TOKEN);
     }
 
     // Check if the refresh token has been revoked
     String jti = claims.getId();
     if (jti != null && tokenBlacklistService.isTokenRevoked(jti)) {
       log.warn("Refresh token has been revoked: jti={}", jti);
-      throw new BusinessException(MessageEnums.INVALID_REFRESH_TOKEN);
+      throw new BusinessException(MessageEnums.SYS_INVALID_REFRESH_TOKEN);
     }
 
     // Token Rotation: revoke the old refresh token

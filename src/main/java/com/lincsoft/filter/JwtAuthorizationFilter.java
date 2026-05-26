@@ -145,7 +145,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         response.setContentType("application/json;charset=UTF-8");
         response
             .getWriter()
-            .write(objectMapper.writeValueAsString(Result.error(MessageEnums.TOKEN_REVOKED)));
+            .write(objectMapper.writeValueAsString(Result.error(MessageEnums.SYS_TOKEN_REVOKED)));
         return;
       }
 

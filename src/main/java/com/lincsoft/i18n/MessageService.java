@@ -110,6 +110,10 @@ public class MessageService {
    * @return Message key
    */
   private String toMessageKey(MessageEnums messageEnum) {
+    String key = messageEnum.getMessageKey();
+    if (key != null) {
+      return key;
+    }
     return "error." + messageEnum.name().toLowerCase();
   }
 }

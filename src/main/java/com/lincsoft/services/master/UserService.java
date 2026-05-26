@@ -233,7 +233,7 @@ public class UserService implements UserDetailsService {
   public MstUser getUserById(Long id) {
     MstUser user = userMapper.selectById(id);
     if (user == null) {
-      throw new BusinessException(MessageEnums.NOT_FOUND, "user");
+      throw new BusinessException(MessageEnums.USER_NOT_FOUND);
     }
     return user;
   }
@@ -289,7 +289,7 @@ public class UserService implements UserDetailsService {
     // Insert user
     int inserted = userMapper.insert(user);
     if (inserted == 0) {
-      throw new BusinessException(MessageEnums.INSERT_FAILED, "user");
+      throw new BusinessException(MessageEnums.USER_INSERT_FAILED);
     }
 
     // Assign roles to user if roleIds is provided
@@ -328,7 +328,7 @@ public class UserService implements UserDetailsService {
 
     // username can't be updated
     if (!existingUser.getUsername().equals(user.getUsername())) {
-      throw new BusinessException(MessageEnums.USERNAME_CANNOT_BE_UPDATED);
+      throw new BusinessException(MessageEnums.USER_USERNAME_CANNOT_BE_UPDATED);
     }
 
     // Encrypt password if provided
@@ -342,7 +342,7 @@ public class UserService implements UserDetailsService {
     // Update user (optimistic locking handled by @Version annotation)
     int updated = userMapper.updateById(user);
     if (updated == 0) {
-      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "user");
+      throw new BusinessException(MessageEnums.USER_OPTIMISTIC_LOCK_FAILED);
     }
 
     // Synchronize user-role assignments if roleIds is provided
@@ -420,7 +420,7 @@ public class UserService implements UserDetailsService {
   public void deleteUser(MstUser user, Integer version) {
     // Check if user not found
     if (user == null) {
-      throw new BusinessException(MessageEnums.NOT_FOUND, "user");
+      throw new BusinessException(MessageEnums.USER_NOT_FOUND);
     }
 
     // Delete user with optimistic locking via explicit version condition
@@ -430,7 +430,7 @@ public class UserService implements UserDetailsService {
     deleteWrapper.eq(MstUser::getId, user.getId()).eq(MstUser::getVersion, version);
     int deleted = userMapper.delete(deleteWrapper);
     if (deleted == 0) {
-      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "user");
+      throw new BusinessException(MessageEnums.USER_OPTIMISTIC_LOCK_FAILED);
     }
 
     // Evict UserDetails cache
@@ -487,7 +487,7 @@ public class UserService implements UserDetailsService {
     QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
     queryWrapper.eq("username", username);
     if (userMapper.selectCount(queryWrapper) > 0) {
-      throw new BusinessException(MessageEnums.UNIQUE_CONSTRAINT_VIOLATION, "username");
+      throw new BusinessException(MessageEnums.USER_USERNAME_EXISTS);
     }
   }
 }

@@ -123,7 +123,7 @@ public class RoleService {
   public MstRole getRoleById(Long id) {
     MstRole role = roleMapper.selectById(id);
     if (role == null) {
-      throw new BusinessException(MessageEnums.NOT_FOUND, "role");
+      throw new BusinessException(MessageEnums.ROLE_NOT_FOUND);
     }
     return role;
   }
@@ -194,7 +194,7 @@ public class RoleService {
     // Note: role_code is not updated as it's only for base roles
     int updated = roleMapper.updateById(role);
     if (updated == 0) {
-      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
+      throw new BusinessException(MessageEnums.ROLE_OPTIMISTIC_LOCK_FAILED);
     }
 
     // Update role inheritance relationships if parentRoleIds are provided
@@ -224,12 +224,12 @@ public class RoleService {
   public void deleteRole(MstRole role, Integer version) {
     // Check if role not found
     if (role == null) {
-      throw new BusinessException(MessageEnums.NOT_FOUND, "role");
+      throw new BusinessException(MessageEnums.ROLE_NOT_FOUND);
     }
 
     // Check if role is a base role (base roles cannot be deleted)
     if (role.getRoleCode() != null && !role.getRoleCode().isBlank()) {
-      throw new BusinessException(MessageEnums.BASE_ROLE_CANNOT_BE_DELETED);
+      throw new BusinessException(MessageEnums.ROLE_BASE_CANNOT_BE_DELETED);
     }
 
     // Check if role is in use
@@ -245,7 +245,7 @@ public class RoleService {
     deleteWrapper.eq(MstRole::getId, role.getId()).eq(MstRole::getVersion, version);
     int deleted = roleMapper.delete(deleteWrapper);
     if (deleted == 0) {
-      throw new BusinessException(MessageEnums.OPTIMISTIC_LOCK_FAILED, "role");
+      throw new BusinessException(MessageEnums.ROLE_OPTIMISTIC_LOCK_FAILED);
     }
 
     // Clean up inheritance relationships where this role is a child
@@ -270,7 +270,6 @@ public class RoleService {
       return Set.of();
     }
 
-    Set<Long> directIdSet = new HashSet<>(directRoleIds);
     Set<Long> ancestorIds = new LinkedHashSet<>();
     Set<Long> visited = new HashSet<>(directRoleIds);
     Queue<Long> queue = new LinkedList<>(directRoleIds);
@@ -347,7 +346,7 @@ public class RoleService {
   public void addRoleInheritance(Long childRoleId, Long parentRoleId) {
     // Cannot inherit self
     if (childRoleId.equals(parentRoleId)) {
-      throw new BusinessException(MessageEnums.CIRCULAR_DEPENDENCY, "role inheritance");
+      throw new BusinessException(MessageEnums.ROLE_CIRCULAR_DEPENDENCY);
     }
 
     // Validate both roles exist
@@ -378,7 +377,7 @@ public class RoleService {
     qw.eq("child_role_id", childRoleId).eq("parent_role_id", parentRoleId);
     int deleted = roleInheritanceMapper.delete(qw);
     if (deleted == 0) {
-      throw new BusinessException(MessageEnums.NOT_FOUND, "role inheritance");
+      throw new BusinessException(MessageEnums.ROLE_NOT_FOUND);
     }
   }
 
@@ -481,7 +480,7 @@ public class RoleService {
     while (!queue.isEmpty()) {
       Long current = queue.poll();
       if (current.equals(childRoleId)) {
-        throw new BusinessException(MessageEnums.CIRCULAR_DEPENDENCY, "role inheritance");
+        throw new BusinessException(MessageEnums.ROLE_CIRCULAR_DEPENDENCY);
       }
       List<Long> parentIds = getParentRoleIds(current);
       for (Long parentId : parentIds) {
@@ -506,7 +505,7 @@ public class RoleService {
     QueryWrapper<MstRoleInheritance> qw = new QueryWrapper<>();
     qw.eq("child_role_id", childRoleId).eq("parent_role_id", parentRoleId);
     if (roleInheritanceMapper.selectCount(qw) > 0) {
-      throw new BusinessException(MessageEnums.UNIQUE_CONSTRAINT_VIOLATION, "role inheritance");
+      throw new BusinessException(MessageEnums.ROLE_INHERITANCE_EXISTS);
     }
   }
 
@@ -521,8 +520,7 @@ public class RoleService {
     qw.eq("parent_role_id", roleId);
     long count = roleInheritanceMapper.selectCount(qw);
     if (count > 0) {
-      throw new BusinessException(
-          MessageEnums.RESOURCE_IS_USED, "role (has inheritance relationships)");
+      throw new BusinessException(MessageEnums.ROLE_HAS_INHERITANCE);
     }
   }
 
@@ -537,7 +535,7 @@ public class RoleService {
     queryWrapper.eq("role_id", roleId);
     long count = userRoleMapper.selectCount(queryWrapper);
     if (count > 0) {
-      throw new BusinessException(MessageEnums.RESOURCE_IS_USED, "role");
+      throw new BusinessException(MessageEnums.ROLE_IN_USE);
     }
   }
 

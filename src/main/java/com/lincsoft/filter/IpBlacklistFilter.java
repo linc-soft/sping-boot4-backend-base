@@ -76,7 +76,7 @@ public class IpBlacklistFilter extends OncePerRequestFilter {
       response.setContentType("application/json;charset=UTF-8");
       response
           .getWriter()
-          .write(objectMapper.writeValueAsString(Result.error(MessageEnums.IP_BLOCKED)));
+          .write(objectMapper.writeValueAsString(Result.error(MessageEnums.SYS_IP_BLOCKED)));
       log.warn("Request blocked from blacklisted IP: {}", clientIp);
       return;
     }
