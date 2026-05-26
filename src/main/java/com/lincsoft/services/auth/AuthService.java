@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -88,6 +89,9 @@ public class AuthService {
     String username = request.username();
     String clientIp = LogUtil.getClientIp(httpRequest);
 
+    // Set username in MDC before authentication so access log captures it even on failure
+    MDC.put(CommonConstants.MDC_CURRENT_USER_KEY, username);
+
     try {
       // Delegate authentication to Spring Security's AuthenticationManager.
       // DaoAuthenticationProvider calls loadUserByUsername(), then PreAuthenticationChecks
@@ -101,6 +105,9 @@ public class AuthService {
       UserDetails userDetails = (UserDetails) authentication.getPrincipal();
       assert userDetails != null;
       String authenticatedUsername = userDetails.getUsername();
+
+      // Overwrite MDC with canonical username from UserDetails (handles case normalization etc.)
+      MDC.put(CommonConstants.MDC_CURRENT_USER_KEY, authenticatedUsername);
 
       // Generate tokens with username as subject
       String secret = appProperties.getJwt().getSecret();

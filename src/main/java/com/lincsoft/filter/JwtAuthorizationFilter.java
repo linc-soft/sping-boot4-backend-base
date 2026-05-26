@@ -111,7 +111,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     // If Bearer token is not present, skip to the next filter
     if (authHeader == null || !authHeader.startsWith(CommonConstants.BEARER_PREFIX)) {
-      filterChain.doFilter(request, response);
+      try {
+        filterChain.doFilter(request, response);
+      } finally {
+        MDC.remove(CommonConstants.MDC_CURRENT_USER_KEY);
+      }
       return;
     }
 
