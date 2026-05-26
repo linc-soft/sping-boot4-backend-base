@@ -15,6 +15,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.util.ContentCachingResponseWrapper;
+import org.springframework.web.util.WebUtils;
 
 /**
  * Access log interceptor.
@@ -159,7 +160,9 @@ public class AccessLogInterceptor implements HandlerInterceptor {
    * @return the masked response body string, or null if it cannot be retrieved
    */
   private String extractResponseBody(HttpServletResponse response) {
-    if (response instanceof ContentCachingResponseWrapper wrapper) {
+    ContentCachingResponseWrapper wrapper =
+        WebUtils.getNativeResponse(response, ContentCachingResponseWrapper.class);
+    if (wrapper != null) {
       byte[] content = wrapper.getContentAsByteArray();
       if (content.length > 0) {
         String body = new String(content, StandardCharsets.UTF_8);
