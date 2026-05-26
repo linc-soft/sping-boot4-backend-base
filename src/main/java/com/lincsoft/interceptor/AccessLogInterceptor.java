@@ -166,6 +166,10 @@ public class AccessLogInterceptor implements HandlerInterceptor {
       byte[] content = wrapper.getContentAsByteArray();
       if (content.length > 0) {
         String body = new String(content, StandardCharsets.UTF_8);
+        // Only save Result type responses (identified by the "code" field)
+        if (extractBusinessCode(body) == null) {
+          return null;
+        }
         // Mask sensitive fields and truncate to maximum length
         return LogUtil.truncate(LogUtil.sanitizeBody(body), CommonConstants.MAX_TEXT_LENGTH);
       }
