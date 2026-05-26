@@ -1,6 +1,10 @@
 package com.lincsoft.services.report.user;
 
+import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.config.AppProperties;
+import com.lincsoft.constant.Module;
+import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.SubModule;
 import com.lincsoft.controller.master.vo.UserListReportRequest;
 import com.lincsoft.dto.master.UserListGroupDto;
 import com.lincsoft.dto.master.UserReportItem;
@@ -46,7 +50,26 @@ public class UserListReportDataFetcher implements ReportDataFetcher<UserListRepo
     return TEMPLATE_NAME;
   }
 
+  /**
+   * Fetches and assembles user list report data based on the grouping strategy.
+   *
+   * <ul>
+   *   <li><b>baseRole</b> - queries via recursive CTE and groups by ancestor role
+   *   <li><b>role</b> - queries direct roles and groups by them
+   *   <li><b>ungrouped</b> (null/blank) - returns a flat user list without grouping
+   * </ul>
+   *
+   * @param request filter and grouping options
+   * @param locale locale for report localization
+   * @return template variables map with generated timestamp, group strategy, total records, and
+   *     grouped user data
+   */
   @Override
+  @OperationLog(
+      module = Module.MASTER,
+      subModule = SubModule.USER_MANAGER,
+      type = OperationType.EXPORT,
+      description = "User list report exported: #{#request}")
   public Map<String, Object> fetchData(UserListReportRequest request, Locale locale) {
     log.debug("Fetching user list report data, filters: {}", request);
 

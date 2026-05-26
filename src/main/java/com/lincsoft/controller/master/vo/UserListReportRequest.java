@@ -25,4 +25,9 @@ public class UserListReportRequest {
    * </ul>
    */
   private String groupBy;
+
+  @Override
+  public String toString() {
+    return "username=" + username + ", groupBy=" + groupBy;
+  }
 }
