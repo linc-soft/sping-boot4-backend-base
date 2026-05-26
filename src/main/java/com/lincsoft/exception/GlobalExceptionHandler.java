@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -91,6 +92,19 @@ public class GlobalExceptionHandler {
     saveErrorLog(e);
     // Return a forbidden error code and message.
     return Result.error(MessageEnums.UNAUTHORIZED);
+  }
+
+  /**
+   * Handle access denied exceptions.
+   *
+   * @param e The access denied exception to handle.
+   * @return A result indicating the error.
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  public Result<Void> handleAccessDeniedException(AccessDeniedException e) {
+    log.error("Access denied: {}", e.getMessage(), e);
+    saveErrorLog(e);
+    return Result.error(MessageEnums.FORBIDDEN);
   }
 
   /**
