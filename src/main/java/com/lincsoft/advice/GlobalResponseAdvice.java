@@ -52,6 +52,10 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
     if (org.springframework.http.HttpEntity.class.isAssignableFrom(returnType.getParameterType())) {
       return false;
     }
+    // Exclude springdoc internal controllers (e.g., /v3/api-docs) to avoid ClassCastException
+    if (returnType.getDeclaringClass().getName().startsWith("org.springdoc.")) {
+      return false;
+    }
     // Process all types (including Result) to fill the message field
     return true;
   }
