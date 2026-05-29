@@ -47,6 +47,17 @@ public class Result<T> implements Serializable {
     return new Result<>(MessageEnums.SUCCESS.getCode(), null, null, null, data);
   }
 
+  /**
+   * Successful response carrying a localized message key (no data).
+   *
+   * <p>The {@code messageKey} is resolved to a localized message by {@code GlobalResponseAdvice} at
+   * serialization time. The HTTP status code is always {@code SUCCESS} (200).
+   */
+  public static <T> Result<T> successMessage(MessageEnums messageEnum) {
+    return new Result<>(
+        MessageEnums.SUCCESS.getCode(), messageEnum.getMessageKey(), null, null, null);
+  }
+
   /** Error response (with status code, message key, and formatting parameters) */
   public static <T> Result<T> error(int code, String messageKey, Object... args) {
     return new Result<>(code, messageKey, args, null, null);

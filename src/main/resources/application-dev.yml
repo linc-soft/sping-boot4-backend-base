@@ -35,6 +35,8 @@ app:
     # Development environment includes API documentation endpoints
     public-endpoints:
       - /api/auth/login
+      - /api/auth/forgot-password
+      - /api/auth/reset-password
       - /api/common/enums
       - /v3/api-docs
       - /v3/api-docs/**

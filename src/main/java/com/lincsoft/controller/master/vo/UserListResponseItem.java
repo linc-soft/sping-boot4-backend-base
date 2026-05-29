@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
  *
  * @param id User ID
  * @param username Username
+ * @param email Email address
  * @param status User status
  * @param updateBy Update user
  * @param updateAt Update time
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 public record UserListResponseItem(
     Long id,
     String username,
+    String email,
     String status,
     String updateBy,
     LocalDateTime updateAt,

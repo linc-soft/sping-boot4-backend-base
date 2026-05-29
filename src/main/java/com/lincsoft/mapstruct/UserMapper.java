@@ -58,6 +58,7 @@ public interface UserMapper {
    */
   @Mapping(target = "id", source = "user.id")
   @Mapping(target = "username", source = "user.username")
+  @Mapping(target = "email", source = "user.email")
   @Mapping(target = "status", source = "user.status")
   @Mapping(target = "version", source = "user.version")
   @Mapping(target = "roleIds", source = "roleIds")

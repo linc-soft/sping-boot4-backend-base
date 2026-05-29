@@ -1,5 +1,6 @@
 package com.lincsoft.controller.master.vo;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -11,6 +12,7 @@ import java.util.List;
  * @param id User ID
  * @param username Username
  * @param password Password (optional, only update if provided)
+ * @param email Email address (optional, null means no change)
  * @param status User status
  * @param roleIds Role IDs (optional, if provided will replace existing role assignments; null means
  *     keep current roles unchanged)
@@ -27,6 +29,7 @@ public record UserUpdateRequest(
         String username,
     @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
         String password,
+    @Email @Size(max = 128, message = "Email must be at most 128 characters") String email,
     @Pattern(regexp = "^[01]$", message = "Status must be 0 (inactive) or 1 (active)")
         String status,
     List<Integer> roleIds,

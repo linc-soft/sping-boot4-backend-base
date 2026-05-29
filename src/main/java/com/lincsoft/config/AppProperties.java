@@ -95,6 +95,20 @@ public class AppProperties {
   private Report report = new Report();
 
   /**
+   * Password reset configuration settings.
+   *
+   * <p>Defines password reset token TTL and frontend base URL for generating reset links.
+   */
+  private PasswordReset passwordReset = new PasswordReset();
+
+  /**
+   * Mail configuration settings.
+   *
+   * <p>Defines mail sender display name and other mail-related configuration.
+   */
+  private Mail mail = new Mail();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -449,9 +463,11 @@ public class AppProperties {
      *
      * <p>These endpoints can be accessed without authentication and do not require CSRF tokens.
      *
-     * <p>Default: login endpoint and API documentation
+     * <p>Default: login, forgot-password, reset-password endpoints
      */
-    private String[] publicEndpoints = {"/api/auth/login"};
+    private String[] publicEndpoints = {
+      "/api/auth/login", "/api/auth/forgot-password", "/api/auth/reset-password"
+    };
 
     /**
      * Endpoints that require CSRF protection but bypass authentication.
@@ -699,5 +715,39 @@ public class AppProperties {
      * <p>Default: 10000
      */
     private int maxExportRecords = 10000;
+  }
+
+  /**
+   * Password reset configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.password-reset} prefix. Defines token TTL and frontend
+   * base URL for generating reset password links.
+   */
+  @Data
+  public static class PasswordReset {
+    /**
+     * Password reset token TTL in minutes.
+     *
+     * <p>Default: 5 minutes
+     */
+    private long tokenTtlMinutes = 5;
+
+    /**
+     * Frontend base URL for generating reset password links.
+     *
+     * <p>Default: http://localhost:5173
+     */
+    private String baseUrl = "http://localhost:5173";
+  }
+
+  /**
+   * Mail configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.mail} prefix. Defines mail sender display name.
+   */
+  @Data
+  public static class Mail {
+    /** Sender display name for outgoing emails. Default: System Notification */
+    private String senderName = "System Notification";
   }
 }

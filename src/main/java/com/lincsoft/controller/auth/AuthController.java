@@ -1,14 +1,21 @@
 package com.lincsoft.controller.auth;
 
 import com.lincsoft.common.Result;
+import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.controller.auth.vo.ChangePasswordRequest;
+import com.lincsoft.controller.auth.vo.ForgotPasswordRequest;
 import com.lincsoft.controller.auth.vo.LoginRequest;
 import com.lincsoft.controller.auth.vo.LoginResponse;
 import com.lincsoft.controller.auth.vo.RefreshResponse;
+import com.lincsoft.controller.auth.vo.ResetPasswordRequest;
+import com.lincsoft.i18n.LanguageContext;
 import com.lincsoft.services.auth.AuthService;
+import com.lincsoft.services.auth.PasswordResetService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,8 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <ul>
  *   <li>{@code /api/auth/login} — public (no auth, no CSRF)
+ *   <li>{@code /api/auth/forgot-password} — public (no auth, no CSRF)
+ *   <li>{@code /api/auth/reset-password} — public (no auth, no CSRF)
  *   <li>{@code /api/auth/refresh} — CSRF protected, no auth required
  *   <li>{@code /api/auth/logout} — authenticated + CSRF protected
+ *   <li>{@code /api/auth/change-password} — authenticated + CSRF protected
  * </ul>
  *
  * @author 林创科技
@@ -37,6 +47,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
+
+  private final PasswordResetService passwordResetService;
 
   /**
    * User login.
@@ -81,5 +93,49 @@ public class AuthController {
   public Result<?> logout(HttpServletRequest request, HttpServletResponse response) {
     authService.logout(request, response);
     return Result.success();
+  }
+
+  /**
+   * Forgot password — send a password reset email.
+   *
+   * <p>For security, this endpoint always returns the same success message regardless of whether
+   * the username or email exists in the system (to prevent username enumeration).
+   *
+   * @param request the forgot password request containing username or email
+   * @return success result with generic message
+   */
+  @PostMapping("/forgot-password")
+  public Result<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    passwordResetService.sendResetEmail(request.usernameOrEmail(), LanguageContext.getLanguage());
+    return Result.successMessage(MessageEnums.SYS_PASSWORD_RESET_EMAIL_SENT);
+  }
+
+  /**
+   * Reset password using the token from the email link.
+   *
+   * <p>Validates the token, updates the password, and deletes the token to prevent reuse.
+   *
+   * @param request the reset password request containing token and new password
+   * @return success result
+   */
+  @PostMapping("/reset-password")
+  public Result<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    passwordResetService.resetPassword(request.token(), request.newPassword());
+    return Result.successMessage(MessageEnums.SYS_PASSWORD_RESET_SUCCESS);
+  }
+
+  /**
+   * Change password for an authenticated user.
+   *
+   * <p>Requires current password verification before updating.
+   *
+   * @param request the change password request containing current and new password
+   * @return success result
+   */
+  @PostMapping("/change-password")
+  public Result<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    passwordResetService.changePassword(username, request.currentPassword(), request.newPassword());
+    return Result.successMessage(MessageEnums.SYS_PASSWORD_CHANGE_SUCCESS);
   }
 }

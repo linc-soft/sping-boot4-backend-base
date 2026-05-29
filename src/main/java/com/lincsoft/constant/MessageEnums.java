@@ -47,6 +47,12 @@ public enum MessageEnums {
   SYS_INVALID_CREDENTIALS(999_402, "error.sys.invalid_credentials"),
   SYS_INVALID_REFRESH_TOKEN(999_403, "error.sys.invalid_refresh_token"),
   SYS_IP_BLOCKED(999_423, "error.sys.ip_blocked"),
+  // 999: Password reset
+  SYS_PASSWORD_RESET_TOKEN_INVALID(999_404, "error.sys.password_reset_token_invalid"),
+  SYS_CURRENT_PASSWORD_MISMATCH(999_401, "error.sys.current_password_mismatch"),
+  SYS_PASSWORD_RESET_EMAIL_SENT(200, "auth.password.reset_email_sent"),
+  SYS_PASSWORD_RESET_SUCCESS(200, "auth.password.reset_success"),
+  SYS_PASSWORD_CHANGE_SUCCESS(200, "auth.password.change_success"),
 
   // ========== 101: Master - User page ==========
   // 101_404: user not found
@@ -54,6 +60,7 @@ public enum MessageEnums {
   USER_INACTIVE(101_403, "error.user.inactive"),
   USER_NOT_FOUND(101_404, "error.user.not_found"),
   USER_USERNAME_EXISTS(101_409, "error.user.username_exists"),
+  USER_EMAIL_EXISTS(101_409, "error.user.email_exists"),
   USER_INSERT_FAILED(101_411, "error.user.insert_failed"),
   USER_OPTIMISTIC_LOCK_FAILED(101_412, "error.user.optimistic_lock_failed"),
 

@@ -21,6 +21,9 @@ public class MstUser extends VersionedEntity {
   /** Password */
   private String password;
 
+  /** Email address */
+  private String email;
+
   /** Status */
   private String status;
 }

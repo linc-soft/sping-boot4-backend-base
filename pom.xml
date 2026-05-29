@@ -176,9 +176,17 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <!-- ========== Mail ========== -->
+
+    <!-- Spring Boot Mail Starter (for sending password reset emails) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
     <!-- ========== Template Engine ========== -->
 
-    <!-- Thymeleaf Template Engine (for report HTML template rendering) -->
+    <!-- Thymeleaf Template Engine (for report HTML template rendering and email templates) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-thymeleaf</artifactId>

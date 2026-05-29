@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS mst_user
   id        BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
   username  VARCHAR(64)  DEFAULT NULL COMMENT 'Username',
   password  VARCHAR(128) DEFAULT NULL COMMENT 'Password',
+  email     VARCHAR(128) DEFAULT NULL COMMENT 'Email address',
   status    VARCHAR(1)   DEFAULT NULL COMMENT 'Status',
   create_by VARCHAR(20) COMMENT 'Creator',
   create_at DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
@@ -24,7 +25,9 @@ CREATE TABLE IF NOT EXISTS mst_user
   update_at DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
   version   INT          DEFAULT 0 COMMENT 'Optimistic lock version',
   deleted   TINYINT(1)   DEFAULT 0 COMMENT 'Logical delete flag',
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  INDEX idx_user_username (username),
+  INDEX idx_user_email (email)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'User table';
@@ -101,9 +104,10 @@ CREATE TABLE IF NOT EXISTS mst_role_inheritance
 -- Initial Data: admin user
 -- Default password: admin123 (BCrypt encoded)
 -- ============================================================
-INSERT INTO mst_user (username, password, status, create_by, update_by)
+INSERT INTO mst_user (username, password, email, status, create_by, update_by)
 VALUES ('admin',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi',
+        'admin@example.com',
         '1',
         'system',
         'system');

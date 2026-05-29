@@ -40,6 +40,22 @@ spring:
           # Maximum wait time for connection (-1 = no limit)
           max-wait: 3000ms
 
+  # Mail settings
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    protocol: smtps
+    default-encoding: utf-8
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
+      mail.smtp.starttls.enable: false
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
 # Application settings
 app:
   # JWT settings
@@ -61,10 +77,21 @@ app:
     font-path: classpath:/fonts/
     # Maximum records per PDF report export
     max-export-records: 10000
+  # Password reset settings
+  password-reset:
+    # Password reset token TTL in minutes (default: 5)
+    token-ttl-minutes: ${PASSWORD_RESET_TOKEN_TTL_MINUTES:5}
+    # Frontend base URL for generating reset password links (e.g., http://localhost:5173)
+    base-url: ${PASSWORD_RESET_BASE_URL:http://localhost:3000}
+  # Mail sender display name
+  mail:
+    sender-name: ${MAIL_SENDER_NAME:System Notification}
   security:
     # Public endpoints bypass authentication and CSRF protection
     public-endpoints:
       - /api/auth/login
+      - /api/auth/forgot-password
+      - /api/auth/reset-password
       - /api/common/enums
     # Auth-only whitelist requires CSRF but bypasses authentication
     auth-only-whitelist:

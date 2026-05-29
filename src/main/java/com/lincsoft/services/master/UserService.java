@@ -276,6 +276,11 @@ public class UserService implements UserDetailsService {
     // Validate username uniqueness
     validateUsernameUnique(user.getUsername());
 
+    // Validate email uniqueness if provided
+    if (user.getEmail() != null && !user.getEmail().isBlank()) {
+      validateEmailUnique(user.getEmail());
+    }
+
     // Encrypt password if provided
     if (user.getPassword() != null && !user.getPassword().isBlank()) {
       user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -329,6 +334,14 @@ public class UserService implements UserDetailsService {
     // username can't be updated
     if (!existingUser.getUsername().equals(user.getUsername())) {
       throw new BusinessException(MessageEnums.USER_USERNAME_CANNOT_BE_UPDATED);
+    }
+
+    // Validate email uniqueness if email is being changed
+    if (user.getEmail() != null && !user.getEmail().isBlank()) {
+      String existingEmail = existingUser.getEmail();
+      if (existingEmail == null || !existingEmail.equals(user.getEmail())) {
+        validateEmailUnique(user.getEmail());
+      }
     }
 
     // Encrypt password if provided
@@ -489,5 +502,65 @@ public class UserService implements UserDetailsService {
     if (userMapper.selectCount(queryWrapper) > 0) {
       throw new BusinessException(MessageEnums.USER_USERNAME_EXISTS);
     }
+  }
+
+  /**
+   * Validate that the email is unique.
+   *
+   * @param email Email to check
+   * @throws BusinessException if the email already exists
+   */
+  private void validateEmailUnique(String email) {
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("email", email);
+    if (userMapper.selectCount(queryWrapper) > 0) {
+      throw new BusinessException(MessageEnums.USER_EMAIL_EXISTS);
+    }
+  }
+
+  /**
+   * Find user by username or email.
+   *
+   * <p>First tries exact match on username, then falls back to exact match on email.
+   *
+   * @param usernameOrEmail username or email address
+   * @return MstUser entity, or null if not found
+   */
+  public MstUser findByUsernameOrEmail(String usernameOrEmail) {
+    MstUser user = findByUsername(usernameOrEmail);
+    if (user != null) {
+      return user;
+    }
+    return findByEmail(usernameOrEmail);
+  }
+
+  /**
+   * Find user by exact username match.
+   *
+   * @param username the username
+   * @return MstUser entity, or null if not found
+   */
+  public MstUser findByUsername(String username) {
+    if (username == null || username.isBlank()) {
+      return null;
+    }
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("username", username);
+    return userMapper.selectOne(queryWrapper);
+  }
+
+  /**
+   * Find user by exact email match.
+   *
+   * @param email the email address
+   * @return MstUser entity, or null if not found
+   */
+  public MstUser findByEmail(String email) {
+    if (email == null || email.isBlank()) {
+      return null;
+    }
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("email", email);
+    return userMapper.selectOne(queryWrapper);
   }
 }

@@ -110,4 +110,13 @@ public interface CommonConstants {
 
   /** Redis key prefix for account lock */
   String REDIS_LOGIN_LOCKED_PREFIX = "login:locked:";
+
+  /** Redis key prefix for password reset tokens */
+  String REDIS_PASSWORD_RESET_PREFIX = "password:reset:";
+
+  /** Redis key prefix for password reset rate limiting */
+  String REDIS_PASSWORD_RESET_RATE_PREFIX = "password:reset:rate:";
+
+  /** Redis key prefix for current active password reset token per user */
+  String REDIS_PASSWORD_RESET_USER_PREFIX = "password:reset:user:";
 }

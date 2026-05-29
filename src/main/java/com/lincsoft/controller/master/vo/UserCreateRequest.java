@@ -2,6 +2,7 @@ package com.lincsoft.controller.master.vo;
 
 import com.lincsoft.annotation.ValidEnum;
 import com.lincsoft.constant.UserStatusEnum;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,7 @@ import java.util.List;
  *
  * @param username Username
  * @param password Password
+ * @param email Email address (optional)
  * @param status User status
  * @param roleIds Role IDs
  * @author 林创科技
@@ -27,5 +29,6 @@ public record UserCreateRequest(
     @NotBlank(message = "Password is required")
         @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
         String password,
+    @Email @Size(max = 128, message = "Email must be at most 128 characters") String email,
     @NotBlank(message = "Status is required") @ValidEnum(UserStatusEnum.class) String status,
     List<Integer> roleIds) {}
