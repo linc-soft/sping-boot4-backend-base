@@ -55,7 +55,7 @@ public class TraceController {
     List<SysOperationLog> operationLogs = traceService.getOperationLogs(traceId);
 
     return new TraceDetailResponse(
-        accessLogMapper.toDetailResponse(accessLog),
+        accessLog != null ? accessLogMapper.toDetailResponse(accessLog) : null,
         errorLog != null ? errorLogMapper.toDetailResponse(errorLog) : null,
         operationLogMapper.toDetailResponseList(operationLogs));
   }

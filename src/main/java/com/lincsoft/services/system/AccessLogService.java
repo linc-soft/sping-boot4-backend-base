@@ -93,11 +93,7 @@ public class AccessLogService {
   public SysAccessLog getByTraceId(String traceId) {
     QueryWrapper<SysAccessLog> queryWrapper = new QueryWrapper<>();
     queryWrapper.eq("trace_id", traceId);
-    SysAccessLog entity = accessLogMapper.selectOne(queryWrapper);
-    if (entity == null) {
-      throw new BusinessException("Access log not found with traceId: " + traceId);
-    }
-    return entity;
+    return accessLogMapper.selectOne(queryWrapper);
   }
 
   /**
