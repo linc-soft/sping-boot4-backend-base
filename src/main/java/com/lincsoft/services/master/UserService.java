@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lincsoft.annotation.OperationLog;
+import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.Module;
@@ -18,8 +19,11 @@ import com.lincsoft.entity.master.MstUserRole;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.filter.PreAuthenticationChecks;
+import com.lincsoft.i18n.LanguageContext;
 import com.lincsoft.mapper.master.MstUserMapper;
 import com.lincsoft.mapper.master.MstUserRoleMapper;
+import com.lincsoft.services.auth.EmailService;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -88,6 +92,12 @@ public class UserService implements UserDetailsService {
   /** Password encoder for encrypting user passwords. */
   private final PasswordEncoder passwordEncoder;
 
+  /** Email service for sending welcome emails to new users. */
+  private final EmailService emailService;
+
+  /** Application configuration properties. */
+  private final AppProperties appProperties;
+
   /** Self reference for lazy initialization. */
   @Lazy private final UserService self;
 
@@ -133,9 +143,11 @@ public class UserService implements UserDetailsService {
       throw new UsernameNotFoundException("User not found: " + username);
     }
 
-    // Validate user status - must be active
-    if (user.getStatus() == null || CommonConstants.USER_STATUS_INACTIVE.equals(user.getStatus())) {
-      throw new DisabledException("User is inactive");
+    // Validate user status - only DISABLED users are blocked from authentication
+    // INACTIVE users can authenticate but will be forced to change password via
+    // JwtAuthorizationFilter
+    if (CommonConstants.USER_STATUS_DISABLED.equals(user.getStatus())) {
+      throw new DisabledException("User is disabled");
     }
 
     // Retrieve user's direct roles from the database
@@ -260,10 +272,11 @@ public class UserService implements UserDetailsService {
   /**
    * Create a new user.
    *
-   * <p>Checks for username uniqueness before inserting. Password is encrypted before storage.
-   * Throws an exception if the username already exists.
+   * <p>Generates a random password, sets status to INACTIVE, and sends a welcome email with the
+   * credentials. Throws an exception if the username or email already exists.
    *
-   * @param user MstUser entity
+   * @param user MstUser entity (email and username must be set)
+   * @param roleIds Role IDs to assign
    * @return The created user ID
    */
   @OperationLog(
@@ -276,19 +289,19 @@ public class UserService implements UserDetailsService {
     // Validate username uniqueness
     validateUsernameUnique(user.getUsername());
 
-    // Validate email uniqueness if provided
-    if (user.getEmail() != null && !user.getEmail().isBlank()) {
-      validateEmailUnique(user.getEmail());
+    // Email is required for new user creation
+    if (user.getEmail() == null || user.getEmail().isBlank()) {
+      throw new BusinessException(MessageEnums.USER_EMAIL_REQUIRED);
     }
+    validateEmailUnique(user.getEmail());
 
-    // Encrypt password if provided
-    if (user.getPassword() != null && !user.getPassword().isBlank()) {
-      user.setPassword(passwordEncoder.encode(user.getPassword()));
-    }
+    // Generate a random password
+    String rawPassword = generateRandomPassword();
+    user.setPassword(passwordEncoder.encode(rawPassword));
 
-    // Set default status if not provided
+    // Default status to INACTIVE (must change password on first login)
     if (user.getStatus() == null || user.getStatus().isBlank()) {
-      user.setStatus(CommonConstants.USER_STATUS_ACTIVE);
+      user.setStatus(CommonConstants.USER_STATUS_INACTIVE);
     }
 
     // Insert user
@@ -304,6 +317,11 @@ public class UserService implements UserDetailsService {
         self.assignRoleToUser(user, role);
       }
     }
+
+    // Send welcome email asynchronously with credentials
+    String loginUrl = appProperties.getPasswordReset().getBaseUrl() + "/login";
+    emailService.sendNewUserWelcomeEmail(
+        user.getEmail(), user.getUsername(), rawPassword, loginUrl, LanguageContext.getLanguage());
 
     return user.getId();
   }
@@ -488,6 +506,21 @@ public class UserService implements UserDetailsService {
     QueryWrapper<MstUserRole> queryWrapper = new QueryWrapper<>();
     queryWrapper.eq("user_id", user.getId()).eq("role_id", role.getId());
     userRoleMapper.delete(queryWrapper);
+  }
+
+  /**
+   * Generate a random 12-character alphanumeric password.
+   *
+   * @return the generated password
+   */
+  private String generateRandomPassword() {
+    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    SecureRandom random = new SecureRandom();
+    StringBuilder sb = new StringBuilder(12);
+    for (int i = 0; i < 12; i++) {
+      sb.append(chars.charAt(random.nextInt(chars.length())));
+    }
+    return sb.toString();
   }
 
   /**

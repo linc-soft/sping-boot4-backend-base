@@ -18,7 +18,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum UserStatusEnum implements BaseEnum<String> {
   ENABLED("1", "enabled"),
-  DISABLED("0", "disabled");
+  DISABLED("0", "disabled"),
+  INACTIVE("2", "inactive");
 
   /** status code. */
   private final String code;

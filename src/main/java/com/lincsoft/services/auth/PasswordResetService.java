@@ -146,6 +146,42 @@ public class PasswordResetService {
   }
 
   /**
+   * Force change password for INACTIVE users on first login.
+   *
+   * <p>Sets the new password and changes the user's status from INACTIVE to ENABLED. Also evicts
+   * the UserDetails cache so the status change takes effect immediately.
+   *
+   * @param username the authenticated username
+   * @param newPassword the new password to set
+   * @throws BusinessException if the user is not found or not in INACTIVE status
+   */
+  public void forceChangePassword(String username, String newPassword) {
+    MstUser user = userService.findByUsername(username);
+    if (user == null) {
+      throw new BusinessException(MessageEnums.USER_NOT_FOUND);
+    }
+
+    // Only INACTIVE users can use force-change-password
+    if (!CommonConstants.USER_STATUS_INACTIVE.equals(user.getStatus())) {
+      throw new BusinessException(MessageEnums.FORBIDDEN);
+    }
+
+    // Encode and set new password
+    String encodedPassword = passwordEncoder.encode(newPassword);
+    user.setPassword(encodedPassword);
+
+    // Change status from INACTIVE to ENABLED
+    user.setStatus(CommonConstants.USER_STATUS_ACTIVE);
+
+    userMapper.updateById(user);
+
+    // Evict cached UserDetails so next authentication loads fresh data with ENABLED status
+    userService.evictUserDetailsCache(username);
+
+    log.info("Force password change successful for user: {}", username);
+  }
+
+  /**
    * Change password for an authenticated user.
    *
    * <p>Verifies the current password before updating.

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${subject}">Account Created</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #1976d2; padding: 32px 40px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 600;" th:text="#{email.welcome.title}">Account Created</h1>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 40px;">
+              <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #333333;" th:text="#{email.welcome.greeting}">Hello,</p>
+
+              <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.6; color: #333333;" th:text="#{email.welcome.body}">
+                Your account has been created. Below are your login credentials:
+              </p>
+
+              <!-- Credentials Table -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px; background-color: #f5f5f5; border-radius: 6px;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0 0 8px; font-size: 14px; color: #666666;" th:text="#{email.welcome.username_label}">Username:</p>
+                    <p style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: #333333;" th:text="${username}"></p>
+                    <p style="margin: 0 0 8px; font-size: 14px; color: #666666;" th:text="#{email.welcome.password_label}">Temporary Password:</p>
+                    <p style="margin: 0; font-size: 16px; font-weight: 600; color: #333333; font-family: 'Courier New', Courier, monospace; background-color: #e8e8e8; display: inline-block; padding: 6px 12px; border-radius: 4px;" th:text="${rawPassword}"></p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Login Button -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    <a th:href="${loginUrl}" target="_blank" style="display: inline-block; background-color: #1976d2; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 6px; font-size: 16px; font-weight: 600;" th:text="#{email.welcome.login_button}">Sign In</a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 8px; font-size: 13px; line-height: 1.5; color: #888888;" th:text="#{email.welcome.login_url_fallback}">
+                Or copy and paste this link into your browser:
+              </p>
+              <p style="margin: 0 0 24px; font-size: 13px; line-height: 1.5; color: #1976d2; word-break: break-all;" th:text="${loginUrl}"></p>
+
+              <!-- Important Notice -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top: 1px solid #e0e0e0; padding-top: 20px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #d32f2f; font-weight: 600;" th:text="#{email.welcome.change_password_note}">
+                      Important: You will be required to change your password on first login.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #fafafa; padding: 20px 40px; text-align: center;">
+              <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #999999;" th:text="#{email.welcome.automated}">This is an automated message, please do not reply.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

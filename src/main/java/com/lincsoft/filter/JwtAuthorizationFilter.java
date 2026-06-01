@@ -169,6 +169,37 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         // Set username in MDC for logging and audit purposes (used in MetaObjectHandler, etc.)
         MDC.put(CommonConstants.MDC_CURRENT_USER_KEY, userDetails.getUsername());
+
+        // Check if user has INACTIVE status and must change password
+        // Extract status from JWT claims (AuthenticatedUserDTO embedded in token)
+        Object userClaim = claims.get(CommonConstants.JWT_CLAIM_USER_KEY);
+        String userStatus = null;
+        if (userClaim instanceof java.util.Map<?, ?> map) {
+          Object statusObj = map.get("status");
+          if (statusObj != null) {
+            userStatus = statusObj.toString();
+          }
+        }
+        if (CommonConstants.USER_STATUS_INACTIVE.equals(userStatus)) {
+          String requestPath = request.getRequestURI();
+          // INACTIVE users can only access force-change-password and logout endpoints
+          if (!"/api/auth/force-change-password".equals(requestPath)
+              && !"/api/auth/logout".equals(requestPath)) {
+            log.warn(
+                "INACTIVE user attempted to access protected resource: username={}, path={}",
+                subject,
+                requestPath);
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setContentType("application/json;charset=UTF-8");
+            response
+                .getWriter()
+                .write(
+                    objectMapper.writeValueAsString(
+                        Result.error(MessageEnums.SYS_FORCE_PASSWORD_CHANGE_REQUIRED)));
+            SecurityContextHolder.clearContext();
+            return;
+          }
+        }
       }
     } catch (JwtException e) {
       log.warn("JWT authentication failed: {}", e.getMessage());

@@ -53,10 +53,13 @@ public enum MessageEnums {
   SYS_PASSWORD_RESET_EMAIL_SENT(200, "auth.password.reset_email_sent"),
   SYS_PASSWORD_RESET_SUCCESS(200, "auth.password.reset_success"),
   SYS_PASSWORD_CHANGE_SUCCESS(200, "auth.password.change_success"),
+  SYS_FORCE_PASSWORD_CHANGE_REQUIRED(999_422, "error.sys.force_password_change_required"),
+  SYS_FORCE_PASSWORD_CHANGE_SUCCESS(200, "auth.force_password_change_success"),
 
   // ========== 101: Master - User page ==========
   // 101_404: user not found
   USER_USERNAME_CANNOT_BE_UPDATED(101_400, "error.user.username_cannot_be_updated"),
+  USER_EMAIL_REQUIRED(101_401, "error.user.email_required"),
   USER_INACTIVE(101_403, "error.user.inactive"),
   USER_NOT_FOUND(101_404, "error.user.not_found"),
   USER_USERNAME_EXISTS(101_409, "error.user.username_exists"),

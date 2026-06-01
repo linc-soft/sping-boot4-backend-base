@@ -36,11 +36,14 @@ public interface CommonConstants {
   /** JWT claim for the authenticated user */
   String JWT_CLAIM_USER_KEY = "AuthenticatedUser";
 
-  /** User status inactive */
-  String USER_STATUS_INACTIVE = "0";
+  /** User status disabled */
+  String USER_STATUS_DISABLED = "0";
 
   /** User status active */
   String USER_STATUS_ACTIVE = "1";
+
+  /** User status inactive (must change password on first login) */
+  String USER_STATUS_INACTIVE = "2";
 
   /** CSRF cookie name */
   String CSRF_COOKIE_NAME = "csrfToken";

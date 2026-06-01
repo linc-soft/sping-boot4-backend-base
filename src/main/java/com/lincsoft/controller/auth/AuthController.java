@@ -1,16 +1,21 @@
 package com.lincsoft.controller.auth;
 
 import com.lincsoft.common.Result;
+import com.lincsoft.config.AppProperties;
+import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.controller.auth.vo.ChangePasswordRequest;
+import com.lincsoft.controller.auth.vo.ForceChangePasswordRequest;
 import com.lincsoft.controller.auth.vo.ForgotPasswordRequest;
 import com.lincsoft.controller.auth.vo.LoginRequest;
 import com.lincsoft.controller.auth.vo.LoginResponse;
 import com.lincsoft.controller.auth.vo.RefreshResponse;
 import com.lincsoft.controller.auth.vo.ResetPasswordRequest;
+import com.lincsoft.dto.AuthenticatedUserDTO;
 import com.lincsoft.i18n.LanguageContext;
 import com.lincsoft.services.auth.AuthService;
 import com.lincsoft.services.auth.PasswordResetService;
+import com.lincsoft.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -36,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
  *   <li>{@code /api/auth/refresh} — CSRF protected, no auth required
  *   <li>{@code /api/auth/logout} — authenticated + CSRF protected
  *   <li>{@code /api/auth/change-password} — authenticated + CSRF protected
+ *   <li>{@code /api/auth/force-change-password} — authenticated + CSRF protected
  * </ul>
  *
  * @author 林创科技
@@ -49,6 +55,8 @@ public class AuthController {
   private final AuthService authService;
 
   private final PasswordResetService passwordResetService;
+
+  private final AppProperties appProperties;
 
   /**
    * User login.
@@ -137,5 +145,30 @@ public class AuthController {
     String username = SecurityContextHolder.getContext().getAuthentication().getName();
     passwordResetService.changePassword(username, request.currentPassword(), request.newPassword());
     return Result.successMessage(MessageEnums.SYS_PASSWORD_CHANGE_SUCCESS);
+  }
+
+  /**
+   * Force change password for INACTIVE users on first login.
+   *
+   * <p>INACTIVE users are required to change their password before accessing other resources. After
+   * successfully changing the password, the user's status is changed to ENABLED.
+   *
+   * @param request the force change password request containing the new password
+   * @return LoginResponse containing the new access token with ENABLED status
+   */
+  @PostMapping("/force-change-password")
+  public LoginResponse forceChangePassword(@Valid @RequestBody ForceChangePasswordRequest request) {
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    passwordResetService.forceChangePassword(username, request.newPassword());
+
+    // Issue a new access token with ENABLED status so the old INACTIVE-status token is replaced
+    String secret = appProperties.getJwt().getSecret();
+    AuthenticatedUserDTO userDTO =
+        new AuthenticatedUserDTO(username, CommonConstants.USER_STATUS_ACTIVE);
+    String accessToken =
+        JwtUtil.generateAccessToken(
+            username, userDTO, secret, appProperties.getJwt().getExpiration());
+
+    return new LoginResponse(accessToken, false);
   }
 }

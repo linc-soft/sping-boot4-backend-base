@@ -12,9 +12,8 @@ import java.util.List;
  * User create request VO.
  *
  * @param username Username
- * @param password Password
- * @param email Email address (optional)
- * @param status User status
+ * @param email Email address (required)
+ * @param status User status (optional, defaults to INACTIVE)
  * @param roleIds Role IDs
  * @author 林创科技
  * @since 2026-04-15
@@ -26,9 +25,9 @@ public record UserCreateRequest(
             regexp = "^[a-zA-Z0-9_]+$",
             message = "Username must contain only letters, digits, and underscores")
         String username,
-    @NotBlank(message = "Password is required")
-        @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
-        String password,
-    @Email @Size(max = 128, message = "Email must be at most 128 characters") String email,
-    @NotBlank(message = "Status is required") @ValidEnum(UserStatusEnum.class) String status,
+    @NotBlank(message = "Email is required")
+        @Email(message = "Email must be a valid email address")
+        @Size(max = 128, message = "Email must be at most 128 characters")
+        String email,
+    @ValidEnum(UserStatusEnum.class) String status,
     List<Integer> roleIds) {}

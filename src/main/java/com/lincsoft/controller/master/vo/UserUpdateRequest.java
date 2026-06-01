@@ -30,7 +30,9 @@ public record UserUpdateRequest(
     @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
         String password,
     @Email @Size(max = 128, message = "Email must be at most 128 characters") String email,
-    @Pattern(regexp = "^[01]$", message = "Status must be 0 (inactive) or 1 (active)")
+    @Pattern(
+            regexp = "^[012]$",
+            message = "Status must be 0 (disabled), 1 (enabled), or 2 (inactive)")
         String status,
     List<Integer> roleIds,
     @NotNull(message = "Version is required") Integer version) {}

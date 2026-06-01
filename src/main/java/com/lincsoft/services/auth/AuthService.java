@@ -7,6 +7,7 @@ import com.lincsoft.controller.auth.vo.LoginRequest;
 import com.lincsoft.controller.auth.vo.LoginResponse;
 import com.lincsoft.controller.auth.vo.RefreshResponse;
 import com.lincsoft.dto.AuthenticatedUserDTO;
+import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.services.master.UserService;
@@ -109,10 +110,16 @@ public class AuthService {
       // Overwrite MDC with canonical username from UserDetails (handles case normalization etc.)
       MDC.put(CommonConstants.MDC_CURRENT_USER_KEY, authenticatedUsername);
 
+      // Check if user must change password on first login (INACTIVE status)
+      MstUser mstUser = userService.findByUsername(authenticatedUsername);
+      boolean requirePasswordChange =
+          mstUser != null && CommonConstants.USER_STATUS_INACTIVE.equals(mstUser.getStatus());
+
       // Generate tokens with username as subject
       String secret = appProperties.getJwt().getSecret();
-      AuthenticatedUserDTO userDTO =
-          new AuthenticatedUserDTO(authenticatedUsername, CommonConstants.USER_STATUS_ACTIVE);
+      String userStatus =
+          mstUser != null ? mstUser.getStatus() : CommonConstants.USER_STATUS_ACTIVE;
+      AuthenticatedUserDTO userDTO = new AuthenticatedUserDTO(authenticatedUsername, userStatus);
 
       String accessToken =
           JwtUtil.generateAccessToken(
@@ -135,7 +142,7 @@ public class AuthService {
       loginProtectionService.recordSuccess(authenticatedUsername, clientIp);
 
       log.info("User logged in successfully: username={}", authenticatedUsername);
-      return new LoginResponse(accessToken);
+      return new LoginResponse(accessToken, requirePasswordChange);
     } catch (LockedException
         | BadCredentialsException
         | UsernameNotFoundException

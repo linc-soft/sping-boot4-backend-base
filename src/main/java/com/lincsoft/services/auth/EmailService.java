@@ -77,6 +77,49 @@ public class EmailService {
   }
 
   /**
+   * Send a new user welcome email with credentials asynchronously.
+   *
+   * <p>Renders the email body from a Thymeleaf template and sends via SMTP. The email contains the
+   * username, temporary password, and a link to the login page.
+   *
+   * @param toEmail recipient email address
+   * @param username the newly created username
+   * @param rawPassword the temporary password in plaintext
+   * @param loginUrl the login page URL
+   * @param locale locale string (e.g., "en", "zh", "ja") for template i18n
+   */
+  @Async("asyncExecutor")
+  public void sendNewUserWelcomeEmail(
+      String toEmail, String username, String rawPassword, String loginUrl, String locale) {
+    try {
+      String lang = locale != null ? locale : "en";
+      String baseLang = lang.contains("-") ? lang.substring(0, lang.indexOf("-")) : lang;
+      Locale localeObj = Locale.of(baseLang);
+      Context context = new Context(localeObj);
+      context.setVariable("username", username);
+      context.setVariable("rawPassword", rawPassword);
+      context.setVariable("loginUrl", loginUrl);
+
+      String subject;
+      if (baseLang.startsWith("zh")) {
+        subject = "账号创建通知 - " + appProperties.getMail().getSenderName();
+      } else if (baseLang.startsWith("ja")) {
+        subject = "アカウント作成通知 - " + appProperties.getMail().getSenderName();
+      } else {
+        subject = "Account Created - " + appProperties.getMail().getSenderName();
+      }
+
+      String htmlBody = templateEngine.process("email/new-user-welcome", context);
+
+      sendHtmlEmail(toEmail, subject, htmlBody);
+      log.info("New user welcome email sent to {}", maskEmail(toEmail));
+    } catch (Exception e) {
+      log.error(
+          "Failed to send new user welcome email to {}: {}", maskEmail(toEmail), e.getMessage());
+    }
+  }
+
+  /**
    * Send an HTML email with the given subject and body.
    *
    * @param to recipient email
