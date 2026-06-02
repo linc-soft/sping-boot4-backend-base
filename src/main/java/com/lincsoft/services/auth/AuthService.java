@@ -209,10 +209,17 @@ public class AuthService {
     String username = claims.getSubject();
     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+    // Retrieve the user's actual status from the database so that the new access token
+    // reflects the real account status. INACTIVE users will receive an INACTIVE-status
+    // access token, which restricts them to force-change-password and logout only.
+    MstUser mstUser = userService.findByUsername(username);
+    String actualStatus =
+        mstUser != null ? mstUser.getStatus() : CommonConstants.USER_STATUS_ACTIVE;
+
     // Generate new token pair
     String secret = appProperties.getJwt().getSecret();
     AuthenticatedUserDTO userDTO =
-        new AuthenticatedUserDTO(userDetails.getUsername(), CommonConstants.USER_STATUS_ACTIVE);
+        new AuthenticatedUserDTO(userDetails.getUsername(), actualStatus);
 
     String newAccessToken =
         JwtUtil.generateAccessToken(
