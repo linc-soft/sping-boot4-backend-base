@@ -281,7 +281,7 @@ public class UserService implements UserDetailsService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.USER_MANAGER,
+      subModule = SubModule.USER,
       type = OperationType.CREATE,
       description = "User created: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
@@ -341,7 +341,7 @@ public class UserService implements UserDetailsService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.USER_MANAGER,
+      subModule = SubModule.USER,
       type = OperationType.UPDATE,
       description = "User updated: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
@@ -444,7 +444,7 @@ public class UserService implements UserDetailsService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.USER_MANAGER,
+      subModule = SubModule.USER,
       type = OperationType.DELETE,
       description = "User deleted: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
@@ -478,7 +478,7 @@ public class UserService implements UserDetailsService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.USER_MANAGER,
+      subModule = SubModule.USER,
       type = OperationType.CREATE,
       description = "Assigned role #{#role.roleName} to user: #{#user.username}")
   public void assignRoleToUser(MstUser user, MstRole role) {
@@ -499,7 +499,7 @@ public class UserService implements UserDetailsService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.USER_MANAGER,
+      subModule = SubModule.USER,
       type = OperationType.DELETE,
       description = "Revoked role #{#role.roleName} from user: #{#user.username}")
   public void revokeRoleFromUser(MstUser user, MstRole role) {

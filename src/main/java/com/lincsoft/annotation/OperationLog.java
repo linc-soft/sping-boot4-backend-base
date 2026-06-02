@@ -30,9 +30,9 @@ public @interface OperationLog {
   /**
    * Gets the submodule.
    *
-   * @return the submodule enum, default is ROLE_MANAGER
+   * @return the submodule enum, default is SESSION
    */
-  SubModule subModule() default SubModule.ROLE_MANAGER;
+  SubModule subModule() default SubModule.SESSION;
 
   /**
    * Gets the operation type.

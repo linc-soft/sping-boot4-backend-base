@@ -1,8 +1,12 @@
 package com.lincsoft.services.auth;
 
+import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.constant.Module;
+import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.SubModule;
 import com.lincsoft.controller.auth.vo.LoginRequest;
 import com.lincsoft.controller.auth.vo.LoginResponse;
 import com.lincsoft.controller.auth.vo.RefreshResponse;
@@ -85,6 +89,11 @@ public class AuthService {
    * @param response the HTTP response for setting the refresh token cookie
    * @return LoginResponse containing the access token
    */
+  @OperationLog(
+      module = Module.AUTH,
+      subModule = SubModule.SESSION,
+      type = OperationType.LOGIN,
+      description = "User login")
   public LoginResponse login(
       LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
     String username = request.username();
@@ -246,6 +255,11 @@ public class AuthService {
    * @param request the HTTP request containing the Authorization header and refresh token cookie
    * @param response the HTTP response for clearing the refresh token cookie
    */
+  @OperationLog(
+      module = Module.AUTH,
+      subModule = SubModule.SESSION,
+      type = OperationType.LOGOUT,
+      description = "User logout")
   public void logout(HttpServletRequest request, HttpServletResponse response) {
     String secret = appProperties.getJwt().getSecret();
     String username = null;

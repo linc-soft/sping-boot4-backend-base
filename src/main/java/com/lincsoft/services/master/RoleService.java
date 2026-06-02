@@ -165,7 +165,7 @@ public class RoleService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.ROLE_MANAGER,
+      subModule = SubModule.ROLE,
       type = OperationType.CREATE,
       description = "Role created: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
@@ -196,7 +196,7 @@ public class RoleService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.ROLE_MANAGER,
+      subModule = SubModule.ROLE,
       type = OperationType.UPDATE,
       description = "Role updated: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
@@ -228,7 +228,7 @@ public class RoleService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.ROLE_MANAGER,
+      subModule = SubModule.ROLE,
       type = OperationType.DELETE,
       description = "Role deleted: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
@@ -350,7 +350,7 @@ public class RoleService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.ROLE_MANAGER,
+      subModule = SubModule.ROLE,
       type = OperationType.CREATE,
       description = "Added role inheritance: #{#result.roleName}")
   @Transactional(rollbackFor = Exception.class)
@@ -386,7 +386,7 @@ public class RoleService {
    */
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.ROLE_MANAGER,
+      subModule = SubModule.ROLE,
       type = OperationType.DELETE,
       description = "Delete role inheritance: #{#result.roleName}")
   @Transactional(rollbackFor = Exception.class)

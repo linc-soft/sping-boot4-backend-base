@@ -67,7 +67,7 @@ public class UserListReportDataFetcher implements ReportDataFetcher<UserListRepo
   @Override
   @OperationLog(
       module = Module.MASTER,
-      subModule = SubModule.USER_MANAGER,
+      subModule = SubModule.USER,
       type = OperationType.EXPORT,
       description = "User list report exported: #{#request}")
   public Map<String, Object> fetchData(UserListReportRequest request, Locale locale) {

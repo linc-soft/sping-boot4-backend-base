@@ -17,8 +17,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SubModule implements BaseEnum<String> {
-  ROLE_MANAGER("ROLE_MANAGER", "Role Manager"),
-  USER_MANAGER("USER_MANAGER", "User Manager"),
+  SESSION("SESSION", "Session management"),
+  ROLE("ROLE", "Role management"),
+  USER("USER", "User management"),
   PERMISSION("PERMISSION", "Permission");
 
   /** Sub-module code. */
