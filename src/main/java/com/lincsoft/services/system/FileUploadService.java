@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.controller.common.vo.FileMetadataResponse;
 import com.lincsoft.entity.system.SysFileUpload;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.system.SysFileUploadMapper;
@@ -20,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +89,7 @@ public class FileUploadService {
    * @throws BusinessException if the file is empty, too large, has a disallowed extension, or
    *     upload fails
    */
-  public FileMetadata upload(MultipartFile file, String associateType, Long associateId) {
+  public FileMetadataResponse upload(MultipartFile file, String associateType, Long associateId) {
     validateFile(file);
 
     String originalFilename = file.getOriginalFilename();
@@ -144,10 +146,11 @@ public class FileUploadService {
     sysFileUploadMapper.insert(record);
     log.info("File record saved: id={}, storedName={}", record.getId(), storedName);
 
-    return new FileMetadata(
+    return new FileMetadataResponse(
         record.getId(),
         storedName,
         originalFilename,
+        record.getFileType(),
         datePath,
         dateUrl,
         fileSize,
@@ -161,7 +164,7 @@ public class FileUploadService {
    * @param file the multipart file uploaded by the client
    * @return metadata describing the stored file
    */
-  public FileMetadata upload(MultipartFile file) {
+  public FileMetadataResponse upload(MultipartFile file) {
     return upload(file, null, null);
   }
 
@@ -297,6 +300,41 @@ public class FileUploadService {
     }
   }
 
+  /**
+   * Find all file upload records associated with a business entity.
+   *
+   * @param associateType the association type
+   * @param associateId the associated business entity ID (nullable — filters only by type when
+   *     null)
+   * @return list of file upload records, or empty list if none found
+   */
+  public List<SysFileUpload> findByAssociate(String associateType, Long associateId) {
+    if (associateType == null) {
+      return Collections.emptyList();
+    }
+    return sysFileUploadMapper.selectList(
+        new LambdaQueryWrapper<SysFileUpload>()
+            .eq(SysFileUpload::getAssociateType, associateType)
+            .eq(associateId != null, SysFileUpload::getAssociateId, associateId)
+            .orderByDesc(SysFileUpload::getCreateTime));
+  }
+
+  /**
+   * Associate a file upload record with a business entity.
+   *
+   * @param fileId the file upload record ID
+   * @param associateType the association type
+   * @param associateId the associated business entity ID
+   */
+  public void associateFile(Long fileId, String associateType, Long associateId) {
+    SysFileUpload record = sysFileUploadMapper.selectById(fileId);
+    if (record != null) {
+      record.setAssociateType(associateType);
+      record.setAssociateId(associateId);
+      sysFileUploadMapper.updateById(record);
+    }
+  }
+
   /** Get the current username from MDC. */
   private String getCurrentUser() {
     String username = MDC.get(CommonConstants.MDC_CURRENT_USER_KEY);
@@ -304,26 +342,4 @@ public class FileUploadService {
         ? username
         : CommonConstants.MDC_DEFAULT_USERNAME;
   }
-
-  /**
-   * Metadata of an uploaded file.
-   *
-   * @param id database record ID (null if not persisted)
-   * @param storedName UUID-based storage filename
-   * @param originalFilename original filename from the client
-   * @param datePath date-based subdirectory (e.g., "2026/06/03")
-   * @param dateUrl date in URL-friendly format (e.g., "2026-06-03")
-   * @param size file size in bytes
-   * @param contentType MIME type of the file
-   * @param md5 MD5 hash of the file content
-   */
-  public record FileMetadata(
-      Long id,
-      String storedName,
-      String originalFilename,
-      String datePath,
-      String dateUrl,
-      long size,
-      String contentType,
-      String md5) {}
 }

@@ -81,7 +81,23 @@ public enum MessageEnums {
   ROLE_INHERITANCE_EXISTS(102_409, "error.role.inheritance_exists"),
   ROLE_OPTIMISTIC_LOCK_FAILED(102_412, "error.role.optimistic_lock_failed"),
   ROLE_IN_USE(102_423, "error.role.in_use"),
-  ROLE_HAS_INHERITANCE(102_424, "error.role.has_inheritance");
+  ROLE_HAS_INHERITANCE(102_424, "error.role.has_inheritance"),
+
+  // ========== 103: Master - Employee page ==========
+  EMPLOYEE_NOT_FOUND(103_404, "error.employee.not_found"),
+
+  // ========== 201: Leave ==========
+  LEAVE_DATE_START_AFTER_END(201_400, "error.leave.date_start_after_end"),
+  LEAVE_DATE_NOT_SAME_YEAR(201_401, "error.leave.date_not_same_year"),
+  LEAVE_OVERLAPPING_DATE(201_402, "error.leave.overlapping_date"),
+  LEAVE_ANNUAL_HAS_UNAPPROVED(201_403, "error.leave.annual_has_unapproved"),
+  LEAVE_ANNUAL_EXCEED_BALANCE(201_404, "error.leave.annual_exceed_balance"),
+  LEAVE_CANNOT_APPROVE_SELF(201_405, "error.leave.cannot_approve_self"),
+  LEAVE_NOT_FOUND(201_408, "error.leave.not_found"),
+  LEAVE_REASON_REQUIRED(201_406, "error.leave.reason_required"),
+  LEAVE_INVALID_DURATION(201_407, "error.leave.invalid_duration"),
+  ANNUAL_LEAVE_EXISTS(201_409, "error.annual_leave.exists"),
+  ANNUAL_LEAVE_NOT_FOUND(201_410, "error.annual_leave.not_found");
 
   @Getter private final int code;
 

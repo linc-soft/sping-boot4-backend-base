@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="#{email.leave_status.title}">Leave Status Update</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 8px; }
+    .header { padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+    .header.approved { background-color: #4caf50; color: white; }
+    .header.rejected { background-color: #f44336; color: white; }
+    .content { padding: 20px; }
+    .info-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .info-table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+    .info-table td:first-child { font-weight: bold; width: 120px; }
+    .footer { text-align: center; padding: 15px; font-size: 12px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header" th:classappend="${status == 'Approved'} ? ' approved' : ' rejected'">
+      <h1 th:text="#{email.leave_status.title}">Leave Status Update</h1>
+    </div>
+    <div class="content">
+      <p th:text="#{email.leave_status.greeting}">Hello,</p>
+      <p th:text="#{email.leave_status.body}">Your leave application status has been updated.</p>
+      <table class="info-table">
+        <tr>
+          <td th:text="#{email.leave_status.leave_type}">Leave Type</td>
+          <td th:text="${leaveType}">-</td>
+        </tr>
+        <tr>
+          <td th:text="#{email.leave_status.period}">Period</td>
+          <td th:text="${period}">-</td>
+        </tr>
+        <tr>
+          <td th:text="#{email.leave_status.status}">Status</td>
+          <td th:text="${status}">-</td>
+        </tr>
+        <tr th:if="${reason != null and !reason.isEmpty()}">
+          <td th:text="#{email.leave_status.reason}">Reason</td>
+          <td th:text="${reason}">-</td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer">
+      <p th:text="#{email.leave_status.automated}">This is an automated message, please do not reply.</p>
+    </div>
+  </div>
+</body>
+</html>

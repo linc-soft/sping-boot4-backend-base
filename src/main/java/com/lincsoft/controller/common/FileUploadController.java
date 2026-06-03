@@ -2,10 +2,10 @@ package com.lincsoft.controller.common;
 
 import com.lincsoft.annotation.IgnoreResultWrapper;
 import com.lincsoft.constant.MessageEnums;
+import com.lincsoft.controller.common.vo.FileMetadataResponse;
 import com.lincsoft.entity.system.SysFileUpload;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.services.system.FileUploadService;
-import com.lincsoft.services.system.FileUploadService.FileMetadata;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -52,7 +52,7 @@ public class FileUploadController {
    */
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).FILE_WRITE.roleCode)")
   @PostMapping
-  public FileMetadata upload(
+  public FileMetadataResponse upload(
       @RequestParam("file") MultipartFile file,
       @RequestParam(value = "associateType", required = false) String associateType,
       @RequestParam(value = "associateId", required = false) Long associateId) {
@@ -69,7 +69,7 @@ public class FileUploadController {
    */
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).FILE_WRITE.roleCode)")
   @PostMapping("/batch")
-  public List<FileMetadata> uploadBatch(
+  public List<FileMetadataResponse> uploadBatch(
       @RequestParam("files") MultipartFile[] files,
       @RequestParam(value = "associateType", required = false) String associateType,
       @RequestParam(value = "associateId", required = false) Long associateId) {

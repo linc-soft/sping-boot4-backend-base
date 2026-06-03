@@ -513,7 +513,7 @@ public class UserService implements UserDetailsService {
    *
    * @return the generated password
    */
-  private String generateRandomPassword() {
+  protected String generateRandomPassword() {
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     SecureRandom random = new SecureRandom();
     StringBuilder sb = new StringBuilder(12);

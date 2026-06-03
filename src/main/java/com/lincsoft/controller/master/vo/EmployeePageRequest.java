@@ -6,21 +6,22 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * User page query request VO.
+ * Employee page query request VO.
  *
- * @author 林创科技
- * @since 2026-04-15
+ * @author lincsoft
+ * @since 2026-06-03
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class UserPageRequest extends PageRequest {
-  /** Username */
-  private String username;
+public class EmployeePageRequest extends PageRequest {
 
-  /** Status */
+  /** Username or nickname filter */
+  private String keyword;
+
+  /** Status filter */
   private String status;
 
   public Set<String> allowedSortColumns() {
-    return Set.of("id", "username", "status", "create_by", "create_at", "update_by", "update_at");
+    return Set.of("username", "nickname", "status", "create_at");
   }
 }
