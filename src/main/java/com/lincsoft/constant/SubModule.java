@@ -20,6 +20,7 @@ public enum SubModule implements BaseEnum<String> {
   SESSION("SESSION", "Session management"),
   ROLE("ROLE", "Role management"),
   USER("USER", "User management"),
+  FILE("FILE", "File management"),
   PERMISSION("PERMISSION", "Permission");
 
   /** Sub-module code. */

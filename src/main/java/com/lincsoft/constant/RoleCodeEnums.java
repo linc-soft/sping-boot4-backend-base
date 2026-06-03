@@ -29,7 +29,10 @@ public enum RoleCodeEnums implements BaseEnum<String> {
   USER_DELETE("USER_DELETE", "User Deleter"),
   USER_EXPORT("USER_EXPORT", "User Exporter"),
   LOG_READ("LOG_READ", "Log Reader"),
-  LOG_EXPORT("LOG_EXPORT", "Log Exporter");
+  LOG_EXPORT("LOG_EXPORT", "Log Exporter"),
+  FILE_READ("FILE_READ", "File Reader"),
+  FILE_WRITE("FILE_WRITE", "File Uploader"),
+  FILE_DELETE("FILE_DELETE", "File Deleter");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;

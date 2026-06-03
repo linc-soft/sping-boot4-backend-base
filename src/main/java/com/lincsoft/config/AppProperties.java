@@ -109,6 +109,13 @@ public class AppProperties {
   private Mail mail = new Mail();
 
   /**
+   * File upload configuration settings.
+   *
+   * <p>Defines upload directory, allowed extensions, max file size, etc.
+   */
+  private Upload upload = new Upload();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -749,5 +756,45 @@ public class AppProperties {
   public static class Mail {
     /** Sender display name for outgoing emails. Default: System Notification */
     private String senderName = "System Notification";
+  }
+
+  /**
+   * File upload configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.upload} prefix. Defines upload directory, allowed
+   * extensions, max file size, etc.
+   */
+  @Data
+  public static class Upload {
+    /**
+     * Local directory for storing uploaded files.
+     *
+     * <p>Default: ./uploads
+     */
+    private String directory = "./uploads";
+
+    /**
+     * Maximum allowed file size in MB.
+     *
+     * <p>Default: 10
+     */
+    private long maxFileSizeMb = 10;
+
+    /**
+     * Maximum number of files per upload request.
+     *
+     * <p>Default: 10
+     */
+    private int maxFilesPerRequest = 10;
+
+    /**
+     * Allowed file extensions (lowercase, without dot). Empty means all extensions are allowed.
+     *
+     * <p>Default: common document and image formats
+     */
+    private List<String> allowedExtensions =
+        List.of(
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "jpg", "jpeg", "png",
+            "gif", "bmp", "svg", "zip", "rar", "7z");
   }
 }

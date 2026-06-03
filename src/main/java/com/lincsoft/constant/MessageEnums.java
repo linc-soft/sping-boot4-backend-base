@@ -42,12 +42,12 @@ public enum MessageEnums {
   INTERNAL_SERVER_ERROR(500, "error.internal_server_error"),
 
   // ========== 999: System module (auth, common, log, etc.) ==========
-  // 999_404 reserved: system data not found
+  // auth
   SYS_TOKEN_REVOKED(999_401, "error.sys.token_revoked"),
   SYS_INVALID_CREDENTIALS(999_402, "error.sys.invalid_credentials"),
   SYS_INVALID_REFRESH_TOKEN(999_403, "error.sys.invalid_refresh_token"),
   SYS_IP_BLOCKED(999_423, "error.sys.ip_blocked"),
-  // 999: Password reset
+  // Password reset
   SYS_PASSWORD_RESET_TOKEN_INVALID(999_404, "error.sys.password_reset_token_invalid"),
   SYS_CURRENT_PASSWORD_MISMATCH(999_401, "error.sys.current_password_mismatch"),
   SYS_PASSWORD_RESET_EMAIL_SENT(200, "auth.password.reset_email_sent"),
@@ -56,8 +56,15 @@ public enum MessageEnums {
   SYS_FORCE_PASSWORD_CHANGE_REQUIRED(999_422, "error.sys.force_password_change_required"),
   SYS_FORCE_PASSWORD_CHANGE_SUCCESS(200, "auth.force_password_change_success"),
 
+  // File Upload
+  SYS_FILE_EMPTY(999_410, "error.sys.file_empty"),
+  SYS_FILE_TOO_LARGE(999_411, "error.sys.file_too_large"),
+  SYS_FILE_EXTENSION_NOT_ALLOWED(999_412, "error.sys.file_extension_not_allowed"),
+  SYS_FILE_NOT_FOUND(999_413, "error.sys.file_not_found"),
+  SYS_FILE_UPLOAD_FAILED(999_500, "error.sys.file_upload_failed"),
+  SYS_FILE_MD5_MISMATCH(999_501, "error.sys.file_md5_mismatch"),
+
   // ========== 101: Master - User page ==========
-  // 101_404: user not found
   USER_USERNAME_CANNOT_BE_UPDATED(101_400, "error.user.username_cannot_be_updated"),
   USER_EMAIL_REQUIRED(101_401, "error.user.email_required"),
   USER_INACTIVE(101_403, "error.user.inactive"),
@@ -68,7 +75,6 @@ public enum MessageEnums {
   USER_OPTIMISTIC_LOCK_FAILED(101_412, "error.user.optimistic_lock_failed"),
 
   // ========== 102: Master - Role page ==========
-  // 102_404: role not found
   ROLE_CIRCULAR_DEPENDENCY(102_400, "error.role.circular_dependency"),
   ROLE_BASE_CANNOT_BE_DELETED(102_403, "error.role.base_cannot_be_deleted"),
   ROLE_NOT_FOUND(102_404, "error.role.not_found"),
