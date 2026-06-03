@@ -249,6 +249,72 @@ Permission is checked per provider: if the `SelectOptionProvider` class is annot
 
 ---
 
+### Upload File
+
+| Item         | Detail                                                                                                      |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| **Endpoint** | `POST /api/common/files`                                                                                    |
+| **Auth**     | Requires `FILE_WRITE` permission                                                                            |
+| **Params**   | `file` (required) — multipart file, `associateType` (optional) — association type, `associateId` (optional) — associated entity ID |
+| **Content-Type** | `multipart/form-data`                                                                                   |
+
+Uploads a single file to the server. The file is stored under a date-based subdirectory (`yyyy/MM/dd`) with a UUID-based filename to prevent conflicts and path traversal attacks. MD5 hash is computed during upload via `DigestInputStream` and stored in the database for integrity verification. File type is auto-detected from extension (1=image, 2=document, 3=archive, 9=other). Extension must be in the allowed list configured in `app.upload.allowed-extensions`. File size must not exceed `app.upload.max-file-size-mb`.
+
+Returns: `id`, `storedName`, `originalFilename`, `datePath`, `dateUrl`, `size`, `contentType`, `md5`.
+
+---
+
+### Upload Files (Batch)
+
+| Item         | Detail                                                                                                          |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| **Endpoint** | `POST /api/common/files/batch`                                                                                  |
+| **Auth**     | Requires `FILE_WRITE` permission                                                                                |
+| **Params**   | `files` (required) — multipart file array, `associateType` (optional), `associateId` (optional)                |
+| **Content-Type** | `multipart/form-data`                                                                                       |
+
+Uploads multiple files in a single request. Each file is processed independently with the same rules as single upload. Total number of files must not exceed `app.upload.max-files-per-request`.
+
+Returns: Array of `id`, `storedName`, `originalFilename`, `datePath`, `dateUrl`, `size`, `contentType`, `md5`.
+
+---
+
+### Download File
+
+| Item          | Detail                                           |
+| ------------- | ------------------------------------------------- |
+| **Endpoint**  | `GET /api/common/files/{dateUrl}/{storedName}`   |
+| **Auth**      | Requires `FILE_READ` permission                  |
+| **Response**  | Binary file content with `Content-Disposition: attachment` |
+
+Downloads a file by its date URL and stored name. The server verifies MD5 integrity before serving: if the file on disk does not match the stored MD5 hash, a `FILE_MD5_MISMATCH` error is returned. The response includes the `X-File-MD5` header containing the stored MD5 hash, allowing client-side integrity verification.
+
+---
+
+### Verify File Integrity
+
+| Item         | Detail                                                    |
+| ------------ | --------------------------------------------------------- |
+| **Endpoint** | `GET /api/common/files/{dateUrl}/{storedName}/verify`     |
+| **Auth**     | Requires `FILE_READ` permission                           |
+
+Verifies that the file on disk matches the stored MD5 hash in the database. Recomputes the MD5 of the physical file and compares it with the database record.
+
+Returns: `{ "match": true/false, "storedMd5": "..." }`
+
+---
+
+### Delete File
+
+| Item         | Detail                                           |
+| ------------ | ------------------------------------------------- |
+| **Endpoint** | `DELETE /api/common/files/{dateUrl}/{storedName}` |
+| **Auth**     | Requires `FILE_DELETE` permission                |
+
+Deletes a file from disk and logically deletes its database record. Physical file is removed from the filesystem, and the database record is soft-deleted (`deleted` flag set to 1) via `@TableLogic`.
+
+---
+
 ## Log System
 
 ### Get Access Log Page
@@ -645,6 +711,72 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 ---
 
+### 上传文件
+
+| 项目           | 详情                                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| **接口地址**   | `POST /api/common/files`                                                                               |
+| **权限**       | 需要 `FILE_WRITE` 权限                                                                                  |
+| **参数**       | `file`（必填）— 上传文件，`associateType`（可选）— 关联类型，`associateId`（可选）— 关联业务实体 ID |
+| **Content-Type** | `multipart/form-data`                                                                                |
+
+上传单个文件到服务器。文件存储在按日期组织的子目录（`yyyy/MM/dd`）下，使用 UUID 文件名防止冲突和路径遍历攻击。上传过程中通过 `DigestInputStream` 计算 MD5 哈希并存储到数据库，用于完整性校验。文件类型根据扩展名自动检测（1=图片，2=文档，3=压缩包，9=其他）。扩展名必须在 `app.upload.allowed-extensions` 配置的允许列表中。文件大小不得超过 `app.upload.max-file-size-mb`。
+
+返回：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5`。
+
+---
+
+### 批量上传文件
+
+| 项目           | 详情                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| **接口地址**   | `POST /api/common/files/batch`                                                                   |
+| **权限**       | 需要 `FILE_WRITE` 权限                                                                            |
+| **参数**       | `files`（必填）— 上传文件数组，`associateType`（可选），`associateId`（可选）                   |
+| **Content-Type** | `multipart/form-data`                                                                          |
+
+批量上传多个文件。每个文件独立处理，规则与单文件上传相同。文件总数不得超过 `app.upload.max-files-per-request`。
+
+返回：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5` 的数组。
+
+---
+
+### 下载文件
+
+| 项目           | 详情                                                |
+| -------------- | --------------------------------------------------- |
+| **接口地址**   | `GET /api/common/files/{dateUrl}/{storedName}`      |
+| **权限**       | 需要 `FILE_READ` 权限                               |
+| **响应**       | 二进制文件内容，包含 `Content-Disposition: attachment` |
+
+通过日期 URL 和存储文件名下载文件。服务器在返回文件前验证 MD5 完整性：如果磁盘文件与存储的 MD5 哈希不匹配，返回 `FILE_MD5_MISMATCH` 错误。响应包含 `X-File-MD5` 头，用于客户端完整性校验。
+
+---
+
+### 验证文件完整性
+
+| 项目           | 详情                                                      |
+| -------------- | --------------------------------------------------------- |
+| **接口地址**   | `GET /api/common/files/{dateUrl}/{storedName}/verify`     |
+| **权限**       | 需要 `FILE_READ` 权限                                      |
+
+验证磁盘文件与数据库存储的 MD5 哈希是否匹配。重新计算物理文件的 MD5 并与数据库记录比较。
+
+返回：`{ "match": true/false, "storedMd5": "..." }`
+
+---
+
+### 删除文件
+
+| 项目           | 详情                                           |
+| -------------- | ---------------------------------------------- |
+| **接口地址**   | `DELETE /api/common/files/{dateUrl}/{storedName}` |
+| **权限**       | 需要 `FILE_DELETE` 权限                        |
+
+从磁盘删除文件并逻辑删除数据库记录。物理文件从文件系统中移除，数据库记录通过 `@TableLogic` 软删除（`deleted` 标志设为 1）。
+
+---
+
 ## 日志系统
 
 ### 获取访问日志分页
@@ -1038,6 +1170,72 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 フロントエンドのドロップダウン/セレクトコンポーネント用のオプションリストを返します。Provider 実装は Spring DI により自動検出されます。新しいタイプを追加するには、新しい `SelectOptionProvider` Bean を作成するだけで、コントローラーの変更は不要です。各オプションには `value`、`label`、`description` が含まれます。
 
 権限は Provider ごとにチェックされます。`SelectOptionProvider` クラスに `@SelectOptionPermission` が付与されている場合、ユーザーは指定された権限を持っている必要があります（例：`role` タイプには `ROLE_READ`、`user` タイプには `USER_READ`）。注記がない Provider は公開アクセスです。
+
+---
+
+### ファイルアップロード
+
+| 項目               | 詳細                                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| **エンドポイント** | `POST /api/common/files`                                                                              |
+| **認可**           | `FILE_WRITE` 権限が必要                                                                              |
+| **パラメータ**     | `file`（必須）— マルチパートファイル、`associateType`（任意）— 関連タイプ、`associateId`（任意）— 関連エンティティ ID |
+| **Content-Type**   | `multipart/form-data`                                                                                |
+
+単一ファイルをサーバーにアップロードします。ファイルは日付ベースのサブディレクトリ（`yyyy/MM/dd`）に UUID ベースのファイル名で保存され、競合とパストラバーサル攻撃を防止します。アップロード中に `DigestInputStream` で MD5 ハッシュを計算し、整合性検証のためデータベースに保存します。ファイルタイプは拡張子から自動検出されます（1=画像、2=ドキュメント、3=アーカイブ、9=その他）。拡張子は `app.upload.allowed-extensions` で設定された許可リストに含まれている必要があります。ファイルサイズは `app.upload.max-file-size-mb` を超えることはできません。
+
+戻り値：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5`。
+
+---
+
+### ファイル一括アップロード
+
+| 項目               | 詳細                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| **エンドポイント** | `POST /api/common/files/batch`                                                                   |
+| **認可**           | `FILE_WRITE` 権限が必要                                                                          |
+| **パラメータ**     | `files`（必須）— マルチパートファイル配列、`associateType`（任意）、`associateId`（任意）       |
+| **Content-Type**   | `multipart/form-data`                                                                            |
+
+複数ファイルを一括アップロードします。各ファイルは単一アップロードと同じルールで独立して処理されます。ファイル総数は `app.upload.max-files-per-request` を超えることはできません。
+
+戻り値：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5` の配列。
+
+---
+
+### ファイルダウンロード
+
+| 項目               | 詳細                                                    |
+| ------------------ | ------------------------------------------------------- |
+| **エンドポイント** | `GET /api/common/files/{dateUrl}/{storedName}`           |
+| **認可**           | `FILE_READ` 権限が必要                                  |
+| **レスポンス**     | `Content-Disposition: attachment` ヘッダー付きのバイナリファイル |
+
+日付 URL と保存名でファイルをダウンロードします。サーバーは返却前に MD5 整合性を検証します。ディスク上のファイルが保存された MD5 ハッシュと一致しない場合、`FILE_MD5_MISMATCH` エラーが返されます。レスポンスには `X-File-MD5` ヘッダーが含まれ、クライアント側で整合性検証に使用できます。
+
+---
+
+### ファイル整合性検証
+
+| 項目               | 詳細                                                          |
+| ------------------ | ------------------------------------------------------------- |
+| **エンドポイント** | `GET /api/common/files/{dateUrl}/{storedName}/verify`         |
+| **認可**           | `FILE_READ` 権限が必要                                        |
+
+ディスク上のファイルがデータベースに保存された MD5 ハッシュと一致するか検証します。物理ファイルの MD5 を再計算し、データベースレコードと比較します。
+
+戻り値：`{ "match": true/false, "storedMd5": "..." }`
+
+---
+
+### ファイル削除
+
+| 項目               | 詳細                                                |
+| ------------------ | --------------------------------------------------- |
+| **エンドポイント** | `DELETE /api/common/files/{dateUrl}/{storedName}`   |
+| **認可**           | `FILE_DELETE` 権限が必要                            |
+
+ディスクからファイルを削除し、データベースレコードを論理削除します。物理ファイルはファイルシステムから削除され、データベースレコードは `@TableLogic` により論理削除（`deleted` フラグを 1 に設定）されます。
 
 ---
 

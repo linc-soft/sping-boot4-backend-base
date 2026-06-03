@@ -4,6 +4,7 @@
 --  * sys_access_log
 --  * sys_error_log
 --  * sys_operation_log
+--  * sys_file_upload
 -- Engine: InnoDB
 -- Character Set: utf8mb4
 -- ============================================================
@@ -87,3 +88,32 @@ CREATE TABLE IF NOT EXISTS sys_operation_log (
   KEY idx_operation_log_create_time (create_time),
   KEY idx_operation_log_username (username)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Operation log';
+
+-- ============================================================
+-- sys_file_upload table
+-- Records metadata of uploaded files
+-- ============================================================
+DROP TABLE IF EXISTS sys_file_upload;
+
+CREATE TABLE IF NOT EXISTS sys_file_upload (
+  id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  file_type INT DEFAULT NULL COMMENT 'File type (1=image, 2=document, 3=archive, 9=other)',
+  stored_name VARCHAR(128) DEFAULT NULL COMMENT 'UUID-based storage filename',
+  original_filename VARCHAR(255) DEFAULT NULL COMMENT 'Original filename from client',
+  extension VARCHAR(32) DEFAULT NULL COMMENT 'File extension (lowercase, without dot)',
+  file_size BIGINT DEFAULT NULL COMMENT 'File size in bytes',
+  content_type VARCHAR(128) DEFAULT NULL COMMENT 'MIME type',
+  file_path VARCHAR(512) DEFAULT NULL COMMENT 'Full relative path from upload directory',
+  date_path VARCHAR(32) DEFAULT NULL COMMENT 'Date-based subdirectory (e.g., "2026/06/03")',
+  date_url VARCHAR(32) DEFAULT NULL COMMENT 'Date in URL-friendly format (e.g., "2026-06-03")',
+  associate_type VARCHAR(64) DEFAULT NULL COMMENT 'Association type (e.g., USER_AVATAR, TICKET_ATTACHMENT)',
+  associate_id BIGINT DEFAULT NULL COMMENT 'Associated business entity ID',
+  md5 VARCHAR(32) DEFAULT NULL COMMENT 'MD5 hash of file content',
+  creator VARCHAR(64) DEFAULT NULL COMMENT 'Record creation user',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+  deleted TINYINT(1) DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id),
+  KEY idx_file_upload_associate (associate_type, associate_id),
+  KEY idx_file_upload_create_time (create_time),
+  KEY idx_file_upload_creator (creator)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'File upload';
