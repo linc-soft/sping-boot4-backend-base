@@ -77,7 +77,7 @@ public class EmployeeController {
    */
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).EMPLOYEE_WRITE.roleCode)")
   @PostMapping
-  public Long createEmployee(@Valid @RequestBody SaveEmployeeRequest request) {
+  public Long createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {
     return employeeService.createEmployee(request);
   }
 
@@ -88,8 +88,8 @@ public class EmployeeController {
    */
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).EMPLOYEE_WRITE.roleCode)")
   @PutMapping
-  public void updateEmployee(@Valid @RequestBody SaveEmployeeRequest request) {
-    // TODO: Implement update logic
+  public void updateEmployee(@Valid @RequestBody EmployeeUpdateRequest request) {
+    employeeService.updateEmployee(request);
   }
 
   /**

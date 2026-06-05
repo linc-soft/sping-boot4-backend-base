@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,8 +39,8 @@ public class EmployeeService {
   private final EmployeeMapper employeeMapper;
   private final MstUserRoleMapper userRoleMapper;
   private final RoleService roleService;
-  private final PasswordEncoder passwordEncoder;
   private final UserService userService;
+  private final com.lincsoft.mapstruct.EmployeeMapper employeeMapperConvert;
 
   /**
    * Get employee by user ID (with user and role info).
@@ -103,6 +102,10 @@ public class EmployeeService {
   /**
    * Create a new employee (mst_user + mst_employee + default roles).
    *
+   * <p>Delegates user creation to {@link UserService#createUser(MstUser, List)} which handles
+   * username/email uniqueness validation, password generation, status defaulting, role assignment,
+   * and welcome email sending.
+   *
    * @param request the creation request
    * @return the created user ID
    */
@@ -112,41 +115,16 @@ public class EmployeeService {
       type = OperationType.CREATE,
       description = "Employee created: #{#request.username}")
   @Transactional(rollbackFor = Exception.class)
-  public Long createEmployee(SaveEmployeeRequest request) {
-    // Create MstUser
-    MstUser user = new MstUser();
-    user.setUsername(request.username());
-    user.setEmail(request.email());
-    user.setStatus(
-        request.status() != null ? request.status() : CommonConstants.USER_STATUS_INACTIVE);
+  public Long createEmployee(EmployeeCreateRequest request) {
+    MstUser user = employeeMapperConvert.toUserEntity(request);
+    Long userId = userService.createUser(user, request.roleIds());
 
-    String rawPassword = userService.generateRandomPassword();
-    user.setPassword(passwordEncoder.encode(rawPassword));
-
-    userMapper.insert(user);
-    Long userId = user.getId();
-
-    // Create Employee (mst_employee)
-    Employee employee = new Employee();
+    Employee employee = employeeMapperConvert.toEmployeeEntity(request);
     employee.setUserId(userId);
-    employee.setNickname(request.nickname());
-    employee.setMobile(request.mobile());
     employee.setSex(request.sex() != null ? request.sex().getCode() : 0);
     employee.setHiredDate(
         request.hiredDate() != null ? LocalDate.parse(request.hiredDate()) : null);
-    employee.setRemark(request.remark());
     employeeMapper.insert(employee);
-
-    // Assign roles
-    if (request.roleIds() != null && !request.roleIds().isEmpty()) {
-      List<MstRole> roles = roleService.getRolesByIds(request.roleIds());
-      for (MstRole role : roles) {
-        MstUserRole userRole = new MstUserRole();
-        userRole.setUserId(userId);
-        userRole.setRoleId(role.getId());
-        userRoleMapper.insert(userRole);
-      }
-    }
 
     return userId;
   }
@@ -154,21 +132,41 @@ public class EmployeeService {
   /**
    * Update employee information.
    *
+   * <p>Delegates user update to {@link UserService#updateUser(MstUser, List)} which handles
+   * username immutability check, email uniqueness validation, password encryption, optimistic
+   * locking, and role synchronization.
+   *
    * @param request the update request
    */
   @OperationLog(
       module = Module.MASTER,
       subModule = SubModule.EMPLOYEE,
       type = OperationType.UPDATE,
-      description = "Employee updated")
+      description = "Employee updated: #{#request.id}")
   @Transactional(rollbackFor = Exception.class)
-  public void updateEmployee(SaveEmployeeRequest request) {
-    // This method would update both mst_user and mst_employee
-    // Implementation similar to createUser but with updateById
-    // For brevity, delegate to user service for user fields
-    // and update employee fields here
-    MstUser user = userService.getUserById(request.username() != null ? 0L : 0L);
-    // Simplified: full implementation would map all fields
+  public void updateEmployee(EmployeeUpdateRequest request) {
+    MstUser existingUser = userService.getUserById(request.id());
+    MstUser user = employeeMapperConvert.toUserEntity(request);
+    user.setUsername(existingUser.getUsername());
+    userService.updateUser(user, request.roleIds());
+
+    Employee employee = getEmployeeByUserId(request.id());
+    if (request.nickname() != null) {
+      employee.setNickname(request.nickname());
+    }
+    if (request.mobile() != null) {
+      employee.setMobile(request.mobile());
+    }
+    if (request.sex() != null) {
+      employee.setSex(request.sex().getCode());
+    }
+    if (request.hiredDate() != null) {
+      employee.setHiredDate(LocalDate.parse(request.hiredDate()));
+    }
+    if (request.remark() != null) {
+      employee.setRemark(request.remark());
+    }
+    employeeMapper.updateById(employee);
   }
 
   /**
@@ -183,17 +181,14 @@ public class EmployeeService {
       description = "Employee deleted")
   @Transactional(rollbackFor = Exception.class)
   public void deleteEmployee(Long userId) {
-    // Delete employee record
     LambdaQueryWrapper<Employee> empQuery = new LambdaQueryWrapper<>();
     empQuery.eq(Employee::getUserId, userId);
     employeeMapper.delete(empQuery);
 
-    // Delete role assignments
     LambdaQueryWrapper<MstUserRole> roleQuery = new LambdaQueryWrapper<>();
     roleQuery.eq(MstUserRole::getUserId, userId);
     userRoleMapper.delete(roleQuery);
 
-    // Delete user record
     userMapper.deleteById(userId);
   }
 
@@ -221,26 +216,26 @@ public class EmployeeService {
         employee.getSex() != null ? employee.getSex() : 0,
         employee.getHiredDate(),
         employee.getRemark(),
-        null, // totalAnnualDays - calculated in controller
-        null, // usedAnnualDays - calculated in controller
-        null, // remainAnnualDays - calculated in controller
-        null); // otherLeaveDays - calculated in controller
+        null,
+        null,
+        null,
+        null);
   }
 
   private EmployeeListResponseItem toListResponseItem(MstUser user) {
     return new EmployeeListResponseItem(
         user.getId(),
         user.getUsername(),
-        null, // nickname from employee table
-        null, // sex from employee table
-        null, // hiredDate from employee table
+        null,
+        null,
+        null,
         user.getStatus(),
         user.getUpdateBy(),
         user.getUpdateAt(),
         user.getVersion(),
-        null, // totalAnnualDays
-        null, // usedAnnualDays
-        null, // remainAnnualDays
-        null); // otherLeaveDays
+        null,
+        null,
+        null,
+        null);
   }
 }

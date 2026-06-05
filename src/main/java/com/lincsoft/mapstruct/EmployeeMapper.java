@@ -1,5 +1,6 @@
 package com.lincsoft.mapstruct;
 
+import com.lincsoft.constant.SexType;
 import com.lincsoft.controller.master.vo.*;
 import com.lincsoft.dto.master.EmployeeWithProfile;
 import com.lincsoft.entity.master.Employee;
@@ -16,14 +17,20 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper {
 
+  default Integer sexTypeToInteger(SexType sexType) {
+    return sexType != null ? sexType.getCode() : null;
+  }
+
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "password", ignore = true)
+  @Mapping(target = "status", ignore = true)
   @Mapping(target = "createBy", ignore = true)
   @Mapping(target = "createAt", ignore = true)
   @Mapping(target = "updateBy", ignore = true)
   @Mapping(target = "updateAt", ignore = true)
   @Mapping(target = "deleted", ignore = true)
   @Mapping(target = "version", ignore = true)
-  MstUser toUserEntity(SaveEmployeeRequest request);
+  MstUser toUserEntity(EmployeeCreateRequest request);
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "userId", ignore = true)
@@ -32,7 +39,24 @@ public interface EmployeeMapper {
   @Mapping(target = "updateBy", ignore = true)
   @Mapping(target = "updateAt", ignore = true)
   @Mapping(target = "deleted", ignore = true)
-  Employee toEmployeeEntity(SaveEmployeeRequest request);
+  Employee toEmployeeEntity(EmployeeCreateRequest request);
+
+  @Mapping(target = "username", ignore = true)
+  @Mapping(target = "createBy", ignore = true)
+  @Mapping(target = "createAt", ignore = true)
+  @Mapping(target = "updateBy", ignore = true)
+  @Mapping(target = "updateAt", ignore = true)
+  @Mapping(target = "deleted", ignore = true)
+  MstUser toUserEntity(EmployeeUpdateRequest request);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "userId", ignore = true)
+  @Mapping(target = "createBy", ignore = true)
+  @Mapping(target = "createAt", ignore = true)
+  @Mapping(target = "updateBy", ignore = true)
+  @Mapping(target = "updateAt", ignore = true)
+  @Mapping(target = "deleted", ignore = true)
+  Employee toEmployeeEntity(EmployeeUpdateRequest request);
 
   @Mapping(target = "id", source = "user.id")
   @Mapping(target = "username", source = "user.username")
