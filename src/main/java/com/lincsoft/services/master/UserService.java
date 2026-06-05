@@ -16,13 +16,13 @@ import com.lincsoft.dto.master.UserWithRoles;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.entity.master.MstUserRole;
+import com.lincsoft.event.UserCreatedEvent;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.filter.JwtAuthorizationFilter;
 import com.lincsoft.filter.PreAuthenticationChecks;
 import com.lincsoft.i18n.LanguageContext;
 import com.lincsoft.mapper.master.MstUserMapper;
 import com.lincsoft.mapper.master.MstUserRoleMapper;
-import com.lincsoft.services.auth.EmailService;
 import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -92,8 +93,8 @@ public class UserService implements UserDetailsService {
   /** Password encoder for encrypting user passwords. */
   private final PasswordEncoder passwordEncoder;
 
-  /** Email service for sending welcome emails to new users. */
-  private final EmailService emailService;
+  /** Application event publisher for domain events. */
+  private final ApplicationEventPublisher eventPublisher;
 
   /** Application configuration properties. */
   private final AppProperties appProperties;
@@ -272,8 +273,9 @@ public class UserService implements UserDetailsService {
   /**
    * Create a new user.
    *
-   * <p>Generates a random password, sets status to INACTIVE, and sends a welcome email with the
-   * credentials. Throws an exception if the username or email already exists.
+   * <p>Generates a random password, sets status to INACTIVE, and publishes a {@link
+   * UserCreatedEvent} which triggers a welcome email with the credentials after the surrounding
+   * transaction commits. Throws an exception if the username or email already exists.
    *
    * @param user MstUser entity (email and username must be set)
    * @param roleIds Role IDs to assign
@@ -318,10 +320,18 @@ public class UserService implements UserDetailsService {
       }
     }
 
-    // Send welcome email asynchronously with credentials
+    // Publish a domain event so that the welcome email is sent only after the surrounding
+    // transaction commits. If a caller (e.g., EmployeeService.createEmployee) rolls back the
+    // transaction after this point, the listener never fires and no email is sent.
     String loginUrl = appProperties.getPasswordReset().getBaseUrl() + "/login";
-    emailService.sendNewUserWelcomeEmail(
-        user.getEmail(), user.getUsername(), rawPassword, loginUrl, LanguageContext.getLanguage());
+    eventPublisher.publishEvent(
+        new UserCreatedEvent(
+            user.getId(),
+            user.getEmail(),
+            user.getUsername(),
+            rawPassword,
+            loginUrl,
+            LanguageContext.getLanguage()));
 
     return user.getId();
   }
