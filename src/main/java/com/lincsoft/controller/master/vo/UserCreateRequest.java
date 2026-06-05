@@ -1,7 +1,5 @@
 package com.lincsoft.controller.master.vo;
 
-import com.lincsoft.annotation.ValidEnum;
-import com.lincsoft.constant.UserStatusEnum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -11,9 +9,11 @@ import java.util.List;
 /**
  * User create request VO.
  *
+ * <p>The {@code status} is not accepted from the client; new users are always created as {@code
+ * INACTIVE} and must change their password on first login.
+ *
  * @param username Username
  * @param email Email address (required)
- * @param status User status (optional, defaults to INACTIVE)
  * @param roleIds Role IDs
  * @author 林创科技
  * @since 2026-04-15
@@ -29,5 +29,4 @@ public record UserCreateRequest(
         @Email(message = "Email must be a valid email address")
         @Size(max = 128, message = "Email must be at most 128 characters")
         String email,
-    @ValidEnum(UserStatusEnum.class) String status,
     List<Integer> roleIds) {}
