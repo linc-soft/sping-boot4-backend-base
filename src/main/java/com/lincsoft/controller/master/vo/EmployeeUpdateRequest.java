@@ -33,7 +33,7 @@ public record EmployeeUpdateRequest(
     @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
         String password,
     @ValidEnum(UserStatusEnum.class) String status,
-    String nickname,
+    @Size(max = 30, message = "Nickname must be at most 30 characters") String nickname,
     String mobile,
     SexType sex,
     String hiredDate,

@@ -73,11 +73,11 @@ public class EmployeeController {
    * Create a new employee.
    *
    * @param request employee creation request
-   * @return created user ID
+   * @return display name (username + nickname) of the created employee
    */
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).EMPLOYEE_WRITE.roleCode)")
   @PostMapping
-  public Long createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {
+  public String createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {
     return employeeService.createEmployee(request);
   }
 

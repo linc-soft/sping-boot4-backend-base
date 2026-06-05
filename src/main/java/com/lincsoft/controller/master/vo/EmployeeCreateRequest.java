@@ -32,7 +32,9 @@ public record EmployeeCreateRequest(
         @Email(message = "Email must be a valid email address")
         @Size(max = 128, message = "Email must be at most 128 characters")
         String email,
-    @NotBlank(message = "Nickname is required") String nickname,
+    @NotBlank(message = "Nickname is required")
+        @Size(max = 30, message = "Nickname must be at most 30 characters")
+        String nickname,
     String mobile,
     SexType sex,
     String hiredDate,

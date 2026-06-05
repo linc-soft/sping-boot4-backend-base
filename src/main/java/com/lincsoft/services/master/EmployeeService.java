@@ -107,15 +107,15 @@ public class EmployeeService {
    * and welcome email sending.
    *
    * @param request the creation request
-   * @return the created user ID
+   * @return display name (username + nickname) of the created employee
    */
   @OperationLog(
       module = Module.MASTER,
       subModule = SubModule.EMPLOYEE,
       type = OperationType.CREATE,
-      description = "Employee created: #{#request.username}")
+      description = "Employee created: #{#result}")
   @Transactional(rollbackFor = Exception.class)
-  public Long createEmployee(EmployeeCreateRequest request) {
+  public String createEmployee(EmployeeCreateRequest request) {
     MstUser user = employeeMapperConvert.toUserEntity(request);
     Long userId = userService.createUser(user, request.roleIds());
 
@@ -126,7 +126,7 @@ public class EmployeeService {
         request.hiredDate() != null ? LocalDate.parse(request.hiredDate()) : null);
     employeeMapper.insert(employee);
 
-    return userId;
+    return formatDisplayName(request.username(), request.nickname());
   }
 
   /**
@@ -142,9 +142,9 @@ public class EmployeeService {
       module = Module.MASTER,
       subModule = SubModule.EMPLOYEE,
       type = OperationType.UPDATE,
-      description = "Employee updated: #{#request.id}")
+      description = "Employee updated: #{#result}")
   @Transactional(rollbackFor = Exception.class)
-  public void updateEmployee(EmployeeUpdateRequest request) {
+  public String updateEmployee(EmployeeUpdateRequest request) {
     MstUser existingUser = userService.getUserById(request.id());
     MstUser user = employeeMapperConvert.toUserEntity(request);
     user.setUsername(existingUser.getUsername());
@@ -167,6 +167,8 @@ public class EmployeeService {
       employee.setRemark(request.remark());
     }
     employeeMapper.updateById(employee);
+
+    return formatDisplayName(existingUser.getUsername(), employee.getNickname());
   }
 
   /**
@@ -178,9 +180,14 @@ public class EmployeeService {
       module = Module.MASTER,
       subModule = SubModule.EMPLOYEE,
       type = OperationType.DELETE,
-      description = "Employee deleted")
+      description = "Employee deleted: #{#result}")
   @Transactional(rollbackFor = Exception.class)
-  public void deleteEmployee(Long userId) {
+  public String deleteEmployee(Long userId) {
+    MstUser existingUser = userService.getUserById(userId);
+    Employee existingEmployee = getEmployeeByUserId(userId);
+    String displayName =
+        formatDisplayName(existingUser.getUsername(), existingEmployee.getNickname());
+
     LambdaQueryWrapper<Employee> empQuery = new LambdaQueryWrapper<>();
     empQuery.eq(Employee::getUserId, userId);
     employeeMapper.delete(empQuery);
@@ -190,6 +197,14 @@ public class EmployeeService {
     userRoleMapper.delete(roleQuery);
 
     userMapper.deleteById(userId);
+    return displayName;
+  }
+
+  private String formatDisplayName(String username, String nickname) {
+    if (nickname == null || nickname.isBlank()) {
+      return username;
+    }
+    return username + " (" + nickname + ")";
   }
 
   /** Get Employee entity by userId. */
