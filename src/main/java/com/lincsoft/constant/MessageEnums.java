@@ -81,7 +81,27 @@ public enum MessageEnums {
   ROLE_INHERITANCE_EXISTS(102_409, "error.role.inheritance_exists"),
   ROLE_OPTIMISTIC_LOCK_FAILED(102_412, "error.role.optimistic_lock_failed"),
   ROLE_IN_USE(102_423, "error.role.in_use"),
-  ROLE_HAS_INHERITANCE(102_424, "error.role.has_inheritance");
+  ROLE_HAS_INHERITANCE(102_424, "error.role.has_inheritance"),
+
+  // ========== 103: OA - Department page ==========
+  DEPT_CIRCULAR_DEPENDENCY(103_400, "error.dept.circular_dependency"),
+  DEPT_PARENT_NOT_FOUND(103_401, "error.dept.parent_not_found"),
+  DEPT_NOT_FOUND(103_404, "error.dept.not_found"),
+  DEPT_CODE_EXISTS(103_409, "error.dept.code_exists"),
+  DEPT_OPTIMISTIC_LOCK_FAILED(103_412, "error.dept.optimistic_lock_failed"),
+  DEPT_HAS_CHILDREN(103_423, "error.dept.has_children"),
+  DEPT_HAS_EMPLOYEES(103_424, "error.dept.has_employees"),
+
+  // ========== 104: OA - Position page ==========
+  POSITION_NOT_FOUND(104_404, "error.position.not_found"),
+  POSITION_CODE_EXISTS(104_409, "error.position.code_exists"),
+  POSITION_OPTIMISTIC_LOCK_FAILED(104_412, "error.position.optimistic_lock_failed"),
+  POSITION_HAS_EMPLOYEES(104_424, "error.position.has_employees"),
+
+  // ========== 105: OA - Employee page ==========
+  EMPLOYEE_NOT_FOUND(105_404, "error.employee.not_found"),
+  EMPLOYEE_NO_EXISTS(105_409, "error.employee.no_exists"),
+  EMPLOYEE_OPTIMISTIC_LOCK_FAILED(105_412, "error.employee.optimistic_lock_failed");
 
   @Getter private final int code;
 

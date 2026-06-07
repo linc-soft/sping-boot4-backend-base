@@ -19,7 +19,8 @@ import lombok.Getter;
 public enum Module implements BaseEnum<String> {
   MASTER("MASTER", "Master"),
   AUTH("AUTH", "Auth"),
-  SYSTEM("SYSTEM", "System");
+  SYSTEM("SYSTEM", "System"),
+  OA("OA", "Office Automation");
 
   /** Module code. */
   private final String code;
