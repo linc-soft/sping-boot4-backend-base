@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS mst_role_inheritance
 -- ============================================================
 INSERT INTO mst_user (username, password, email, status, create_by, update_by)
 VALUES ('admin',
-        '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi',
+        '$2a$10$EnO/OowYMyVUUaYMHwaR.Oh.tnaLtj8Y/zhhlgL3L/qDkuUc.Hr9C',
         'admin@example.com',
         '1',
         'system',

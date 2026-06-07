@@ -32,7 +32,17 @@ public enum RoleCodeEnums implements BaseEnum<String> {
   LOG_EXPORT("LOG_EXPORT", "Log Exporter"),
   FILE_READ("FILE_READ", "File Reader"),
   FILE_WRITE("FILE_WRITE", "File Uploader"),
-  FILE_DELETE("FILE_DELETE", "File Deleter");
+  FILE_DELETE("FILE_DELETE", "File Deleter"),
+  DEPT_READ("DEPT_READ", "Department Reader"),
+  DEPT_WRITE("DEPT_WRITE", "Department Writer"),
+  DEPT_DELETE("DEPT_DELETE", "Department Deleter"),
+  POSITION_READ("POSITION_READ", "Position Reader"),
+  POSITION_WRITE("POSITION_WRITE", "Position Writer"),
+  POSITION_DELETE("POSITION_DELETE", "Position Deleter"),
+  EMPLOYEE_READ("EMPLOYEE_READ", "Employee Reader"),
+  EMPLOYEE_WRITE("EMPLOYEE_WRITE", "Employee Writer"),
+  EMPLOYEE_DELETE("EMPLOYEE_DELETE", "Employee Deleter"),
+  EMPLOYEE_EXPORT("EMPLOYEE_EXPORT", "Employee Exporter");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;
