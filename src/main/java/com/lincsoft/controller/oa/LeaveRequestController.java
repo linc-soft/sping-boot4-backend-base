@@ -1,6 +1,7 @@
 package com.lincsoft.controller.oa;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.lincsoft.controller.oa.vo.AnnualBalanceResponse;
 import com.lincsoft.controller.oa.vo.LeaveApprovalRequest;
 import com.lincsoft.controller.oa.vo.LeaveInfoResponse;
 import com.lincsoft.controller.oa.vo.LeavePageRequest;
@@ -35,6 +36,29 @@ public class LeaveRequestController {
 
   /** Leave request mapper for converting between VO and entity. */
   private final LeaveRequestMapper leaveRequestMapper;
+
+  /**
+   * Get the current user's annual-leave balance.
+   *
+   * @return the current user's annual-leave balance with per-batch detail
+   */
+  @GetMapping("/annual-balance")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_APPLY.roleCode)")
+  public AnnualBalanceResponse getMyAnnualBalance() {
+    return leaveRequestService.getMyAnnualBalance();
+  }
+
+  /**
+   * Get an employee's annual-leave balance by employee ID (privileged view).
+   *
+   * @param employeeId Employee ID
+   * @return the employee's annual-leave balance with per-batch detail
+   */
+  @GetMapping("/annual-balance/{employeeId}")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode)")
+  public AnnualBalanceResponse getAnnualBalanceByEmployeeId(@PathVariable Long employeeId) {
+    return leaveRequestService.getAnnualBalanceByEmployeeId(employeeId);
+  }
 
   /**
    * Get leave request by ID.

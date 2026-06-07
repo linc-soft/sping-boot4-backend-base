@@ -134,6 +134,63 @@ CREATE TABLE IF NOT EXISTS oa_leave_request
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Leave request table';
 
 -- ============================================================
+-- oa_annual_leave_grant table
+-- Annual-leave quota, one row per grant batch. Quota is granted on
+-- each employment anniversary (lazy-written on first access). A batch
+-- is valid for 24 months from its grant_date; consumption is FIFO
+-- (earliest grant_date first). granted_days is locked at grant time
+-- based on tenure tier (5 / 7 / 9 days).
+-- ============================================================
+DROP TABLE IF EXISTS oa_annual_leave_grant;
+CREATE TABLE IF NOT EXISTS oa_annual_leave_grant
+(
+  id           BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  employee_id  BIGINT       DEFAULT NULL COMMENT 'Employee ID (mst_employee.id)',
+  grant_date   DATE         DEFAULT NULL COMMENT 'Grant date (employment anniversary)',
+  expire_date  DATE         DEFAULT NULL COMMENT 'Expiry date (grant_date + 24 months)',
+  granted_days DECIMAL(5,1) DEFAULT NULL COMMENT 'Days granted in this batch (tenure tier 5/7/9)',
+  used_days    DECIMAL(5,1) DEFAULT 0.0 COMMENT 'Days consumed from this batch',
+  create_by    VARCHAR(20) COMMENT 'Creator',
+  create_at    DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
+  update_by    VARCHAR(20) COMMENT 'Updater',
+  update_at    DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
+  version      INT          DEFAULT 0 COMMENT 'Optimistic lock version',
+  deleted      TINYINT(1)   DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id),
+  INDEX idx_grant_employee_id (employee_id),
+  INDEX idx_grant_expire_date (expire_date)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Annual leave grant table';
+
+-- ============================================================
+-- oa_annual_leave_consumption table
+-- Per-batch consumption ledger for a leave request. When an annual
+-- leave request is submitted, FIFO consumption across grant batches
+-- writes one row per affected batch (leave_request_id + grant_id +
+-- days). On reject/withdraw, refund restores each batch by exactly
+-- the recorded days.
+-- ============================================================
+DROP TABLE IF EXISTS oa_annual_leave_consumption;
+CREATE TABLE IF NOT EXISTS oa_annual_leave_consumption
+(
+  id               BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  leave_request_id BIGINT       DEFAULT NULL COMMENT 'Leave request ID (oa_leave_request.id)',
+  grant_id         BIGINT       DEFAULT NULL COMMENT 'Grant batch ID (oa_annual_leave_grant.id)',
+  days             DECIMAL(5,1) DEFAULT NULL COMMENT 'Days consumed from this batch',
+  create_by        VARCHAR(20) COMMENT 'Creator',
+  create_at        DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
+  update_by        VARCHAR(20) COMMENT 'Updater',
+  update_at        DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
+  deleted          TINYINT(1)   DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id),
+  INDEX idx_consumption_leave_request_id (leave_request_id),
+  INDEX idx_consumption_grant_id (grant_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Annual leave consumption ledger table';
+
+-- ============================================================
 -- Initial Data: permission roles for organization modules
 -- Follows existing convention: role_code IS the granted authority.
 -- (Continues the id sequence after master.sql which ends at id=11)

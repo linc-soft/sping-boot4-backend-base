@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lincsoft.annotation.OperationLog;
+import com.lincsoft.constant.LeaveTypeEnum;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.Module;
 import com.lincsoft.constant.OperationType;
 import com.lincsoft.constant.SubModule;
+import com.lincsoft.controller.oa.vo.AnnualBalanceResponse;
 import com.lincsoft.controller.oa.vo.LeavePageRequest;
 import com.lincsoft.controller.oa.vo.LeaveTaskResponseItem;
 import com.lincsoft.entity.master.MstUser;
@@ -63,11 +65,17 @@ public class LeaveRequestService {
   /** Days threshold at or above which department-leader (second-level) approval is required. */
   private static final BigDecimal MULTI_LEVEL_THRESHOLD = new BigDecimal("3");
 
+  /** Smallest allowed leave-day unit; requested days must be a positive multiple of this. */
+  private static final BigDecimal HALF_DAY_UNIT = new BigDecimal("0.5");
+
   /** Leave request mapper for database operations. */
   private final OaLeaveRequestMapper leaveRequestMapper;
 
   /** Employee service for resolving applicant and approver. */
   private final EmployeeService employeeService;
+
+  /** Annual leave service for quota check / consumption / refund. */
+  private final AnnualLeaveService annualLeaveService;
 
   /** Department service for resolving the department leader (second-level approver). */
   private final DepartmentService departmentService;
@@ -94,6 +102,26 @@ public class LeaveRequestService {
       throw new BusinessException(MessageEnums.LEAVE_NOT_FOUND);
     }
     return leave;
+  }
+
+  /**
+   * Get the current authenticated user's annual-leave balance.
+   *
+   * @return the current user's annual-leave balance with per-batch detail
+   */
+  public AnnualBalanceResponse getMyAnnualBalance() {
+    return annualLeaveService.getBalance(resolveCurrentEmployee());
+  }
+
+  /**
+   * Get an employee's annual-leave balance by employee ID (privileged view).
+   *
+   * @param employeeId Employee ID
+   * @return the employee's annual-leave balance with per-batch detail
+   * @throws BusinessException if the employee is not found
+   */
+  public AnnualBalanceResponse getAnnualBalanceByEmployeeId(Long employeeId) {
+    return annualLeaveService.getBalance(employeeService.getEmployeeById(employeeId));
   }
 
   /**
@@ -138,6 +166,9 @@ public class LeaveRequestService {
       description = "Leave request submitted: #{#result}")
   @Transactional(rollbackFor = Exception.class)
   public Long submitLeave(OaLeaveRequest leave) {
+    validateLeaveType(leave.getLeaveType());
+    validateHalfDayUnit(leave.getDays());
+
     MstEmployee applicant = resolveCurrentEmployee();
     if (applicant.getManagerId() == null) {
       throw new BusinessException(MessageEnums.LEAVE_NO_MANAGER);
@@ -152,6 +183,13 @@ public class LeaveRequestService {
     leave.setApproverId(manager.getId());
     leave.setStatus(STATUS_PENDING);
     leaveRequestMapper.insert(leave);
+
+    // Annual leave consumes quota at submission time (FIFO). Insufficient balance rolls back the
+    // whole transaction, so no leave record or process is left behind.
+    if (LeaveTypeEnum.ANNUAL.getCode().equals(leave.getLeaveType())
+        && !annualLeaveService.consume(applicant, leave.getDays(), leave.getId())) {
+      throw new BusinessException(MessageEnums.LEAVE_INSUFFICIENT_ANNUAL);
+    }
 
     Map<String, Object> variables = new HashMap<>();
     variables.put("leaveId", leave.getId());
@@ -214,6 +252,7 @@ public class LeaveRequestService {
     LambdaUpdateWrapper<OaLeaveRequest> uw = new LambdaUpdateWrapper<>();
     uw.eq(OaLeaveRequest::getId, id);
     if (!approved) {
+      refundAnnualLeaveIfNeeded(leave);
       uw.set(OaLeaveRequest::getStatus, STATUS_REJECTED)
           .set(OaLeaveRequest::getApprovalComment, comment);
     } else if (processEnded) {
@@ -264,6 +303,8 @@ public class LeaveRequestService {
     if (leave.getProcessInstanceId() != null) {
       runtimeService.deleteProcessInstance(leave.getProcessInstanceId(), "Withdrawn by applicant");
     }
+
+    refundAnnualLeaveIfNeeded(leave);
 
     LambdaUpdateWrapper<OaLeaveRequest> uw = new LambdaUpdateWrapper<>();
     uw.eq(OaLeaveRequest::getId, id).set(OaLeaveRequest::getStatus, STATUS_WITHDRAWN);
@@ -368,5 +409,42 @@ public class LeaveRequestService {
     }
     MstEmployee leader = employeeService.getEmployeeById(department.getLeaderEmployeeId());
     return resolveUsername(leader);
+  }
+
+  /**
+   * Validate that the leave type is one of the defined types.
+   *
+   * @param leaveType Leave type code
+   * @throws BusinessException if the type is not defined
+   */
+  private void validateLeaveType(String leaveType) {
+    if (!LeaveTypeEnum.isValid(leaveType)) {
+      throw new BusinessException(MessageEnums.LEAVE_INVALID_TYPE);
+    }
+  }
+
+  /**
+   * Validate that the requested days is a positive multiple of the half-day unit.
+   *
+   * @param days Number of leave days
+   * @throws BusinessException if days is null, non-positive, or not a multiple of 0.5
+   */
+  private void validateHalfDayUnit(BigDecimal days) {
+    if (days == null
+        || days.signum() <= 0
+        || days.remainder(HALF_DAY_UNIT).compareTo(BigDecimal.ZERO) != 0) {
+      throw new BusinessException(MessageEnums.LEAVE_DAYS_NOT_HALF_UNIT);
+    }
+  }
+
+  /**
+   * Refund consumed annual leave for the given request, if it is an annual-leave request.
+   *
+   * @param leave The leave request being rejected or withdrawn
+   */
+  private void refundAnnualLeaveIfNeeded(OaLeaveRequest leave) {
+    if (LeaveTypeEnum.ANNUAL.getCode().equals(leave.getLeaveType())) {
+      annualLeaveService.refund(leave.getId());
+    }
   }
 }

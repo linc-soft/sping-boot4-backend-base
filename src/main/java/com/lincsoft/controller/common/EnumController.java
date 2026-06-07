@@ -1,5 +1,6 @@
 package com.lincsoft.controller.common;
 
+import com.lincsoft.constant.LeaveTypeEnum;
 import com.lincsoft.constant.Module;
 import com.lincsoft.constant.RoleCodeEnums;
 import com.lincsoft.constant.SubModule;
@@ -27,7 +28,7 @@ public class EnumController {
   /**
    * Get enumeration list by type.
    *
-   * @param type the enumeration type identifier (e.g., "user-status")
+   * @param type the enumeration type identifier (e.g., "user-status", "leave-type")
    * @return list of maps with "code" and "name" entries
    * @throws IllegalArgumentException if the type is not supported
    */
@@ -38,6 +39,7 @@ public class EnumController {
       case "role-code" -> RoleCodeEnums.getList();
       case "module" -> Module.getList();
       case "sub-module" -> SubModule.getList();
+      case "leave-type" -> LeaveTypeEnum.getList();
       default -> throw new IllegalArgumentException("Unsupported enum type: " + type);
     };
   }
