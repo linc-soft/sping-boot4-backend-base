@@ -24,7 +24,8 @@ public enum SubModule implements BaseEnum<String> {
   PERMISSION("PERMISSION", "Permission"),
   DEPARTMENT("DEPARTMENT", "Department management"),
   POSITION("POSITION", "Position management"),
-  EMPLOYEE("EMPLOYEE", "Employee management");
+  EMPLOYEE("EMPLOYEE", "Employee management"),
+  LEAVE("LEAVE", "Leave request management");
 
   /** Sub-module code. */
   private final String code;

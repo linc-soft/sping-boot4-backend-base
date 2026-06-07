@@ -100,6 +100,40 @@ CREATE TABLE IF NOT EXISTS mst_employee
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Employee table';
 
 -- ============================================================
+-- oa_leave_request table
+-- Leave request business data. Flowable owns the approval flow;
+-- this table stores the business fields and links to the BPMN
+-- process instance via process_instance_id.
+-- ============================================================
+DROP TABLE IF EXISTS oa_leave_request;
+CREATE TABLE IF NOT EXISTS oa_leave_request
+(
+  id                  BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  employee_id         BIGINT       DEFAULT NULL COMMENT 'Applicant employee ID (mst_employee.id)',
+  leave_type          VARCHAR(2)   DEFAULT NULL COMMENT 'Leave type (1 annual / 2 sick / 3 personal / 4 marriage / 5 maternity / 9 other)',
+  start_time          DATETIME     DEFAULT NULL COMMENT 'Leave start time',
+  end_time            DATETIME     DEFAULT NULL COMMENT 'Leave end time',
+  days                DECIMAL(5,1) DEFAULT NULL COMMENT 'Number of leave days',
+  reason              VARCHAR(500) DEFAULT NULL COMMENT 'Leave reason',
+  status              VARCHAR(2)   DEFAULT NULL COMMENT 'Status (0 pending / 1 approved / 2 rejected / 3 withdrawn)',
+  process_instance_id VARCHAR(64)  DEFAULT NULL COMMENT 'Flowable process instance ID',
+  approver_id         BIGINT       DEFAULT NULL COMMENT 'Resolved approver employee ID (direct manager)',
+  approval_comment    VARCHAR(500) DEFAULT NULL COMMENT 'Approver comment',
+  create_by           VARCHAR(20) COMMENT 'Creator',
+  create_at           DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
+  update_by           VARCHAR(20) COMMENT 'Updater',
+  update_at           DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
+  version             INT          DEFAULT 0 COMMENT 'Optimistic lock version',
+  deleted             TINYINT(1)   DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id),
+  INDEX idx_leave_employee_id (employee_id),
+  INDEX idx_leave_status (status),
+  INDEX idx_leave_process_instance_id (process_instance_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Leave request table';
+
+-- ============================================================
 -- Initial Data: permission roles for organization modules
 -- Follows existing convention: role_code IS the granted authority.
 -- (Continues the id sequence after master.sql which ends at id=11)
@@ -114,4 +148,7 @@ VALUES (12, 'Department Reader', 'DEPT_READ', 'Can read departments', 'system', 
        (18, 'Employee Reader', 'EMPLOYEE_READ', 'Can read employees', 'system', 'system'),
        (19, 'Employee Writer', 'EMPLOYEE_WRITE', 'Can write employees', 'system', 'system'),
        (20, 'Employee Deleter', 'EMPLOYEE_DELETE', 'Can delete employees', 'system', 'system'),
-       (21, 'Employee Exporter', 'EMPLOYEE_EXPORT', 'Can export employees', 'system', 'system');
+       (21, 'Employee Exporter', 'EMPLOYEE_EXPORT', 'Can export employees', 'system', 'system'),
+       (22, 'Leave Applicant', 'LEAVE_APPLY', 'Can submit leave requests', 'system', 'system'),
+       (23, 'Leave Reader', 'LEAVE_READ', 'Can read leave requests', 'system', 'system'),
+       (24, 'Leave Approver', 'LEAVE_APPROVE', 'Can approve leave requests', 'system', 'system');

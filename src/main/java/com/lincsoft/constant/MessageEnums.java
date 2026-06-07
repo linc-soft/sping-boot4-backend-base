@@ -101,7 +101,16 @@ public enum MessageEnums {
   // ========== 105: OA - Employee page ==========
   EMPLOYEE_NOT_FOUND(105_404, "error.employee.not_found"),
   EMPLOYEE_NO_EXISTS(105_409, "error.employee.no_exists"),
-  EMPLOYEE_OPTIMISTIC_LOCK_FAILED(105_412, "error.employee.optimistic_lock_failed");
+  EMPLOYEE_OPTIMISTIC_LOCK_FAILED(105_412, "error.employee.optimistic_lock_failed"),
+
+  // ========== 106: OA - Leave page ==========
+  LEAVE_NOT_FOUND(106_404, "error.leave.not_found"),
+  LEAVE_NO_MANAGER(106_400, "error.leave.no_manager"),
+  LEAVE_NO_DEPT_LEADER(106_401, "error.leave.no_dept_leader"),
+  LEAVE_NOT_OWNER(106_403, "error.leave.not_owner"),
+  LEAVE_NOT_PENDING(106_409, "error.leave.not_pending"),
+  LEAVE_TASK_NOT_FOUND(106_410, "error.leave.task_not_found"),
+  LEAVE_OPTIMISTIC_LOCK_FAILED(106_412, "error.leave.optimistic_lock_failed");
 
   @Getter private final int code;
 

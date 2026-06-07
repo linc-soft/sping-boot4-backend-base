@@ -42,7 +42,10 @@ public enum RoleCodeEnums implements BaseEnum<String> {
   EMPLOYEE_READ("EMPLOYEE_READ", "Employee Reader"),
   EMPLOYEE_WRITE("EMPLOYEE_WRITE", "Employee Writer"),
   EMPLOYEE_DELETE("EMPLOYEE_DELETE", "Employee Deleter"),
-  EMPLOYEE_EXPORT("EMPLOYEE_EXPORT", "Employee Exporter");
+  EMPLOYEE_EXPORT("EMPLOYEE_EXPORT", "Employee Exporter"),
+  LEAVE_APPLY("LEAVE_APPLY", "Leave Applicant"),
+  LEAVE_READ("LEAVE_READ", "Leave Reader"),
+  LEAVE_APPROVE("LEAVE_APPROVE", "Leave Approver");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;

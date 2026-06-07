@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://www.lincsoft.com/leave">
+
+  <process id="leaveApproval" name="Leave Approval Process" isExecutable="true">
+
+    <startEvent id="startEvent" name="Leave Request"/>
+
+    <sequenceFlow id="toManager" sourceRef="startEvent" targetRef="managerApprovalTask"/>
+
+    <userTask id="managerApprovalTask" name="Manager Approval"
+              flowable:assignee="${managerId}">
+      <documentation>Leave request from ${applicantName} for ${leaveDays} day(s)</documentation>
+    </userTask>
+
+    <sequenceFlow id="toManagerDecision" sourceRef="managerApprovalTask" targetRef="managerGateway"/>
+
+    <exclusiveGateway id="managerGateway" name="Manager Approved?"/>
+
+    <sequenceFlow id="managerRejected" sourceRef="managerGateway" targetRef="endEvent">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approved == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="managerApproved" sourceRef="managerGateway" targetRef="thresholdGateway">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approved == true}]]></conditionExpression>
+    </sequenceFlow>
+
+    <exclusiveGateway id="thresholdGateway" name="Days >= 3?"/>
+
+    <sequenceFlow id="shortLeave" sourceRef="thresholdGateway" targetRef="endEvent">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${leaveDays < 3}]]></conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="longLeave" sourceRef="thresholdGateway" targetRef="deptLeaderApprovalTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${leaveDays >= 3}]]></conditionExpression>
+    </sequenceFlow>
+
+    <userTask id="deptLeaderApprovalTask" name="Department Leader Approval"
+              flowable:assignee="${deptLeaderId}">
+      <documentation>Leave request from ${applicantName} for ${leaveDays} day(s), manager-approved</documentation>
+    </userTask>
+
+    <sequenceFlow id="toLeaderDecision" sourceRef="deptLeaderApprovalTask" targetRef="leaderGateway"/>
+
+    <exclusiveGateway id="leaderGateway" name="Leader Approved?"/>
+
+    <sequenceFlow id="leaderApproved" sourceRef="leaderGateway" targetRef="endEvent">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approved == true}]]></conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="leaderRejected" sourceRef="leaderGateway" targetRef="endEvent">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approved == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <endEvent id="endEvent" name="End"/>
+
+  </process>
+</definitions>
