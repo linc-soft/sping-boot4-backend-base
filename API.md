@@ -221,6 +221,405 @@ Returns a PDF file with `Content-Type: application/pdf` and `Content-Disposition
 
 ---
 
+## Organization — Department
+
+### Get Department
+
+| Item         | Detail                          |
+| ------------ | ------------------------------- |
+| **Endpoint** | `GET /api/departments/{id}`     |
+| **Auth**     | Requires `DEPT_READ` permission |
+
+Retrieves a single department by ID. Returns `id`, `deptName`, `deptCode`, `parentId` (0 for top level), `leaderEmployeeId`, `sortOrder`, `status`, and `version`. Throws 404 if not found.
+
+---
+
+### Get Department Tree
+
+| Item         | Detail                          |
+| ------------ | ------------------------------- |
+| **Endpoint** | `GET /api/departments/tree`     |
+| **Auth**     | Requires `DEPT_READ` permission |
+
+Returns the full department hierarchy as a nested tree. All departments are loaded in a single query and assembled in memory into nested `children` arrays. Siblings are ordered by `sortOrder` ascending (nulls last), then by `id` ascending. Orphaned nodes (whose parent is missing or soft-deleted) are surfaced as top-level nodes so they remain visible. Each node carries the same fields as the detail endpoint plus a `children` array.
+
+---
+
+### Create Department
+
+| Item         | Detail                           |
+| ------------ | -------------------------------- |
+| **Endpoint** | `POST /api/departments`          |
+| **Auth**     | Requires `DEPT_WRITE` permission |
+
+Creates a new department. Validates parent existence (unless top-level) and department code uniqueness before inserting. A null `parentId` is normalized to `0` (top level). Returns the created department ID.
+
+**Request Body:**
+
+- `deptName` (required): Department name, max 64 characters
+- `deptCode` (optional): Department code, max 64 characters (must be unique)
+- `parentId` (optional): Parent department ID, `0` or omitted for top level
+- `leaderEmployeeId` (optional): Department head employee ID
+- `sortOrder` (optional): Sort order among siblings
+- `status` (optional): Status (`0` disabled / `1` enabled)
+
+---
+
+### Update Department
+
+| Item         | Detail                           |
+| ------------ | -------------------------------- |
+| **Endpoint** | `PUT /api/departments`           |
+| **Auth**     | Requires `DEPT_WRITE` permission |
+
+Updates an existing department. Validates parent existence, code uniqueness (excluding itself), and that the new parent does not create a cycle (a department cannot become a child of itself or any of its descendants). Uses optimistic locking via the `version` field.
+
+**Request Body:**
+
+- `id` (required): Department ID
+- `deptName` (required): Department name, max 64 characters
+- `deptCode` (optional): Department code, max 64 characters
+- `parentId` (optional): Parent department ID (`0` for top level)
+- `leaderEmployeeId` (optional): Department head employee ID
+- `sortOrder` (optional): Sort order among siblings
+- `status` (optional): Status (`0` disabled / `1` enabled)
+- `version` (required): Version for optimistic locking
+
+---
+
+### Delete Department
+
+| Item         | Detail                            |
+| ------------ | --------------------------------- |
+| **Endpoint** | `DELETE /api/departments`         |
+| **Auth**     | Requires `DEPT_DELETE` permission |
+
+Deletes a department after validating it has no sub-departments and no assigned employees. Uses optimistic locking via an explicit version condition.
+
+**Request Body:**
+
+- `id` (required): Department ID
+- `version` (required): Version for optimistic locking
+
+---
+
+## Organization — Position
+
+### Get Position
+
+| Item         | Detail                              |
+| ------------ | ----------------------------------- |
+| **Endpoint** | `GET /api/positions/{id}`           |
+| **Auth**     | Requires `POSITION_READ` permission |
+
+Retrieves a single position by ID. Returns `id`, `positionName`, `positionCode`, `sortOrder`, `status`, and `version`. Throws 404 if not found.
+
+---
+
+### Get Position List
+
+| Item         | Detail                                                 |
+| ------------ | ------------------------------------------------------ |
+| **Endpoint** | `GET /api/positions`                                   |
+| **Auth**     | Requires `POSITION_READ` permission                    |
+| **Params**   | `positionName` (partial match), `status` (exact match) |
+
+Queries positions by optional conditions. Results are ordered by `sortOrder` ascending, then by `id` ascending. Each item includes `id`, `positionName`, `positionCode`, `sortOrder`, `status`, and `version`.
+
+---
+
+### Create Position
+
+| Item         | Detail                               |
+| ------------ | ------------------------------------ |
+| **Endpoint** | `POST /api/positions`                |
+| **Auth**     | Requires `POSITION_WRITE` permission |
+
+Creates a new position. Validates position code uniqueness before inserting. Returns the created position ID.
+
+**Request Body:**
+
+- `positionName` (required): Position name, max 64 characters
+- `positionCode` (optional): Position code, max 64 characters (must be unique)
+- `sortOrder` (optional): Sort order
+- `status` (optional): Status (`0` disabled / `1` enabled)
+
+---
+
+### Update Position
+
+| Item         | Detail                               |
+| ------------ | ------------------------------------ |
+| **Endpoint** | `PUT /api/positions`                 |
+| **Auth**     | Requires `POSITION_WRITE` permission |
+
+Updates an existing position. Validates code uniqueness (excluding itself). Uses optimistic locking via the `version` field.
+
+**Request Body:**
+
+- `id` (required): Position ID
+- `positionName` (required): Position name, max 64 characters
+- `positionCode` (optional): Position code, max 64 characters
+- `sortOrder` (optional): Sort order
+- `status` (optional): Status (`0` disabled / `1` enabled)
+- `version` (required): Version for optimistic locking
+
+---
+
+### Delete Position
+
+| Item         | Detail                                |
+| ------------ | ------------------------------------- |
+| **Endpoint** | `DELETE /api/positions`               |
+| **Auth**     | Requires `POSITION_DELETE` permission |
+
+Deletes a position after validating it is not assigned to any employee. Uses optimistic locking via an explicit version condition.
+
+**Request Body:**
+
+- `id` (required): Position ID
+- `version` (required): Version for optimistic locking
+
+---
+
+## Organization — Employee
+
+### Get Employee
+
+| Item         | Detail                              |
+| ------------ | ----------------------------------- |
+| **Endpoint** | `GET /api/employees/{id}`           |
+| **Auth**     | Requires `EMPLOYEE_READ` permission |
+
+Retrieves a single employee by ID. Returns `id`, `userId` (linked login account), `employeeNo`, `realName`, `deptId`, `positionId`, `managerId`, `mobile`, `email`, `gender`, `idCardNo`, `birthday`, `hireDate`, `status`, and `version`. Throws 404 if not found.
+
+---
+
+### Get Employee Page
+
+| Item         | Detail                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| **Endpoint** | `GET /api/employees/page`                                                                           |
+| **Auth**     | Requires `EMPLOYEE_READ` permission                                                                 |
+| **Params**   | `page`, `size`, `realName` (partial match), `employeeNo` (partial match), `deptId`, `status`        |
+
+Queries employees with pagination support. Supports dynamic sorting via `sortBy`/`sortOrder` over a whitelist (`id`, `employee_no`, `real_name`, `dept_id`, `hire_date`, `create_at`, `update_at`), defaulting to `update_at` descending. Each item includes `id`, `userId`, `employeeNo`, `realName`, `deptId`, `positionId`, `mobile`, `email`, `hireDate`, `status`, and `version`.
+
+---
+
+### Create Employee
+
+| Item         | Detail                               |
+| ------------ | ------------------------------------ |
+| **Endpoint** | `POST /api/employees`                |
+| **Auth**     | Requires `EMPLOYEE_WRITE` permission |
+
+Creates a new employee **together with a linked login account** in a single transaction. Validates employee number uniqueness, provisions the login account (generates a random password, sets the account to inactive, sends the welcome email after commit, assigns the given roles), then links the resulting user ID to the employee. If either side fails, both are rolled back atomically — no orphan employee or account is left behind.
+
+**Request Body:**
+
+- `username` (required): Login username, alphanumeric and underscore only (`^[a-zA-Z0-9_]+$`), max 64 characters
+- `employeeNo` (optional): Employee number, max 32 characters (must be unique)
+- `realName` (required): Real name, max 64 characters
+- `deptId` (optional): Department ID
+- `positionId` (optional): Position ID
+- `managerId` (optional): Direct supervisor employee ID
+- `mobile` (optional): Mobile phone, max 20 characters
+- `email` (required): Email address, valid email, max 128 characters (used for the login account)
+- `gender` (optional): Gender (`0` unknown / `1` male / `2` female)
+- `idCardNo` (optional): ID card number, max 32 characters
+- `birthday` (optional): Date of birth (`yyyy-MM-dd`)
+- `hireDate` (optional): Hire date (`yyyy-MM-dd`)
+- `status` (optional): Employment status (`0` left / `1` active / `2` on leave)
+- `roleIds` (optional): Role IDs to assign to the auto-created account
+
+Returns the created employee ID.
+
+---
+
+### Update Employee
+
+| Item         | Detail                               |
+| ------------ | ------------------------------------ |
+| **Endpoint** | `PUT /api/employees`                 |
+| **Auth**     | Requires `EMPLOYEE_WRITE` permission |
+
+Updates an employee profile only. The linked login account (username, password, roles) is managed separately via the User Management module. Validates employee number uniqueness (excluding itself). Uses optimistic locking via the `version` field.
+
+**Request Body:**
+
+- `id` (required): Employee ID
+- `employeeNo` (optional): Employee number, max 32 characters
+- `realName` (required): Real name, max 64 characters
+- `deptId` (optional): Department ID
+- `positionId` (optional): Position ID
+- `managerId` (optional): Direct supervisor employee ID
+- `mobile` (optional): Mobile phone, max 20 characters
+- `email` (optional): Email address, valid email, max 128 characters
+- `gender` (optional): Gender (`0` unknown / `1` male / `2` female)
+- `idCardNo` (optional): ID card number, max 32 characters
+- `birthday` (optional): Date of birth (`yyyy-MM-dd`)
+- `hireDate` (optional): Hire date (`yyyy-MM-dd`)
+- `status` (optional): Employment status (`0` left / `1` active / `2` on leave)
+- `version` (required): Version for optimistic locking
+
+---
+
+### Delete Employee
+
+| Item         | Detail                                |
+| ------------ | ------------------------------------- |
+| **Endpoint** | `DELETE /api/employees`               |
+| **Auth**     | Requires `EMPLOYEE_DELETE` permission |
+
+Deletes an employee profile using optimistic locking via an explicit version condition. The linked login account is intentionally left untouched and must be managed via the User Management module.
+
+**Request Body:**
+
+- `id` (required): Employee ID
+- `version` (required): Version for optimistic locking
+
+---
+
+## Workflow — Leave Approval
+
+> The approval flow is driven by the Flowable BPMN engine. Business data lives in `oa_leave_request` (MyBatis-Plus); Flowable owns the process instance and the approval task. Approvers are resolved dynamically from the organization tables, and their login usernames are passed to Flowable as task assignees.
+>
+> **Approval levels (threshold-based):**
+>
+> - `days < 3` — single level: direct manager only (`mst_employee.manager_id`).
+> - `days >= 3` — two levels: direct manager → department leader (`mst_department.leader_employee_id`). The business record stays `pending` after the first approval until the process actually ends.
+>
+> **Annual leave (`leaveType = 1`) quota rules:** Quota is granted on each employment anniversary, tiered by tenure at grant date (1–3 years → 5 days, 4–6 years → 7 days, 7+ years → 9 days). Each grant batch is valid for 24 months and consumed FIFO (earliest-granted first). On submit, annual leave quota is consumed within the same transaction; on reject/withdraw it is refunded to the exact original batches. Other leave types do not check or consume quota.
+
+### Submit Leave Request
+
+| Item         | Detail                            |
+| ------------ | --------------------------------- |
+| **Endpoint** | `POST /api/leaves`                |
+| **Auth**     | Requires `LEAVE_APPLY` permission |
+
+Submits a new leave request and starts the approval process in one transaction. The applicant is resolved from the authenticated user; the direct manager is resolved from the applicant's `managerId`. For `days >= 3`, the department leader is also resolved (the applicant's department must have a leader). For annual leave, the available quota is checked and consumed FIFO. Returns the created leave request ID.
+
+**Validation & failures:**
+
+- `leaveType` must be a defined type, otherwise `error.leave.invalid_type`.
+- `days` must be a positive multiple of `0.5`, otherwise `error.leave.days_not_half_unit`.
+- No direct manager → `error.leave.no_manager`.
+- `days >= 3` but the department has no leader → `error.leave.no_dept_leader`.
+- Annual leave exceeding the available balance → `error.leave.insufficient_annual`.
+
+The entire operation (quota consumption + record insert + process start) is transactional: any failure rolls back all of it.
+
+**Request Body:**
+
+- `leaveType` (required): Leave type (`1` annual / `2` sick / `3` personal / `4` marriage / `5` maternity / `9` other), max 2 characters
+- `startTime` (required): Leave start time (`yyyy-MM-dd'T'HH:mm:ss`)
+- `endTime` (required): Leave end time (`yyyy-MM-dd'T'HH:mm:ss`)
+- `days` (required): Number of leave days, must be a positive multiple of `0.5`
+- `reason` (optional): Leave reason, max 500 characters
+
+---
+
+### Get My Pending Tasks
+
+| Item         | Detail                              |
+| ------------ | ----------------------------------- |
+| **Endpoint** | `GET /api/leaves/tasks`             |
+| **Auth**     | Requires `LEAVE_APPROVE` permission |
+
+Lists the pending approval tasks assigned to the current user. Queries Flowable for tasks whose assignee equals the current user's username, then loads the underlying leave request business data for each. Each item includes `leaveId`, `employeeId`, `leaveType`, `startTime`, `endTime`, `days`, `reason`, and `createAt`.
+
+---
+
+### Review Leave Request
+
+| Item         | Detail                              |
+| ------------ | ----------------------------------- |
+| **Endpoint** | `POST /api/leaves/review`           |
+| **Auth**     | Requires `LEAVE_APPROVE` permission |
+
+Approves or rejects a leave request. The current user must be the assignee of the pending Flowable task. Completes the task with the `approved` variable (which drives the BPMN exclusive gateway), then synchronizes the business status and persists the approval comment.
+
+- **Approve, single-level (`days < 3`)** → process ends → status `1` approved.
+- **Approve, first level of two (`days >= 3`)** → process advances to the department leader → status stays `0` pending (comment recorded).
+- **Approve, final level** → process ends → status `1` approved.
+- **Reject (any level)** → process ends → status `2` rejected. For annual leave, the consumed quota is refunded.
+
+Fails if the leave request is not in a pending state or has no pending task.
+
+**Request Body:**
+
+- `id` (required): Leave request ID
+- `approved` (required): Approval decision (`true` = approve, `false` = reject)
+- `comment` (optional): Approver comment, max 500 characters
+
+---
+
+### Withdraw Leave Request
+
+| Item         | Detail                            |
+| ------------ | --------------------------------- |
+| **Endpoint** | `POST /api/leaves/withdraw`       |
+| **Auth**     | Requires `LEAVE_APPLY` permission |
+
+Withdraws a pending leave request. Only the applicant may withdraw their own request, and only while it is still pending. Deletes the Flowable process instance and marks the business record as withdrawn (`3`). For annual leave, the consumed quota is refunded to the exact original batches. Fails if the caller is not the owner or the request is not pending.
+
+**Request Body:**
+
+- `id` (required): Leave request ID
+
+---
+
+### Get My Annual Leave Balance
+
+| Item         | Detail                            |
+| ------------ | --------------------------------- |
+| **Endpoint** | `GET /api/leaves/annual-balance`  |
+| **Auth**     | Requires `LEAVE_APPLY` permission |
+
+Returns the current user's annual-leave balance as of today. Materializes any due (non-expired) grant batches on first access (lazy grant), then returns the total available days plus the per-batch breakdown. Returns:
+
+- `employeeId` — the current user's employee ID
+- `totalAvailable` — total available annual-leave days
+- `batches[]` — active grant batches, earliest grant date first, each with `grantDate`, `expireDate`, `grantedDays`, `usedDays`, `remainingDays`
+
+---
+
+### Get Annual Leave Balance by Employee
+
+| Item         | Detail                                       |
+| ------------ | -------------------------------------------- |
+| **Endpoint** | `GET /api/leaves/annual-balance/{employeeId}` |
+| **Auth**     | Requires `LEAVE_READ` permission             |
+
+Privileged view of another employee's annual-leave balance. Same response shape as the self endpoint. Throws 404 if the employee is not found.
+
+---
+
+### Get Leave Request
+
+| Item         | Detail                           |
+| ------------ | -------------------------------- |
+| **Endpoint** | `GET /api/leaves/{id}`           |
+| **Auth**     | Requires `LEAVE_READ` permission |
+
+Retrieves a single leave request by ID. Returns `id`, `employeeId`, `leaveType`, `startTime`, `endTime`, `days`, `reason`, `status` (`0` pending / `1` approved / `2` rejected / `3` withdrawn), `processInstanceId`, `approverId`, `approvalComment`, and `version`. Throws 404 if not found.
+
+---
+
+### Get Leave Request Page
+
+| Item         | Detail                                                          |
+| ------------ | --------------------------------------------------------------- |
+| **Endpoint** | `GET /api/leaves/page`                                          |
+| **Auth**     | Requires `LEAVE_READ` permission                                |
+| **Params**   | `page`, `size`, `employeeId`, `leaveType`, `status`             |
+
+Queries leave requests with pagination support. Supports dynamic sorting via `sortBy`/`sortOrder` over a whitelist (`id`, `employee_id`, `leave_type`, `status`, `create_at`, `update_at`), defaulting to `create_at` descending. Each item includes `id`, `employeeId`, `leaveType`, `startTime`, `endTime`, `days`, `status`, `approverId`, `createAt`, and `version`.
+
+---
+
 ## Common
 
 ### Get Enum List
@@ -229,9 +628,9 @@ Returns a PDF file with `Content-Type: application/pdf` and `Content-Disposition
 | ------------ | ----------------------------------------------------- |
 | **Endpoint** | `GET /api/common/enums`                               |
 | **Auth**     | Public (No authentication required)                   |
-| **Params**   | `type` — supported values: `user-status`, `role-code`, `module`, `sub-module` |
+| **Params**   | `type` — supported values: `user-status`, `role-code`, `module`, `sub-module`, `leave-type` |
 
-Returns enumeration data list by type. Supports `user-status` (user status options), `role-code` (role code options), `module` (module options), and `sub-module` (sub-module options). Each item contains `code` and `name` fields.
+Returns enumeration data list by type. Supports `user-status` (user status options), `role-code` (role code options), `module` (module options), `sub-module` (sub-module options), and `leave-type` (leave type options). Each item contains `code` and `name` fields.
 
 ---
 
@@ -683,6 +1082,405 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 ---
 
+## 组织架构 — 部门
+
+### 获取部门详情
+
+| 项目         | 详情                  |
+| ------------ | --------------------- |
+| **接口地址** | `GET /api/departments/{id}` |
+| **权限**     | 需要 `DEPT_READ` 权限 |
+
+根据 ID 获取单个部门。返回 `id`、`deptName`、`deptCode`、`parentId`（顶级为 0）、`leaderEmployeeId`、`sortOrder`、`status`、`version`。未找到时抛出 404 异常。
+
+---
+
+### 获取部门树
+
+| 项目         | 详情                  |
+| ------------ | --------------------- |
+| **接口地址** | `GET /api/departments/tree` |
+| **权限**     | 需要 `DEPT_READ` 权限 |
+
+返回完整的部门层级树形结构。一次性查询所有部门，在内存中组装为嵌套的 `children` 数组。同级按 `sortOrder` 升序排列（null 排最后），再按 `id` 升序。孤儿节点（父级缺失或被逻辑删除）会上浮为顶级节点以保持可见。每个节点包含与详情接口相同的字段，外加 `children` 数组。
+
+---
+
+### 创建部门
+
+| 项目         | 详情                   |
+| ------------ | ---------------------- |
+| **接口地址** | `POST /api/departments` |
+| **权限**     | 需要 `DEPT_WRITE` 权限 |
+
+创建新部门。插入前校验父部门存在性（非顶级时）和部门编码唯一性。`parentId` 为 null 时规范化为 `0`（顶级）。返回创建的部门 ID。
+
+**请求体：**
+
+- `deptName`（必填）：部门名称，最长 64 字符
+- `deptCode`（可选）：部门编码，最长 64 字符（须唯一）
+- `parentId`（可选）：父部门 ID，`0` 或不传表示顶级
+- `leaderEmployeeId`（可选）：部门负责人员工 ID
+- `sortOrder`（可选）：同级排序
+- `status`（可选）：状态（`0` 停用 / `1` 启用）
+
+---
+
+### 更新部门
+
+| 项目         | 详情                   |
+| ------------ | ---------------------- |
+| **接口地址** | `PUT /api/departments` |
+| **权限**     | 需要 `DEPT_WRITE` 权限 |
+
+更新现有部门。校验父部门存在性、编码唯一性（排除自身），以及新父级不会形成循环（部门不能成为自己或其后代的子级）。通过 `version` 字段使用乐观锁。
+
+**请求体：**
+
+- `id`（必填）：部门 ID
+- `deptName`（必填）：部门名称，最长 64 字符
+- `deptCode`（可选）：部门编码，最长 64 字符
+- `parentId`（可选）：父部门 ID（`0` 表示顶级）
+- `leaderEmployeeId`（可选）：部门负责人员工 ID
+- `sortOrder`（可选）：同级排序
+- `status`（可选）：状态（`0` 停用 / `1` 启用）
+- `version`（必填）：版本号，用于乐观锁
+
+---
+
+### 删除部门
+
+| 项目         | 详情                    |
+| ------------ | ----------------------- |
+| **接口地址** | `DELETE /api/departments` |
+| **权限**     | 需要 `DEPT_DELETE` 权限 |
+
+校验部门无子部门且无关联员工后删除。通过显式版本条件使用乐观锁。
+
+**请求体：**
+
+- `id`（必填）：部门 ID
+- `version`（必填）：版本号，用于乐观锁
+
+---
+
+## 组织架构 — 岗位
+
+### 获取岗位详情
+
+| 项目         | 详情                      |
+| ------------ | ------------------------- |
+| **接口地址** | `GET /api/positions/{id}` |
+| **权限**     | 需要 `POSITION_READ` 权限 |
+
+根据 ID 获取单个岗位。返回 `id`、`positionName`、`positionCode`、`sortOrder`、`status`、`version`。未找到时抛出 404 异常。
+
+---
+
+### 获取岗位列表
+
+| 项目         | 详情                                              |
+| ------------ | ------------------------------------------------- |
+| **接口地址** | `GET /api/positions`                              |
+| **权限**     | 需要 `POSITION_READ` 权限                         |
+| **参数**     | `positionName`（模糊匹配）、`status`（精确匹配）  |
+
+根据可选条件查询岗位。结果按 `sortOrder` 升序、再按 `id` 升序排列。每项包含 `id`、`positionName`、`positionCode`、`sortOrder`、`status`、`version`。
+
+---
+
+### 创建岗位
+
+| 项目         | 详情                       |
+| ------------ | -------------------------- |
+| **接口地址** | `POST /api/positions`      |
+| **权限**     | 需要 `POSITION_WRITE` 权限 |
+
+创建新岗位。插入前校验岗位编码唯一性。返回创建的岗位 ID。
+
+**请求体：**
+
+- `positionName`（必填）：岗位名称，最长 64 字符
+- `positionCode`（可选）：岗位编码，最长 64 字符（须唯一）
+- `sortOrder`（可选）：排序
+- `status`（可选）：状态（`0` 停用 / `1` 启用）
+
+---
+
+### 更新岗位
+
+| 项目         | 详情                       |
+| ------------ | -------------------------- |
+| **接口地址** | `PUT /api/positions`       |
+| **权限**     | 需要 `POSITION_WRITE` 权限 |
+
+更新现有岗位。校验编码唯一性（排除自身）。通过 `version` 字段使用乐观锁。
+
+**请求体：**
+
+- `id`（必填）：岗位 ID
+- `positionName`（必填）：岗位名称，最长 64 字符
+- `positionCode`（可选）：岗位编码，最长 64 字符
+- `sortOrder`（可选）：排序
+- `status`（可选）：状态（`0` 停用 / `1` 启用）
+- `version`（必填）：版本号，用于乐观锁
+
+---
+
+### 删除岗位
+
+| 项目         | 详情                        |
+| ------------ | --------------------------- |
+| **接口地址** | `DELETE /api/positions`     |
+| **权限**     | 需要 `POSITION_DELETE` 权限 |
+
+校验岗位未分配给任何员工后删除。通过显式版本条件使用乐观锁。
+
+**请求体：**
+
+- `id`（必填）：岗位 ID
+- `version`（必填）：版本号，用于乐观锁
+
+---
+
+## 组织架构 — 员工
+
+### 获取员工详情
+
+| 项目         | 详情                      |
+| ------------ | ------------------------- |
+| **接口地址** | `GET /api/employees/{id}` |
+| **权限**     | 需要 `EMPLOYEE_READ` 权限 |
+
+根据 ID 获取单个员工。返回 `id`、`userId`（关联的登录账号）、`employeeNo`、`realName`、`deptId`、`positionId`、`managerId`、`mobile`、`email`、`gender`、`idCardNo`、`birthday`、`hireDate`、`status`、`version`。未找到时抛出 404 异常。
+
+---
+
+### 获取员工分页
+
+| 项目         | 详情                                                                                          |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| **接口地址** | `GET /api/employees/page`                                                                     |
+| **权限**     | 需要 `EMPLOYEE_READ` 权限                                                                     |
+| **参数**     | `page`、`size`、`realName`（模糊匹配）、`employeeNo`（模糊匹配）、`deptId`、`status`           |
+
+支持分页查询员工。支持通过 `sortBy`/`sortOrder` 在白名单字段（`id`、`employee_no`、`real_name`、`dept_id`、`hire_date`、`create_at`、`update_at`）上动态排序，默认按 `update_at` 降序。每项包含 `id`、`userId`、`employeeNo`、`realName`、`deptId`、`positionId`、`mobile`、`email`、`hireDate`、`status`、`version`。
+
+---
+
+### 创建员工
+
+| 项目         | 详情                       |
+| ------------ | -------------------------- |
+| **接口地址** | `POST /api/employees`      |
+| **权限**     | 需要 `EMPLOYEE_WRITE` 权限 |
+
+在单个事务中创建员工**并同步创建关联的登录账号**。校验工号唯一性，创建登录账号（生成随机密码、账号置为未激活、事务提交后发送欢迎邮件、分配指定角色），然后将生成的用户 ID 关联到员工。任一环节失败则两者原子回滚 —— 不会残留孤儿员工或孤儿账号。
+
+**请求体：**
+
+- `username`（必填）：登录用户名，仅允许字母、数字和下划线（`^[a-zA-Z0-9_]+$`），最长 64 字符
+- `employeeNo`（可选）：工号，最长 32 字符（须唯一）
+- `realName`（必填）：真实姓名，最长 64 字符
+- `deptId`（可选）：部门 ID
+- `positionId`（可选）：岗位 ID
+- `managerId`（可选）：直属上级员工 ID
+- `mobile`（可选）：手机号，最长 20 字符
+- `email`（必填）：邮箱，合法邮箱格式，最长 128 字符（用于登录账号）
+- `gender`（可选）：性别（`0` 未知 / `1` 男 / `2` 女）
+- `idCardNo`（可选）：身份证号，最长 32 字符
+- `birthday`（可选）：出生日期（`yyyy-MM-dd`）
+- `hireDate`（可选）：入职日期（`yyyy-MM-dd`）
+- `status`（可选）：在职状态（`0` 离职 / `1` 在职 / `2` 休假）
+- `roleIds`（可选）：分配给自动创建账号的角色 ID 列表
+
+返回创建的员工 ID。
+
+---
+
+### 更新员工
+
+| 项目         | 详情                       |
+| ------------ | -------------------------- |
+| **接口地址** | `PUT /api/employees`       |
+| **权限**     | 需要 `EMPLOYEE_WRITE` 权限 |
+
+仅更新员工档案。关联的登录账号（用户名、密码、角色）由用户管理模块单独管理。校验工号唯一性（排除自身）。通过 `version` 字段使用乐观锁。
+
+**请求体：**
+
+- `id`（必填）：员工 ID
+- `employeeNo`（可选）：工号，最长 32 字符
+- `realName`（必填）：真实姓名，最长 64 字符
+- `deptId`（可选）：部门 ID
+- `positionId`（可选）：岗位 ID
+- `managerId`（可选）：直属上级员工 ID
+- `mobile`（可选）：手机号，最长 20 字符
+- `email`（可选）：邮箱，合法邮箱格式，最长 128 字符
+- `gender`（可选）：性别（`0` 未知 / `1` 男 / `2` 女）
+- `idCardNo`（可选）：身份证号，最长 32 字符
+- `birthday`（可选）：出生日期（`yyyy-MM-dd`）
+- `hireDate`（可选）：入职日期（`yyyy-MM-dd`）
+- `status`（可选）：在职状态（`0` 离职 / `1` 在职 / `2` 休假）
+- `version`（必填）：版本号，用于乐观锁
+
+---
+
+### 删除员工
+
+| 项目         | 详情                        |
+| ------------ | --------------------------- |
+| **接口地址** | `DELETE /api/employees`     |
+| **权限**     | 需要 `EMPLOYEE_DELETE` 权限 |
+
+通过显式版本条件使用乐观锁删除员工档案。关联的登录账号有意保留不动，须通过用户管理模块单独管理。
+
+**请求体：**
+
+- `id`（必填）：员工 ID
+- `version`（必填）：版本号，用于乐观锁
+
+---
+
+## 工作流 — 请假审批
+
+> 审批流程由 Flowable BPMN 引擎驱动。业务数据存于 `oa_leave_request`（MyBatis-Plus），Flowable 负责流程实例与审批任务。审批人由组织架构动态解析，其登录用户名作为审批任务负责人传给 Flowable。
+>
+> **审批层级（按天数阈值分级）：**
+>
+> - `days < 3` —— 一级：仅直属上级（`mst_employee.manager_id`）。
+> - `days >= 3` —— 两级：直属上级 → 部门负责人（`mst_department.leader_employee_id`）。一级同意后业务状态仍为 `待审批`，直到流程真正结束。
+>
+> **年假（`leaveType = 1`）额度规则：** 额度按入职周年发放，按发放日工龄分级（满 1–3 年 → 5 天，4–6 年 → 7 天，7 年以上 → 9 天）。每批额度自发放日起 24 个月有效，按 FIFO（最早发放优先）扣减。提交时年假额度在同一事务内扣减；驳回/撤回时精确退还到原批次。其他请假类型不校验、不扣减额度。
+
+### 提交请假申请
+
+| 项目         | 详情                  |
+| ------------ | --------------------- |
+| **接口地址** | `POST /api/leaves`    |
+| **权限**     | 需要 `LEAVE_APPLY` 权限 |
+
+在单个事务中提交请假申请并启动审批流程。申请人由当前登录用户解析；直属上级由申请人的 `managerId` 解析。当 `days >= 3` 时还会解析部门负责人（申请人所在部门必须已配置负责人）。年假会校验并按 FIFO 扣减可用额度。返回创建的请假申请 ID。
+
+**校验与失败：**
+
+- `leaveType` 必须是已定义类型，否则 `error.leave.invalid_type`。
+- `days` 必须是 `0.5` 的正整数倍，否则 `error.leave.days_not_half_unit`。
+- 无直属上级 → `error.leave.no_manager`。
+- `days >= 3` 但部门无负责人 → `error.leave.no_dept_leader`。
+- 年假超过可用余额 → `error.leave.insufficient_annual`。
+
+整个操作（额度扣减 + 插入记录 + 启动流程）在同一事务内，任一环节失败全部回滚。
+
+**请求体：**
+
+- `leaveType`（必填）：请假类型（`1` 年假 / `2` 病假 / `3` 事假 / `4` 婚假 / `5` 产假 / `9` 其他），最长 2 字符
+- `startTime`（必填）：请假开始时间（`yyyy-MM-dd'T'HH:mm:ss`）
+- `endTime`（必填）：请假结束时间（`yyyy-MM-dd'T'HH:mm:ss`）
+- `days`（必填）：请假天数，必须是 `0.5` 的正整数倍
+- `reason`（可选）：请假事由，最长 500 字符
+
+---
+
+### 获取我的待办任务
+
+| 项目         | 详情                    |
+| ------------ | ----------------------- |
+| **接口地址** | `GET /api/leaves/tasks` |
+| **权限**     | 需要 `LEAVE_APPROVE` 权限 |
+
+列出分配给当前用户的待审批任务。从 Flowable 查询负责人为当前用户名的任务，再为每条任务加载底层请假申请的业务数据。每项包含 `leaveId`、`employeeId`、`leaveType`、`startTime`、`endTime`、`days`、`reason`、`createAt`。
+
+---
+
+### 审批请假申请
+
+| 项目         | 详情                      |
+| ------------ | ------------------------- |
+| **接口地址** | `POST /api/leaves/review` |
+| **权限**     | 需要 `LEAVE_APPROVE` 权限 |
+
+同意或驳回请假申请。当前用户必须是待办 Flowable 任务的负责人。用 `approved` 变量完成任务（驱动 BPMN 排他网关），随后同步业务状态并持久化审批意见。
+
+- **同意，一级（`days < 3`）** → 流程结束 → 状态 `1` 已批准。
+- **同意，两级中的一级（`days >= 3`）** → 流程推进到部门负责人 → 状态仍为 `0` 待审批（记录意见）。
+- **同意，最后一级** → 流程结束 → 状态 `1` 已批准。
+- **驳回（任意层级）** → 流程结束 → 状态 `2` 已驳回。年假会退还已扣额度。
+
+若请假申请不处于待审批状态或无待办任务则失败。
+
+**请求体：**
+
+- `id`（必填）：请假申请 ID
+- `approved`（必填）：审批决定（`true` 同意，`false` 驳回）
+- `comment`（可选）：审批意见，最长 500 字符
+
+---
+
+### 撤回请假申请
+
+| 项目         | 详情                        |
+| ------------ | --------------------------- |
+| **接口地址** | `POST /api/leaves/withdraw` |
+| **权限**     | 需要 `LEAVE_APPLY` 权限     |
+
+撤回待审批的请假申请。仅申请人本人可撤回自己的申请，且仅在仍处于待审批状态时可撤回。删除 Flowable 流程实例，并将业务记录标记为已撤回（`3`）。年假会精确退还到原批次。若调用者非本人或申请不处于待审批状态则失败。
+
+**请求体：**
+
+- `id`（必填）：请假申请 ID
+
+---
+
+### 获取我的年假余额
+
+| 项目         | 详情                             |
+| ------------ | -------------------------------- |
+| **接口地址** | `GET /api/leaves/annual-balance` |
+| **权限**     | 需要 `LEAVE_APPLY` 权限          |
+
+返回当前用户截至今日的年假余额。首次访问时物化尚未过期的应发批次（懒发放），然后返回总可用天数及各批次明细。返回：
+
+- `employeeId` —— 当前用户的员工 ID
+- `totalAvailable` —— 总可用年假天数
+- `batches[]` —— 有效（未过期）发放批次，按发放日升序，每项含 `grantDate`、`expireDate`、`grantedDays`、`usedDays`、`remainingDays`
+
+---
+
+### 按员工获取年假余额
+
+| 项目         | 详情                                          |
+| ------------ | --------------------------------------------- |
+| **接口地址** | `GET /api/leaves/annual-balance/{employeeId}` |
+| **权限**     | 需要 `LEAVE_READ` 权限                        |
+
+管理员查询他人年假余额。响应结构与"查自己"接口相同。员工不存在时抛出 404 异常。
+
+---
+
+### 获取请假申请详情
+
+| 项目         | 详情                     |
+| ------------ | ------------------------ |
+| **接口地址** | `GET /api/leaves/{id}`   |
+| **权限**     | 需要 `LEAVE_READ` 权限   |
+
+根据 ID 获取单个请假申请。返回 `id`、`employeeId`、`leaveType`、`startTime`、`endTime`、`days`、`reason`、`status`（`0` 待审批 / `1` 已批准 / `2` 已驳回 / `3` 已撤回）、`processInstanceId`、`approverId`、`approvalComment`、`version`。未找到时抛出 404 异常。
+
+---
+
+### 获取请假申请分页
+
+| 项目         | 详情                                                        |
+| ------------ | ----------------------------------------------------------- |
+| **接口地址** | `GET /api/leaves/page`                                      |
+| **权限**     | 需要 `LEAVE_READ` 权限                                      |
+| **参数**     | `page`、`size`、`employeeId`、`leaveType`、`status`         |
+
+支持分页查询请假申请。支持通过 `sortBy`/`sortOrder` 在白名单字段（`id`、`employee_id`、`leave_type`、`status`、`create_at`、`update_at`）上动态排序，默认按 `create_at` 降序。每项包含 `id`、`employeeId`、`leaveType`、`startTime`、`endTime`、`days`、`status`、`approverId`、`createAt`、`version`。
+
+---
+
 ## 公共接口
 
 ### 获取枚举列表
@@ -691,9 +1489,9 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 | ------------ | ------------------------------------------- |
 | **接口地址** | `GET /api/common/enums`                     |
 | **权限**     | 公开（无需认证）                            |
-| **参数**     | `type` — 支持值：`user-status`、`role-code`、`module`、`sub-module` |
+| **参数**     | `type` — 支持值：`user-status`、`role-code`、`module`、`sub-module`、`leave-type` |
 
-根据类型返回枚举数据列表。支持 `user-status`（用户状态选项）、`role-code`（角色代码选项）、`module`（模块选项）和 `sub-module`（子模块选项）。每项包含 `code` 和 `name` 字段。
+根据类型返回枚举数据列表。支持 `user-status`（用户状态选项）、`role-code`（角色代码选项）、`module`（模块选项）、`sub-module`（子模块选项）和 `leave-type`（请假类型选项）。每项包含 `code` 和 `name` 字段。
 
 ---
 
@@ -1145,6 +1943,405 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 
 ---
 
+## 組織 — 部門
+
+### 部門詳細取得
+
+| 項目               | 詳細                        |
+| ------------------ | --------------------------- |
+| **エンドポイント** | `GET /api/departments/{id}` |
+| **認可**           | `DEPT_READ` 権限が必要      |
+
+ID で単一の部門を取得します。`id`、`deptName`、`deptCode`、`parentId`（トップレベルは 0）、`leaderEmployeeId`、`sortOrder`、`status`、`version` を返します。見つからない場合は 404 例外をスローします。
+
+---
+
+### 部門ツリー取得
+
+| 項目               | 詳細                        |
+| ------------------ | --------------------------- |
+| **エンドポイント** | `GET /api/departments/tree` |
+| **認可**           | `DEPT_READ` 権限が必要      |
+
+完全な部門階層をネストされたツリーとして返します。全部門を単一クエリで読み込み、メモリ上でネストされた `children` 配列に組み立てます。同階層は `sortOrder` の昇順（null は最後）、次に `id` の昇順で並べられます。孤立ノード（親が存在しないまたは論理削除済み）はトップレベルノードとして浮上し、可視性を保ちます。各ノードは詳細エンドポイントと同じフィールドに加えて `children` 配列を持ちます。
+
+---
+
+### 部門作成
+
+| 項目               | 詳細                     |
+| ------------------ | ------------------------ |
+| **エンドポイント** | `POST /api/departments`  |
+| **認可**           | `DEPT_WRITE` 権限が必要  |
+
+新しい部門を作成します。挿入前に親部門の存在（トップレベル以外）と部門コードの一意性を検証します。`parentId` が null の場合は `0`（トップレベル）に正規化されます。作成された部門 ID を返します。
+
+**リクエストボディ：**
+
+- `deptName`（必須）：部門名、最大 64 文字
+- `deptCode`（オプション）：部門コード、最大 64 文字（一意である必要があります）
+- `parentId`（オプション）：親部門 ID、`0` または省略でトップレベル
+- `leaderEmployeeId`（オプション）：部門長の従業員 ID
+- `sortOrder`（オプション）：同階層内の並び順
+- `status`（オプション）：ステータス（`0` 無効 / `1` 有効）
+
+---
+
+### 部門更新
+
+| 項目               | 詳細                     |
+| ------------------ | ------------------------ |
+| **エンドポイント** | `PUT /api/departments`   |
+| **認可**           | `DEPT_WRITE` 権限が必要  |
+
+既存の部門を更新します。親部門の存在、コードの一意性（自身を除く）、および新しい親が循環を作らないこと（部門は自身またはその子孫の子になれません）を検証します。`version` フィールドによる楽観的ロックを使用します。
+
+**リクエストボディ：**
+
+- `id`（必須）：部門 ID
+- `deptName`（必須）：部門名、最大 64 文字
+- `deptCode`（オプション）：部門コード、最大 64 文字
+- `parentId`（オプション）：親部門 ID（`0` でトップレベル）
+- `leaderEmployeeId`（オプション）：部門長の従業員 ID
+- `sortOrder`（オプション）：同階層内の並び順
+- `status`（オプション）：ステータス（`0` 無効 / `1` 有効）
+- `version`（必須）：楽観的ロック用バージョン
+
+---
+
+### 部門削除
+
+| 項目               | 詳細                      |
+| ------------------ | ------------------------- |
+| **エンドポイント** | `DELETE /api/departments` |
+| **認可**           | `DEPT_DELETE` 権限が必要  |
+
+子部門がなく、割り当てられた従業員もないことを検証してから部門を削除します。明示的なバージョン条件による楽観的ロックを使用します。
+
+**リクエストボディ：**
+
+- `id`（必須）：部門 ID
+- `version`（必須）：楽観的ロック用バージョン
+
+---
+
+## 組織 — 役職
+
+### 役職詳細取得
+
+| 項目               | 詳細                        |
+| ------------------ | --------------------------- |
+| **エンドポイント** | `GET /api/positions/{id}`   |
+| **認可**           | `POSITION_READ` 権限が必要  |
+
+ID で単一の役職を取得します。`id`、`positionName`、`positionCode`、`sortOrder`、`status`、`version` を返します。見つからない場合は 404 例外をスローします。
+
+---
+
+### 役職一覧取得
+
+| 項目               | 詳細                                                |
+| ------------------ | --------------------------------------------------- |
+| **エンドポイント** | `GET /api/positions`                                |
+| **認可**           | `POSITION_READ` 権限が必要                          |
+| **パラメータ**     | `positionName`（部分一致）、`status`（完全一致）    |
+
+オプション条件で役職を検索します。結果は `sortOrder` 昇順、次に `id` 昇順で並べられます。各項目は `id`、`positionName`、`positionCode`、`sortOrder`、`status`、`version` を含みます。
+
+---
+
+### 役職作成
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `POST /api/positions`      |
+| **認可**           | `POSITION_WRITE` 権限が必要 |
+
+新しい役職を作成します。挿入前に役職コードの一意性を検証します。作成された役職 ID を返します。
+
+**リクエストボディ：**
+
+- `positionName`（必須）：役職名、最大 64 文字
+- `positionCode`（オプション）：役職コード、最大 64 文字（一意である必要があります）
+- `sortOrder`（オプション）：並び順
+- `status`（オプション）：ステータス（`0` 無効 / `1` 有効）
+
+---
+
+### 役職更新
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `PUT /api/positions`       |
+| **認可**           | `POSITION_WRITE` 権限が必要 |
+
+既存の役職を更新します。コードの一意性（自身を除く）を検証します。`version` フィールドによる楽観的ロックを使用します。
+
+**リクエストボディ：**
+
+- `id`（必須）：役職 ID
+- `positionName`（必須）：役職名、最大 64 文字
+- `positionCode`（オプション）：役職コード、最大 64 文字
+- `sortOrder`（オプション）：並び順
+- `status`（オプション）：ステータス（`0` 無効 / `1` 有効）
+- `version`（必須）：楽観的ロック用バージョン
+
+---
+
+### 役職削除
+
+| 項目               | 詳細                        |
+| ------------------ | --------------------------- |
+| **エンドポイント** | `DELETE /api/positions`     |
+| **認可**           | `POSITION_DELETE` 権限が必要 |
+
+役職がどの従業員にも割り当てられていないことを検証してから削除します。明示的なバージョン条件による楽観的ロックを使用します。
+
+**リクエストボディ：**
+
+- `id`（必須）：役職 ID
+- `version`（必須）：楽観的ロック用バージョン
+
+---
+
+## 組織 — 従業員
+
+### 従業員詳細取得
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `GET /api/employees/{id}`  |
+| **認可**           | `EMPLOYEE_READ` 権限が必要 |
+
+ID で単一の従業員を取得します。`id`、`userId`（連携ログインアカウント）、`employeeNo`、`realName`、`deptId`、`positionId`、`managerId`、`mobile`、`email`、`gender`、`idCardNo`、`birthday`、`hireDate`、`status`、`version` を返します。見つからない場合は 404 例外をスローします。
+
+---
+
+### 従業員ページング取得
+
+| 項目               | 詳細                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| **エンドポイント** | `GET /api/employees/page`                                                                     |
+| **認可**           | `EMPLOYEE_READ` 権限が必要                                                                    |
+| **パラメータ**     | `page`、`size`、`realName`（部分一致）、`employeeNo`（部分一致）、`deptId`、`status`           |
+
+ページング対応で従業員を検索します。ホワイトリストフィールド（`id`、`employee_no`、`real_name`、`dept_id`、`hire_date`、`create_at`、`update_at`）に対する `sortBy`/`sortOrder` による動的ソートをサポートし、デフォルトは `update_at` の降順です。各項目は `id`、`userId`、`employeeNo`、`realName`、`deptId`、`positionId`、`mobile`、`email`、`hireDate`、`status`、`version` を含みます。
+
+---
+
+### 従業員作成
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `POST /api/employees`      |
+| **認可**           | `EMPLOYEE_WRITE` 権限が必要 |
+
+単一トランザクション内で従業員**および連携ログインアカウント**を作成します。従業員番号の一意性を検証し、ログインアカウントをプロビジョニング（ランダムパスワード生成、アカウントを未アクティブに設定、コミット後にウェルカムメール送信、指定ロールを割り当て）してから、生成されたユーザー ID を従業員に連携します。いずれかが失敗した場合、両方がアトミックにロールバックされ、孤立した従業員やアカウントは残りません。
+
+**リクエストボディ：**
+
+- `username`（必須）：ログインユーザー名、英数字とアンダースコアのみ（`^[a-zA-Z0-9_]+$`）、最大 64 文字
+- `employeeNo`（オプション）：従業員番号、最大 32 文字（一意である必要があります）
+- `realName`（必須）：氏名、最大 64 文字
+- `deptId`（オプション）：部門 ID
+- `positionId`（オプション）：役職 ID
+- `managerId`（オプション）：直属上司の従業員 ID
+- `mobile`（オプション）：携帯電話番号、最大 20 文字
+- `email`（必須）：メールアドレス、有効なメール形式、最大 128 文字（ログインアカウントに使用）
+- `gender`（オプション）：性別（`0` 不明 / `1` 男性 / `2` 女性）
+- `idCardNo`（オプション）：身分証番号、最大 32 文字
+- `birthday`（オプション）：生年月日（`yyyy-MM-dd`）
+- `hireDate`（オプション）：入社日（`yyyy-MM-dd`）
+- `status`（オプション）：在職ステータス（`0` 退職 / `1` 在職 / `2` 休職）
+- `roleIds`（オプション）：自動作成アカウントに割り当てるロール ID リスト
+
+作成された従業員 ID を返します。
+
+---
+
+### 従業員更新
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `PUT /api/employees`       |
+| **認可**           | `EMPLOYEE_WRITE` 権限が必要 |
+
+従業員プロフィールのみを更新します。連携ログインアカウント（ユーザー名、パスワード、ロール）はユーザー管理モジュールで個別に管理されます。従業員番号の一意性（自身を除く）を検証します。`version` フィールドによる楽観的ロックを使用します。
+
+**リクエストボディ：**
+
+- `id`（必須）：従業員 ID
+- `employeeNo`（オプション）：従業員番号、最大 32 文字
+- `realName`（必須）：氏名、最大 64 文字
+- `deptId`（オプション）：部門 ID
+- `positionId`（オプション）：役職 ID
+- `managerId`（オプション）：直属上司の従業員 ID
+- `mobile`（オプション）：携帯電話番号、最大 20 文字
+- `email`（オプション）：メールアドレス、有効なメール形式、最大 128 文字
+- `gender`（オプション）：性別（`0` 不明 / `1` 男性 / `2` 女性）
+- `idCardNo`（オプション）：身分証番号、最大 32 文字
+- `birthday`（オプション）：生年月日（`yyyy-MM-dd`）
+- `hireDate`（オプション）：入社日（`yyyy-MM-dd`）
+- `status`（オプション）：在職ステータス（`0` 退職 / `1` 在職 / `2` 休職）
+- `version`（必須）：楽観的ロック用バージョン
+
+---
+
+### 従業員削除
+
+| 項目               | 詳細                        |
+| ------------------ | --------------------------- |
+| **エンドポイント** | `DELETE /api/employees`     |
+| **認可**           | `EMPLOYEE_DELETE` 権限が必要 |
+
+明示的なバージョン条件による楽観的ロックを使用して従業員プロフィールを削除します。連携ログインアカウントは意図的に変更されず、ユーザー管理モジュールで管理する必要があります。
+
+**リクエストボディ：**
+
+- `id`（必須）：従業員 ID
+- `version`（必須）：楽観的ロック用バージョン
+
+---
+
+## ワークフロー — 休暇承認
+
+> 承認フローは Flowable BPMN エンジンによって駆動されます。業務データは `oa_leave_request`（MyBatis-Plus）に保存され、Flowable がプロセスインスタンスと承認タスクを管理します。承認者は組織テーブルから動的に解決され、そのログインユーザー名がタスク担当者として Flowable に渡されます。
+>
+> **承認段階（日数しきい値による分岐）：**
+>
+> - `days < 3` —— 1 段階：直属上司のみ（`mst_employee.manager_id`）。
+> - `days >= 3` —— 2 段階：直属上司 → 部門責任者（`mst_department.leader_employee_id`）。1 段階目の承認後も業務ステータスは `承認待ち` のままで、プロセスが実際に終了するまで継続します。
+>
+> **年次有給休暇（`leaveType = 1`）の付与ルール：** 付与は入社記念日ごとに行われ、付与日時点の勤続年数で段階分けされます（1〜3 年 → 5 日、4〜6 年 → 7 日、7 年以上 → 9 日）。各付与バッチは付与日から 24 か月間有効で、FIFO（最も早く付与されたものから）で消費されます。提出時に年次有給休暇は同一トランザクション内で消費され、却下・取り下げ時には元のバッチへ正確に返還されます。その他の休暇種別は残数を検証・消費しません。
+
+### 休暇申請の提出
+
+| 項目               | 詳細                     |
+| ------------------ | ------------------------ |
+| **エンドポイント** | `POST /api/leaves`       |
+| **認可**           | `LEAVE_APPLY` 権限が必要 |
+
+単一トランザクション内で休暇申請を提出し、承認プロセスを開始します。申請者は認証済みユーザーから解決され、直属上司は申請者の `managerId` から解決されます。`days >= 3` の場合は部門責任者も解決されます（申請者の部門に責任者が設定されている必要があります）。年次有給休暇は残数を検証し FIFO で消費します。作成された休暇申請 ID を返します。
+
+**検証と失敗：**
+
+- `leaveType` は定義済みの種別である必要があります。そうでない場合は `error.leave.invalid_type`。
+- `days` は `0.5` の正の倍数である必要があります。そうでない場合は `error.leave.days_not_half_unit`。
+- 直属上司がいない → `error.leave.no_manager`。
+- `days >= 3` だが部門に責任者がいない → `error.leave.no_dept_leader`。
+- 年次有給休暇が残数を超過 → `error.leave.insufficient_annual`。
+
+操作全体（残数消費 + レコード挿入 + プロセス開始）は同一トランザクション内で行われ、いずれかが失敗するとすべてロールバックされます。
+
+**リクエストボディ：**
+
+- `leaveType`（必須）：休暇種別（`1` 年次 / `2` 病気 / `3` 私用 / `4` 結婚 / `5` 出産 / `9` その他）、最大 2 文字
+- `startTime`（必須）：休暇開始時刻（`yyyy-MM-dd'T'HH:mm:ss`）
+- `endTime`（必須）：休暇終了時刻（`yyyy-MM-dd'T'HH:mm:ss`）
+- `days`（必須）：休暇日数、`0.5` の正の倍数である必要があります
+- `reason`（オプション）：休暇理由、最大 500 文字
+
+---
+
+### 自分の保留中タスク取得
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `GET /api/leaves/tasks`    |
+| **認可**           | `LEAVE_APPROVE` 権限が必要 |
+
+現在のユーザーに割り当てられた承認待ちタスクを一覧表示します。担当者が現在のユーザー名と一致するタスクを Flowable から検索し、各タスクの基となる休暇申請の業務データを読み込みます。各項目は `leaveId`、`employeeId`、`leaveType`、`startTime`、`endTime`、`days`、`reason`、`createAt` を含みます。
+
+---
+
+### 休暇申請の審査
+
+| 項目               | 詳細                       |
+| ------------------ | -------------------------- |
+| **エンドポイント** | `POST /api/leaves/review`  |
+| **認可**           | `LEAVE_APPROVE` 権限が必要 |
+
+休暇申請を承認または却下します。現在のユーザーは承認待ち Flowable タスクの担当者である必要があります。`approved` 変数でタスクを完了し（BPMN 排他ゲートウェイを駆動）、業務ステータスを同期して承認コメントを永続化します。
+
+- **承認、1 段階（`days < 3`）** → プロセス終了 → ステータス `1` 承認。
+- **承認、2 段階のうち 1 段階目（`days >= 3`）** → プロセスは部門責任者へ進む → ステータスは `0` 承認待ちのまま（コメントは記録）。
+- **承認、最終段階** → プロセス終了 → ステータス `1` 承認。
+- **却下（任意の段階）** → プロセス終了 → ステータス `2` 却下。年次有給休暇は消費した残数が返還されます。
+
+休暇申請が承認待ち状態でない場合、または承認待ちタスクがない場合は失敗します。
+
+**リクエストボディ：**
+
+- `id`（必須）：休暇申請 ID
+- `approved`（必須）：承認判断（`true` 承認、`false` 却下）
+- `comment`（オプション）：承認コメント、最大 500 文字
+
+---
+
+### 休暇申請の取り下げ
+
+| 項目               | 詳細                        |
+| ------------------ | --------------------------- |
+| **エンドポイント** | `POST /api/leaves/withdraw` |
+| **認可**           | `LEAVE_APPLY` 権限が必要    |
+
+承認待ちの休暇申請を取り下げます。申請者本人のみが自分の申請を取り下げることができ、承認待ち状態の間のみ可能です。Flowable プロセスインスタンスを削除し、業務レコードを取り下げ済み（`3`）としてマークします。年次有給休暇は元のバッチへ正確に返還されます。呼び出し元が本人でない場合、または申請が承認待ちでない場合は失敗します。
+
+**リクエストボディ：**
+
+- `id`（必須）：休暇申請 ID
+
+---
+
+### 自分の年次有給休暇残数取得
+
+| 項目               | 詳細                             |
+| ------------------ | -------------------------------- |
+| **エンドポイント** | `GET /api/leaves/annual-balance` |
+| **認可**           | `LEAVE_APPLY` 権限が必要         |
+
+現在のユーザーの本日時点の年次有給休暇残数を返します。初回アクセス時に未失効の付与予定バッチを物理化（遅延付与）し、合計利用可能日数と各バッチの内訳を返します。返却内容：
+
+- `employeeId` —— 現在のユーザーの従業員 ID
+- `totalAvailable` —— 利用可能な年次有給休暇の合計日数
+- `batches[]` —— 有効（未失効）な付与バッチ。付与日の昇順で、各項目に `grantDate`、`expireDate`、`grantedDays`、`usedDays`、`remainingDays` を含む
+
+---
+
+### 従業員別の年次有給休暇残数取得
+
+| 項目               | 詳細                                          |
+| ------------------ | --------------------------------------------- |
+| **エンドポイント** | `GET /api/leaves/annual-balance/{employeeId}` |
+| **認可**           | `LEAVE_READ` 権限が必要                       |
+
+他の従業員の年次有給休暇残数を参照する特権ビューです。レスポンス構造は「自分」エンドポイントと同じです。従業員が見つからない場合は 404 例外をスローします。
+
+---
+
+### 休暇申請詳細取得
+
+| 項目               | 詳細                     |
+| ------------------ | ------------------------ |
+| **エンドポイント** | `GET /api/leaves/{id}`   |
+| **認可**           | `LEAVE_READ` 権限が必要  |
+
+ID で単一の休暇申請を取得します。`id`、`employeeId`、`leaveType`、`startTime`、`endTime`、`days`、`reason`、`status`（`0` 承認待ち / `1` 承認 / `2` 却下 / `3` 取り下げ）、`processInstanceId`、`approverId`、`approvalComment`、`version` を返します。見つからない場合は 404 例外をスローします。
+
+---
+
+### 休暇申請ページング取得
+
+| 項目               | 詳細                                                  |
+| ------------------ | ----------------------------------------------------- |
+| **エンドポイント** | `GET /api/leaves/page`                                |
+| **認可**           | `LEAVE_READ` 権限が必要                               |
+| **パラメータ**     | `page`、`size`、`employeeId`、`leaveType`、`status`   |
+
+ページング対応で休暇申請を検索します。ホワイトリストフィールド（`id`、`employee_id`、`leave_type`、`status`、`create_at`、`update_at`）に対する `sortBy`/`sortOrder` による動的ソートをサポートし、デフォルトは `create_at` の降順です。各項目は `id`、`employeeId`、`leaveType`、`startTime`、`endTime`、`days`、`status`、`approverId`、`createAt`、`version` を含みます。
+
+---
+
 ## 共通
 
 ### 列挙リスト取得
@@ -1153,9 +2350,9 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 | ------------------ | ----------------------------------------------- |
 | **エンドポイント** | `GET /api/common/enums`                         |
 | **認可**           | 公開（認証不要）                                |
-| **パラメータ**     | `type` — サポート値：`user-status`、`role-code`、`module`、`sub-module` |
+| **パラメータ**     | `type` — サポート値：`user-status`、`role-code`、`module`、`sub-module`、`leave-type` |
 
-タイプ別に列挙データリストを返します。`user-status`（ユーザーステータスオプション）、`role-code`（ロールコードオプション）、`module`（モジュールオプション）、`sub-module`（サブモジュールオプション）をサポートします。各項目には `code` と `name` フィールドが含まれます。
+タイプ別に列挙データリストを返します。`user-status`（ユーザーステータスオプション）、`role-code`（ロールコードオプション）、`module`（モジュールオプション）、`sub-module`（サブモジュールオプション）、`leave-type`（休暇タイプオプション）をサポートします。各項目には `code` と `name` フィールドが含まれます。
 
 ---
 
