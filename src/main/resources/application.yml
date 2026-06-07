@@ -173,3 +173,14 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+# Flowable BPMN engine settings
+flowable:
+  # Auto-create / upgrade the ACT_* engine tables on startup
+  database-schema-update: true
+  # Disable the async job executor (leave approval uses synchronous human tasks, no async jobs)
+  async-executor-activate: false
+  # Write history synchronously (no async history job churn)
+  async-history-enabled: false
+  # Auto-deploy BPMN definitions under classpath:/processes/ on startup
+  check-process-definitions: true

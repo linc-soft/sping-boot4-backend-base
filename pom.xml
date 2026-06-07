@@ -49,6 +49,8 @@
     <fmt-maven-plugin.version>2.29</fmt-maven-plugin.version>
     <!-- OpenHTMLToPDF Version -->
     <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
+    <!-- Flowable Version (8.x targets Spring Boot 4 / Spring 7 / Jackson 3) -->
+    <flowable.version>8.0.0</flowable.version>
     <!-- Active Profile -->
     <active.profile>dev</active.profile>
   </properties>
@@ -221,6 +223,15 @@
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
 
+    <!-- ========== Workflow (Approval) ========== -->
+
+    <!-- Flowable BPMN process engine starter (Spring Boot 4 compatible, 8.x) -->
+    <dependency>
+      <groupId>org.flowable</groupId>
+      <artifactId>flowable-spring-boot-starter-process</artifactId>
+      <version>${flowable.version}</version>
+    </dependency>
+
     <!-- ========== Utility ========== -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -272,6 +283,7 @@
           <include>i18n/**</include>
           <include>fonts/*.ttf</include>
           <include>templates/**</include>
+          <include>processes/**</include>
         </includes>
       </resource>
     </resources>
