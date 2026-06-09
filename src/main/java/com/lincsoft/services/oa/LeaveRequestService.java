@@ -341,8 +341,10 @@ public class LeaveRequestService {
         leave.getId(),
         leave.getEmployeeId(),
         leave.getLeaveType(),
-        leave.getStartTime(),
-        leave.getEndTime(),
+        leave.getStartDate(),
+        leave.getStartPeriod(),
+        leave.getEndDate(),
+        leave.getEndPeriod(),
         leave.getDays(),
         leave.getReason(),
         leave.getCreateAt());

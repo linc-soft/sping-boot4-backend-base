@@ -3,7 +3,7 @@ package com.lincsoft.entity.oa;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.lincsoft.common.VersionedEntity;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -26,11 +26,17 @@ public class OaLeaveRequest extends VersionedEntity {
   /** Leave type (1 annual / 2 sick / 3 personal / 4 marriage / 5 maternity / 9 other) */
   private String leaveType;
 
-  /** Leave start time */
-  private LocalDateTime startTime;
+  /** Leave start date */
+  private LocalDate startDate;
 
-  /** Leave end time */
-  private LocalDateTime endTime;
+  /** Leave start period ('0' = AM, '1' = PM) */
+  private String startPeriod;
+
+  /** Leave end date */
+  private LocalDate endDate;
+
+  /** Leave end period ('0' = AM, '1' = PM) */
+  private String endPeriod;
 
   /** Number of leave days */
   private BigDecimal days;

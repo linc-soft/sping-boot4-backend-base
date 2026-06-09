@@ -1,7 +1,7 @@
 package com.lincsoft.controller.oa.vo;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /**
  * Leave request info response VO.
@@ -25,8 +25,10 @@ public record LeaveInfoResponse(
     Long id,
     Long employeeId,
     String leaveType,
-    LocalDateTime startTime,
-    LocalDateTime endTime,
+    LocalDate startDate,
+    String startPeriod,
+    LocalDate endDate,
+    String endPeriod,
     BigDecimal days,
     String reason,
     String status,
