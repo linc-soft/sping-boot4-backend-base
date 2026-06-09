@@ -54,7 +54,8 @@ public class EmployeeController {
    * @return IPage of employee items
    */
   @GetMapping("/page")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).EMPLOYEE_READ.roleCode)")
+  @PreAuthorize(
+      "hasAnyRole(T(com.lincsoft.constant.RoleCodeEnums).EMPLOYEE_READ.roleCode, T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode)")
   public IPage<EmployeePageResponseItem> getEmployeePage(EmployeePageRequest request) {
     return employeeService.getEmployeePage(request).convert(employeeMapper::toPageResponseItem);
   }

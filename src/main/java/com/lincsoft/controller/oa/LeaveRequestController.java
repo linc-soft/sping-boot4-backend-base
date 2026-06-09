@@ -55,7 +55,8 @@ public class LeaveRequestController {
    * @return the employee's annual-leave balance with per-batch detail
    */
   @GetMapping("/annual-balance/{employeeId}")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode)")
+  @PreAuthorize(
+      "hasAnyRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode, T(com.lincsoft.constant.RoleCodeEnums).LEAVE_APPLY.roleCode)")
   public AnnualBalanceResponse getAnnualBalanceByEmployeeId(@PathVariable Long employeeId) {
     return leaveRequestService.getAnnualBalanceByEmployeeId(employeeId);
   }
@@ -67,7 +68,8 @@ public class LeaveRequestController {
    * @return Leave info response
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode)")
+  @PreAuthorize(
+      "hasAnyRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode, T(com.lincsoft.constant.RoleCodeEnums).LEAVE_APPLY.roleCode)")
   public LeaveInfoResponse getLeave(@PathVariable Long id) {
     return leaveRequestMapper.toInfoResponse(leaveRequestService.getLeaveById(id));
   }
@@ -79,7 +81,8 @@ public class LeaveRequestController {
    * @return IPage of leave request items
    */
   @GetMapping("/page")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode)")
+  @PreAuthorize(
+      "hasAnyRole(T(com.lincsoft.constant.RoleCodeEnums).LEAVE_READ.roleCode, T(com.lincsoft.constant.RoleCodeEnums).LEAVE_APPLY.roleCode)")
   public IPage<LeavePageResponseItem> getLeavePage(LeavePageRequest request) {
     return leaveRequestService
         .getLeavePage(request)

@@ -111,6 +111,7 @@ public enum MessageEnums {
   LEAVE_DAYS_NOT_HALF_UNIT(106_405, "error.leave.days_not_half_unit"),
   LEAVE_INSUFFICIENT_ANNUAL(106_406, "error.leave.insufficient_annual"),
   LEAVE_NOT_OWNER(106_403, "error.leave.not_owner"),
+  LEAVE_NOT_SUBORDINATE(106_407, "error.leave.not_subordinate"),
   LEAVE_NOT_PENDING(106_409, "error.leave.not_pending"),
   LEAVE_TASK_NOT_FOUND(106_410, "error.leave.task_not_found"),
   LEAVE_OPTIMISTIC_LOCK_FAILED(106_412, "error.leave.optimistic_lock_failed");

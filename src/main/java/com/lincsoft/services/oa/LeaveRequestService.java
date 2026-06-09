@@ -101,6 +101,12 @@ public class LeaveRequestService {
     if (leave == null) {
       throw new BusinessException(MessageEnums.LEAVE_NOT_FOUND);
     }
+    if (!hasRole("LEAVE_READ")) {
+      MstEmployee currentEmployee = resolveCurrentEmployee();
+      if (!currentEmployee.getId().equals(leave.getEmployeeId())) {
+        throw new BusinessException(MessageEnums.LEAVE_NOT_OWNER);
+      }
+    }
     return leave;
   }
 
@@ -121,6 +127,14 @@ public class LeaveRequestService {
    * @throws BusinessException if the employee is not found
    */
   public AnnualBalanceResponse getAnnualBalanceByEmployeeId(Long employeeId) {
+    MstEmployee currentEmployee = resolveCurrentEmployee();
+    if (!currentEmployee.getId().equals(employeeId)) {
+      MstEmployee targetEmployee = employeeService.getEmployeeById(employeeId);
+      if (targetEmployee == null
+          || !currentEmployee.getId().equals(targetEmployee.getManagerId())) {
+        throw new BusinessException(MessageEnums.LEAVE_NOT_SUBORDINATE);
+      }
+    }
     return annualLeaveService.getBalance(employeeService.getEmployeeById(employeeId));
   }
 
@@ -132,9 +146,25 @@ public class LeaveRequestService {
    */
   public IPage<OaLeaveRequest> getLeavePage(LeavePageRequest request) {
     QueryWrapper<OaLeaveRequest> queryWrapper = new QueryWrapper<>();
-    if (request.getEmployeeId() != null) {
-      queryWrapper.eq("employee_id", request.getEmployeeId());
+    MstEmployee currentEmployee = resolveCurrentEmployee();
+
+    if (hasRole("LEAVE_READ")) {
+      if (request.getEmployeeId() != null) {
+        MstEmployee targetEmployee = employeeService.getEmployeeById(request.getEmployeeId());
+        if (targetEmployee == null
+            || !currentEmployee.getId().equals(targetEmployee.getManagerId())) {
+          throw new BusinessException(MessageEnums.LEAVE_NOT_SUBORDINATE);
+        }
+        queryWrapper.eq("employee_id", request.getEmployeeId());
+      } else {
+        queryWrapper.inSql(
+            "employee_id",
+            "SELECT id FROM mst_employee WHERE manager_id = " + currentEmployee.getId());
+      }
+    } else {
+      queryWrapper.eq("employee_id", currentEmployee.getId());
     }
+
     if (request.getLeaveType() != null && !request.getLeaveType().isBlank()) {
       queryWrapper.eq("leave_type", request.getLeaveType());
     }
@@ -448,5 +478,16 @@ public class LeaveRequestService {
     if (LeaveTypeEnum.ANNUAL.getCode().equals(leave.getLeaveType())) {
       annualLeaveService.refund(leave.getId());
     }
+  }
+
+  /**
+   * Check whether the currently authenticated user has the given role authority.
+   *
+   * @param roleCode role code without ROLE_ prefix (e.g. "LEAVE_READ")
+   * @return true if the user has the role
+   */
+  private boolean hasRole(String roleCode) {
+    return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("ROLE_" + roleCode));
   }
 }
