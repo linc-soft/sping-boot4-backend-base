@@ -12,7 +12,7 @@ import java.util.List;
  * @param deptName Department name
  * @param deptCode Department code
  * @param parentId Parent department ID (0 = top level)
- * @param leaderEmployeeId Department head employee ID
+ * @param leaderUserId Department head user ID
  * @param sortOrder Sort order among siblings
  * @param status Status (0 disabled / 1 enabled)
  * @param version Version for optimistic locking
@@ -25,7 +25,7 @@ public record DepartmentTreeResponse(
     String deptName,
     String deptCode,
     Long parentId,
-    Long leaderEmployeeId,
+    Long leaderUserId,
     Integer sortOrder,
     String status,
     Integer version,

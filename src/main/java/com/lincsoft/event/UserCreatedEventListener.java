@@ -13,10 +13,9 @@ import org.springframework.transaction.event.TransactionalEventListener;
  *
  * <p>By using {@code phase = AFTER_COMMIT}, this listener fires only when the database transaction
  * has been successfully committed. If the transaction rolls back (e.g., a later step in an outer
- * service such as {@code EmployeeService.createEmployee()} fails after the user has been created),
- * the event is discarded and no email is sent. This prevents the previous inconsistency where a
- * user creation appeared to succeed but a downstream failure caused a rollback while the welcome
- * email had already been dispatched.
+ * service fails after the user has been created), the event is discarded and no email is sent. This
+ * prevents the previous inconsistency where a user creation appeared to succeed but a downstream
+ * failure caused a rollback while the welcome email had already been dispatched.
  *
  * <p>The actual SMTP send is delegated to {@link EmailService#sendNewUserWelcomeEmail}, which is
  * annotated with {@code @Async("asyncExecutor")} and swallows exceptions internally.

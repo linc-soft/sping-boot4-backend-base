@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 /**
  * Position entity.
  *
- * <p>Job position / title. Referenced by {@link MstEmployee#getPositionId()}.
+ * <p>Job position / title. Referenced by {@link MstUser#getPositionId()}.
  *
  * @author 林创科技
  * @since 2026-06-07

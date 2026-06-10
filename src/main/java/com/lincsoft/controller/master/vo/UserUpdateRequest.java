@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -34,5 +35,11 @@ public record UserUpdateRequest(
             regexp = "^[012]$",
             message = "Status must be 0 (disabled), 1 (enabled), or 2 (inactive)")
         String status,
+    String realName,
+    Long deptId,
+    Long positionId,
+    String mobile,
+    String gender,
+    LocalDate birthday,
     List<Integer> roleIds,
     @NotNull(message = "Version is required") Integer version) {}

@@ -11,6 +11,7 @@ import com.lincsoft.controller.oa.vo.DepartmentTreeResponse;
 import com.lincsoft.entity.oa.MstDepartment;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.oa.MstDepartmentMapper;
+import com.lincsoft.services.master.UserService;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -41,8 +42,7 @@ public class DepartmentService {
   /** Department mapper for database operations. */
   private final MstDepartmentMapper departmentMapper;
 
-  /** Employee service for checking department occupancy before deletion. */
-  private final EmployeeService employeeService;
+  private final UserService userService;
 
   /**
    * Get department by ID.
@@ -133,14 +133,13 @@ public class DepartmentService {
   /**
    * Delete a department.
    *
-   * <p>Refuses deletion when the department has any sub-department or assigned employee. Uses
+   * <p>Refuses deletion when the department has any sub-department or assigned user. Uses
    * optimistic locking via an explicit version condition (logical delete does not apply the
    * {@code @Version} check).
    *
    * @param department MstDepartment entity to delete
    * @param version Version for optimistic locking
-   * @throws BusinessException if the department has children, has employees, or optimistic lock
-   *     fails
+   * @throws BusinessException if the department has children, has users, or optimistic lock fails
    */
   @OperationLog(
       module = Module.OA,
@@ -150,7 +149,7 @@ public class DepartmentService {
   @Transactional(rollbackFor = Exception.class)
   public void deleteDepartment(MstDepartment department, Integer version) {
     validateNoChildren(department.getId());
-    validateNoEmployees(department.getId());
+    validateNoUsersInDept(department.getId());
 
     LambdaUpdateWrapper<MstDepartment> deleteWrapper = new LambdaUpdateWrapper<>();
     deleteWrapper
@@ -204,7 +203,7 @@ public class DepartmentService {
                     d.getDeptName(),
                     d.getDeptCode(),
                     d.getParentId(),
-                    d.getLeaderEmployeeId(),
+                    d.getLeaderUserId(),
                     d.getSortOrder(),
                     d.getStatus(),
                     d.getVersion(),
@@ -311,14 +310,14 @@ public class DepartmentService {
   }
 
   /**
-   * Validate that the department has no employees assigned.
+   * Validate that the department has no users assigned.
    *
    * @param deptId Department ID to check
-   * @throws BusinessException if any employee belongs to the department
+   * @throws BusinessException if any user belongs to the department
    */
-  private void validateNoEmployees(Long deptId) {
-    if (employeeService.countByDeptId(deptId) > 0) {
-      throw new BusinessException(MessageEnums.DEPT_HAS_EMPLOYEES);
+  private void validateNoUsersInDept(Long deptId) {
+    if (userService.countByDeptId(deptId) > 0) {
+      throw new BusinessException(MessageEnums.DEPT_HAS_USERS);
     }
   }
 }

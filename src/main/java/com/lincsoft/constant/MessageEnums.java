@@ -90,18 +90,13 @@ public enum MessageEnums {
   DEPT_CODE_EXISTS(103_409, "error.dept.code_exists"),
   DEPT_OPTIMISTIC_LOCK_FAILED(103_412, "error.dept.optimistic_lock_failed"),
   DEPT_HAS_CHILDREN(103_423, "error.dept.has_children"),
-  DEPT_HAS_EMPLOYEES(103_424, "error.dept.has_employees"),
+  DEPT_HAS_USERS(103_424, "error.dept.has_users"),
 
   // ========== 104: OA - Position page ==========
   POSITION_NOT_FOUND(104_404, "error.position.not_found"),
   POSITION_CODE_EXISTS(104_409, "error.position.code_exists"),
   POSITION_OPTIMISTIC_LOCK_FAILED(104_412, "error.position.optimistic_lock_failed"),
-  POSITION_HAS_EMPLOYEES(104_424, "error.position.has_employees"),
-
-  // ========== 105: OA - Employee page ==========
-  EMPLOYEE_NOT_FOUND(105_404, "error.employee.not_found"),
-  EMPLOYEE_NO_EXISTS(105_409, "error.employee.no_exists"),
-  EMPLOYEE_OPTIMISTIC_LOCK_FAILED(105_412, "error.employee.optimistic_lock_failed");
+  POSITION_HAS_USERS(104_424, "error.position.has_users");
 
   @Getter private final int code;
 

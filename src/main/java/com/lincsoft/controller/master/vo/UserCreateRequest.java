@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -29,4 +30,10 @@ public record UserCreateRequest(
         @Email(message = "Email must be a valid email address")
         @Size(max = 128, message = "Email must be at most 128 characters")
         String email,
+    String realName,
+    Long deptId,
+    Long positionId,
+    String mobile,
+    String gender,
+    LocalDate birthday,
     List<Integer> roleIds) {}

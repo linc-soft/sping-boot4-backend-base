@@ -45,6 +45,7 @@ public interface ErrorLogMapper {
   @Mapping(target = "errorType", source = "exceptionClass")
   @Mapping(target = "message", source = "exceptionMessage")
   @Mapping(target = "requestPath", source = "requestUrl")
+  @Mapping(target = "requestBody", ignore = true)
   @Mapping(target = "createdAt", source = "createTime")
   ErrorLogDetailResponse toDetailResponse(SysErrorLog entity);
 }

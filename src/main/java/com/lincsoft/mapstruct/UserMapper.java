@@ -25,6 +25,8 @@ public interface UserMapper {
    * @return MstUser entity
    */
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "password", ignore = true)
+  @Mapping(target = "status", ignore = true)
   @Mapping(target = "createBy", ignore = true)
   @Mapping(target = "createAt", ignore = true)
   @Mapping(target = "updateBy", ignore = true)
@@ -60,6 +62,12 @@ public interface UserMapper {
   @Mapping(target = "username", source = "user.username")
   @Mapping(target = "email", source = "user.email")
   @Mapping(target = "status", source = "user.status")
+  @Mapping(target = "realName", source = "user.realName")
+  @Mapping(target = "deptId", source = "user.deptId")
+  @Mapping(target = "positionId", source = "user.positionId")
+  @Mapping(target = "mobile", source = "user.mobile")
+  @Mapping(target = "gender", source = "user.gender")
+  @Mapping(target = "birthday", source = "user.birthday")
   @Mapping(target = "version", source = "user.version")
   @Mapping(target = "roleIds", source = "roleIds")
   UserInfoResponse toInfoResponse(UserWithRoles dto);

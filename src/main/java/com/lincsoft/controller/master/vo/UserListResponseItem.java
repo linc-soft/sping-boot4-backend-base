@@ -1,5 +1,6 @@
 package com.lincsoft.controller.master.vo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -9,6 +10,12 @@ import java.time.LocalDateTime;
  * @param username Username
  * @param email Email address
  * @param status User status
+ * @param realName Real name
+ * @param deptId Department ID
+ * @param positionId Position ID
+ * @param mobile Mobile phone
+ * @param gender Gender (0 unknown / 1 male / 2 female)
+ * @param birthday Birthday
  * @param updateBy Update user
  * @param updateAt Update time
  * @author 林创科技
@@ -19,6 +26,12 @@ public record UserListResponseItem(
     String username,
     String email,
     String status,
+    String realName,
+    Long deptId,
+    Long positionId,
+    String mobile,
+    String gender,
+    LocalDate birthday,
     String updateBy,
     LocalDateTime updateAt,
     Integer version) {}

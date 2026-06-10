@@ -10,6 +10,7 @@ import com.lincsoft.constant.SubModule;
 import com.lincsoft.entity.oa.MstPosition;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.oa.MstPositionMapper;
+import com.lincsoft.services.master.UserService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,8 @@ public class PositionService {
   /** Position mapper for database operations. */
   private final MstPositionMapper positionMapper;
 
-  /** Employee service for checking position occupancy before deletion. */
-  private final EmployeeService employeeService;
+  /** User service for checking position occupancy before deletion. */
+  private final UserService userService;
 
   /**
    * Get position by ID.
@@ -118,12 +119,12 @@ public class PositionService {
   /**
    * Delete a position.
    *
-   * <p>Refuses deletion when the position is assigned to any employee. Uses optimistic locking via
-   * an explicit version condition (logical delete does not apply the {@code @Version} check).
+   * <p>Refuses deletion when the position is assigned to any user. Uses optimistic locking via an
+   * explicit version condition (logical delete does not apply the {@code @Version} check).
    *
    * @param position MstPosition entity to delete
    * @param version Version for optimistic locking
-   * @throws BusinessException if the position has employees or optimistic lock fails
+   * @throws BusinessException if the position has users or optimistic lock fails
    */
   @OperationLog(
       module = Module.OA,
@@ -164,14 +165,14 @@ public class PositionService {
   }
 
   /**
-   * Validate that the position is not assigned to any employee.
+   * Validate that the position is not assigned to any user.
    *
    * @param positionId Position ID to check
-   * @throws BusinessException if any employee holds the position
+   * @throws BusinessException if any user holds the position
    */
   private void validateNoEmployees(Long positionId) {
-    if (employeeService.countByPositionId(positionId) > 0) {
-      throw new BusinessException(MessageEnums.POSITION_HAS_EMPLOYEES);
+    if (userService.countByPositionId(positionId) > 0) {
+      throw new BusinessException(MessageEnums.POSITION_HAS_USERS);
     }
   }
 }

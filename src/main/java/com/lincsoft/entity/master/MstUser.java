@@ -2,6 +2,7 @@ package com.lincsoft.entity.master;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.lincsoft.common.VersionedEntity;
+import java.time.LocalDate;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -26,4 +27,22 @@ public class MstUser extends VersionedEntity {
 
   /** Status */
   private String status;
+
+  /** Real name */
+  private String realName;
+
+  /** Department ID */
+  private Long deptId;
+
+  /** Position ID */
+  private Long positionId;
+
+  /** Mobile phone */
+  private String mobile;
+
+  /** Gender (0 unknown / 1 male / 2 female) */
+  private String gender;
+
+  /** Birthday */
+  private LocalDate birthday;
 }

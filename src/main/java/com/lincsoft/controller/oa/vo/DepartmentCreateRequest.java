@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
  * @param deptName Department name
  * @param deptCode Department code
  * @param parentId Parent department ID (0 = top level)
- * @param leaderEmployeeId Department head employee ID (optional)
+ * @param leaderUserId Department head user ID (optional)
  * @param sortOrder Sort order among siblings (optional)
  * @param status Status (0 disabled / 1 enabled, optional)
  * @author 林创科技
@@ -21,6 +21,6 @@ public record DepartmentCreateRequest(
         String deptName,
     @Size(max = 64, message = "Department code must be at most 64 characters") String deptCode,
     Long parentId,
-    Long leaderEmployeeId,
+    Long leaderUserId,
     Integer sortOrder,
     @Size(max = 1, message = "Status must be a single character") String status) {}

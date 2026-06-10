@@ -251,6 +251,18 @@ public class UserService implements UserDetailsService {
     return user;
   }
 
+  public long countByDeptId(Long deptId) {
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("dept_id", deptId);
+    return userMapper.selectCount(queryWrapper);
+  }
+
+  public long countByPositionId(Long positionId) {
+    QueryWrapper<MstUser> queryWrapper = new QueryWrapper<>();
+    queryWrapper.eq("position_id", positionId);
+    return userMapper.selectCount(queryWrapper);
+  }
+
   /**
    * Get user with its directly assigned role IDs by ID.
    *
@@ -321,8 +333,8 @@ public class UserService implements UserDetailsService {
     }
 
     // Publish a domain event so that the welcome email is sent only after the surrounding
-    // transaction commits. If a caller (e.g., EmployeeService.createEmployee) rolls back the
-    // transaction after this point, the listener never fires and no email is sent.
+    // transaction commits. If a caller rolls back the transaction after this point, the
+    // listener never fires and no email is sent.
     String loginUrl = appProperties.getPasswordReset().getBaseUrl() + "/login";
     eventPublisher.publishEvent(
         new UserCreatedEvent(
@@ -372,6 +384,8 @@ public class UserService implements UserDetailsService {
       }
     }
 
+    mergeProfileFieldsForPartialUpdate(user, existingUser);
+
     // Encrypt password if provided
     if (user.getPassword() != null && !user.getPassword().isBlank()) {
       user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -393,6 +407,27 @@ public class UserService implements UserDetailsService {
 
     // Evict UserDetails cache
     evictUserDetailsCache(existingUser.getUsername());
+  }
+
+  private void mergeProfileFieldsForPartialUpdate(MstUser user, MstUser existingUser) {
+    if (user.getRealName() == null) {
+      user.setRealName(existingUser.getRealName());
+    }
+    if (user.getDeptId() == null) {
+      user.setDeptId(existingUser.getDeptId());
+    }
+    if (user.getPositionId() == null) {
+      user.setPositionId(existingUser.getPositionId());
+    }
+    if (user.getMobile() == null) {
+      user.setMobile(existingUser.getMobile());
+    }
+    if (user.getGender() == null) {
+      user.setGender(existingUser.getGender());
+    }
+    if (user.getBirthday() == null) {
+      user.setBirthday(existingUser.getBirthday());
+    }
   }
 
   /**

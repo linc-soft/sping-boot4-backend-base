@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
  * Department entity.
  *
  * <p>Multi-level department tree. {@code parentId} is {@code 0} for top-level departments. {@code
- * leaderEmployeeId} references {@link MstEmployee#getId()} and is used by the approval workflow for
+ * leaderUserId} references {@link MstUser#getId()} and is used by the approval workflow for
  * routing.
  *
  * @author 林创科技
@@ -28,8 +28,8 @@ public class MstDepartment extends VersionedEntity {
   /** Parent department ID (0 = top level) */
   private Long parentId;
 
-  /** Department head (mst_employee.id) */
-  private Long leaderEmployeeId;
+  /** Department head (mst_user.id) */
+  private Long leaderUserId;
 
   /** Sort order among siblings */
   private Integer sortOrder;
