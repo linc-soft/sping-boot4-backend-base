@@ -1,4 +1,4 @@
-package com.lincsoft.controller.oa.vo;
+package com.lincsoft.controller.master.vo;
 
 /**
  * Position list request VO.

@@ -1,4 +1,4 @@
-package com.lincsoft.entity.oa;
+package com.lincsoft.entity.master;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.lincsoft.common.VersionedEntity;

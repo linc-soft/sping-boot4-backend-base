@@ -1,12 +1,7 @@
-package com.lincsoft.controller.oa.vo;
-
-import java.util.List;
+package com.lincsoft.controller.master.vo;
 
 /**
- * Department tree node response VO.
- *
- * <p>Each node carries its direct children, forming a nested tree. Top-level nodes have {@code
- * parentId} equal to 0.
+ * Department info response VO.
  *
  * @param id Department ID
  * @param deptName Department name
@@ -16,11 +11,10 @@ import java.util.List;
  * @param sortOrder Sort order among siblings
  * @param status Status (0 disabled / 1 enabled)
  * @param version Version for optimistic locking
- * @param children Direct child departments
  * @author 林创科技
  * @since 2026-06-07
  */
-public record DepartmentTreeResponse(
+public record DepartmentInfoResponse(
     Long id,
     String deptName,
     String deptCode,
@@ -28,5 +22,4 @@ public record DepartmentTreeResponse(
     Long leaderUserId,
     Integer sortOrder,
     String status,
-    Integer version,
-    List<DepartmentTreeResponse> children) {}
+    Integer version) {}

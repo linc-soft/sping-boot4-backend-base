@@ -1,9 +1,9 @@
 package com.lincsoft.mapstruct;
 
-import com.lincsoft.controller.oa.vo.DepartmentCreateRequest;
-import com.lincsoft.controller.oa.vo.DepartmentInfoResponse;
-import com.lincsoft.controller.oa.vo.DepartmentUpdateRequest;
-import com.lincsoft.entity.oa.MstDepartment;
+import com.lincsoft.controller.master.vo.DepartmentCreateRequest;
+import com.lincsoft.controller.master.vo.DepartmentInfoResponse;
+import com.lincsoft.controller.master.vo.DepartmentUpdateRequest;
+import com.lincsoft.entity.master.MstDepartment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

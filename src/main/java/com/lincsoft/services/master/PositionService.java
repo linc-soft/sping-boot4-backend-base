@@ -1,4 +1,4 @@
-package com.lincsoft.services.oa;
+package com.lincsoft.services.master;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -7,10 +7,9 @@ import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.Module;
 import com.lincsoft.constant.OperationType;
 import com.lincsoft.constant.SubModule;
-import com.lincsoft.entity.oa.MstPosition;
+import com.lincsoft.entity.master.MstPosition;
 import com.lincsoft.exception.BusinessException;
-import com.lincsoft.mapper.oa.MstPositionMapper;
-import com.lincsoft.services.master.UserService;
+import com.lincsoft.mapper.master.MstPositionMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

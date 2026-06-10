@@ -1,7 +1,7 @@
-package com.lincsoft.mapper.oa;
+package com.lincsoft.mapper.master;
 
 import com.github.yulichang.base.MPJBaseMapper;
-import com.lincsoft.entity.oa.MstDepartment;
+import com.lincsoft.entity.master.MstDepartment;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

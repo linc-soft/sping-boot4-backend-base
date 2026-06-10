@@ -1,12 +1,12 @@
-package com.lincsoft.controller.oa;
+package com.lincsoft.controller.master;
 
-import com.lincsoft.controller.oa.vo.DepartmentCreateRequest;
-import com.lincsoft.controller.oa.vo.DepartmentDeleteRequest;
-import com.lincsoft.controller.oa.vo.DepartmentInfoResponse;
-import com.lincsoft.controller.oa.vo.DepartmentTreeResponse;
-import com.lincsoft.controller.oa.vo.DepartmentUpdateRequest;
+import com.lincsoft.controller.master.vo.DepartmentCreateRequest;
+import com.lincsoft.controller.master.vo.DepartmentDeleteRequest;
+import com.lincsoft.controller.master.vo.DepartmentInfoResponse;
+import com.lincsoft.controller.master.vo.DepartmentTreeResponse;
+import com.lincsoft.controller.master.vo.DepartmentUpdateRequest;
 import com.lincsoft.mapstruct.DepartmentMapper;
-import com.lincsoft.services.oa.DepartmentService;
+import com.lincsoft.services.master.DepartmentService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

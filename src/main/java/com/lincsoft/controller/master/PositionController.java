@@ -1,12 +1,12 @@
-package com.lincsoft.controller.oa;
+package com.lincsoft.controller.master;
 
-import com.lincsoft.controller.oa.vo.PositionCreateRequest;
-import com.lincsoft.controller.oa.vo.PositionDeleteRequest;
-import com.lincsoft.controller.oa.vo.PositionInfoResponse;
-import com.lincsoft.controller.oa.vo.PositionListRequest;
-import com.lincsoft.controller.oa.vo.PositionUpdateRequest;
+import com.lincsoft.controller.master.vo.PositionCreateRequest;
+import com.lincsoft.controller.master.vo.PositionDeleteRequest;
+import com.lincsoft.controller.master.vo.PositionInfoResponse;
+import com.lincsoft.controller.master.vo.PositionListRequest;
+import com.lincsoft.controller.master.vo.PositionUpdateRequest;
 import com.lincsoft.mapstruct.PositionMapper;
-import com.lincsoft.services.oa.PositionService;
+import com.lincsoft.services.master.PositionService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

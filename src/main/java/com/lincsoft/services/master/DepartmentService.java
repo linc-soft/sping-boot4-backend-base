@@ -1,4 +1,4 @@
-package com.lincsoft.services.oa;
+package com.lincsoft.services.master;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -7,11 +7,10 @@ import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.Module;
 import com.lincsoft.constant.OperationType;
 import com.lincsoft.constant.SubModule;
-import com.lincsoft.controller.oa.vo.DepartmentTreeResponse;
-import com.lincsoft.entity.oa.MstDepartment;
+import com.lincsoft.controller.master.vo.DepartmentTreeResponse;
+import com.lincsoft.entity.master.MstDepartment;
 import com.lincsoft.exception.BusinessException;
-import com.lincsoft.mapper.oa.MstDepartmentMapper;
-import com.lincsoft.services.master.UserService;
+import com.lincsoft.mapper.master.MstDepartmentMapper;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;

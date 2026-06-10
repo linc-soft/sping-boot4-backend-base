@@ -1,9 +1,9 @@
 package com.lincsoft.mapstruct;
 
-import com.lincsoft.controller.oa.vo.PositionCreateRequest;
-import com.lincsoft.controller.oa.vo.PositionInfoResponse;
-import com.lincsoft.controller.oa.vo.PositionUpdateRequest;
-import com.lincsoft.entity.oa.MstPosition;
+import com.lincsoft.controller.master.vo.PositionCreateRequest;
+import com.lincsoft.controller.master.vo.PositionInfoResponse;
+import com.lincsoft.controller.master.vo.PositionUpdateRequest;
+import com.lincsoft.entity.master.MstPosition;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
