@@ -1,5 +1,6 @@
 package com.lincsoft.controller.log;
 
+import com.lincsoft.controller.log.vo.SqlLogDetailResponse;
 import com.lincsoft.controller.log.vo.TraceDetailResponse;
 import com.lincsoft.entity.system.SysAccessLog;
 import com.lincsoft.entity.system.SysErrorLog;
@@ -7,6 +8,7 @@ import com.lincsoft.entity.system.SysOperationLog;
 import com.lincsoft.mapstruct.AccessLogMapper;
 import com.lincsoft.mapstruct.ErrorLogMapper;
 import com.lincsoft.mapstruct.OperationLogQueryMapper;
+import com.lincsoft.mapstruct.SqlLogMapper;
 import com.lincsoft.services.system.TraceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,6 +36,7 @@ public class TraceController {
   private final AccessLogMapper accessLogMapper;
   private final ErrorLogMapper errorLogMapper;
   private final OperationLogQueryMapper operationLogMapper;
+  private final SqlLogMapper sqlLogMapper;
 
   /**
    * Get trace detail by trace ID.
@@ -53,10 +56,13 @@ public class TraceController {
     SysAccessLog accessLog = traceService.getAccessLog(traceId);
     SysErrorLog errorLog = traceService.getErrorLog(traceId);
     List<SysOperationLog> operationLogs = traceService.getOperationLogs(traceId);
+    List<SqlLogDetailResponse> sqlLogs =
+        sqlLogMapper.toDetailResponseList(traceService.getSqlLogs(traceId));
 
     return new TraceDetailResponse(
         accessLog != null ? accessLogMapper.toDetailResponse(accessLog) : null,
         errorLog != null ? errorLogMapper.toDetailResponse(errorLog) : null,
-        operationLogMapper.toDetailResponseList(operationLogs));
+        operationLogMapper.toDetailResponseList(operationLogs),
+        sqlLogs);
   }
 }

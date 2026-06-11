@@ -116,6 +116,13 @@ public class AppProperties {
   private Upload upload = new Upload();
 
   /**
+   * SQL log configuration settings.
+   *
+   * <p>Defines parameters for SQL logging, slow SQL detection, and batch persistence.
+   */
+  private SqlLog sqlLog = new SqlLog();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -796,5 +803,71 @@ public class AppProperties {
         List.of(
             "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "jpg", "jpeg", "png",
             "gif", "bmp", "svg", "zip", "rar", "7z");
+  }
+
+  /**
+   * SQL log configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.sql-log} prefix. Controls SQL logging, slow SQL
+   * detection thresholds, mapper exclusion, and batch persistence parameters.
+   */
+  @Data
+  public static class SqlLog {
+    /**
+     * Whether SQL logging is enabled.
+     *
+     * <p>Default: true
+     */
+    private boolean enabled = true;
+
+    /**
+     * Slow SQL threshold in milliseconds.
+     *
+     * <p>SQL statements exceeding this duration are flagged as slow. A value of 0 means all SQL
+     * statements are recorded regardless of execution time.
+     *
+     * <p>Default: 0 (record all SQL)
+     */
+    private long slowSqlThresholdMs = 0;
+
+    /**
+     * Mapper class simple names to exclude from SQL logging.
+     *
+     * <p>Useful for excluding mappers that generate high-volume, low-value log entries (e.g., the
+     * SQL log mapper itself).
+     *
+     * <p>Default: empty list (no exclusions)
+     */
+    private List<String> excludeMapperClasses = new ArrayList<>();
+
+    /**
+     * Maximum number of log entries per batch INSERT.
+     *
+     * <p>When the buffer reaches this size, a flush is triggered immediately regardless of the
+     * scheduled interval.
+     *
+     * <p>Default: 200
+     */
+    private int batchSize = 200;
+
+    /**
+     * Scheduled flush interval in milliseconds.
+     *
+     * <p>A fixed-rate scheduled task drains the buffer at this interval, ensuring logs are
+     * persisted even under low traffic.
+     *
+     * <p>Default: 3000 (3 seconds)
+     */
+    private long flushIntervalMs = 3000;
+
+    /**
+     * Maximum number of batches to flush in a single scheduled invocation.
+     *
+     * <p>Prevents a single flush cycle from monopolizing the scheduler thread for too long when the
+     * buffer has a massive backlog.
+     *
+     * <p>Default: 30
+     */
+    private int maxBatchesPerFlush = 30;
   }
 }

@@ -17,6 +17,7 @@
 --        CALL sp_create_monthly_partitions('sys_access_log', 'your_schema', 6);
 --        CALL sp_create_monthly_partitions('sys_error_log', 'your_schema', 6);
 --        CALL sp_create_monthly_partitions('sys_operation_log', 'your_schema', 6);
+--        CALL sp_create_monthly_partitions('sys_sql_log', 'your_schema', 6);
 --   4. Enable Event Scheduler tasks (see bottom of partition-maintenance.sql)
 --
 -- Partition behavior:
@@ -117,6 +118,44 @@ CREATE TABLE IF NOT EXISTS sys_operation_log (
   KEY idx_operation_log_trace_id (trace_id),
   KEY idx_operation_log_create_time (create_time)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Operation log (monthly partition)'
+PARTITION BY
+  RANGE (TO_DAYS (create_time)) (
+    PARTITION p_init
+    VALUES
+      LESS THAN (TO_DAYS ('2026-05-01')) COMMENT 'Initial partition (includes historical data)',
+      PARTITION p_future
+    VALUES
+      LESS THAN MAXVALUE COMMENT 'Catch-all partition'
+  );
+
+-- ============================================================
+-- sys_sql_log table (monthly partition)
+-- Records SQL execution logs for MyBatis mapper methods
+-- ============================================================
+DROP TABLE IF EXISTS sys_sql_log;
+
+CREATE TABLE IF NOT EXISTS sys_sql_log (
+  id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  trace_id VARCHAR(64) DEFAULT NULL COMMENT 'Trace ID',
+  sql_text TEXT DEFAULT NULL COMMENT 'SQL text',
+  duration BIGINT DEFAULT NULL COMMENT 'Execution duration (milliseconds)',
+  mapper_class VARCHAR(255) DEFAULT NULL COMMENT 'Mapper class name',
+  mapper_method VARCHAR(64) DEFAULT NULL COMMENT 'Mapper method name',
+  sql_type VARCHAR(10) DEFAULT NULL COMMENT 'SQL type (SELECT/INSERT/UPDATE/DELETE)',
+  username VARCHAR(64) DEFAULT NULL COMMENT 'Operating username',
+  request_url VARCHAR(255) DEFAULT NULL COMMENT 'Request URL',
+  request_method VARCHAR(10) DEFAULT NULL COMMENT 'Request method (GET/POST/PUT/DELETE)',
+  client_ip VARCHAR(64) DEFAULT NULL COMMENT 'Client IP address',
+  sql_params TEXT DEFAULT NULL COMMENT 'SQL parameters (JSON format)',
+  row_count BIGINT DEFAULT NULL COMMENT 'Affected row count',
+  create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+  PRIMARY KEY (id, create_time),
+  KEY idx_sql_log_trace_id (trace_id),
+  KEY idx_sql_log_create_time (create_time),
+  KEY idx_sql_log_username (username),
+  KEY idx_sql_log_sql_type (sql_type),
+  KEY idx_sql_log_duration (duration)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'SQL execution log (monthly partition)'
 PARTITION BY
   RANGE (TO_DAYS (create_time)) (
     PARTITION p_init

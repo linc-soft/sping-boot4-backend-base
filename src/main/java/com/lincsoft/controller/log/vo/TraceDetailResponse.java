@@ -8,10 +8,12 @@ import java.util.List;
  * @param accessLog Access log detail
  * @param errorLog Error log detail (optional)
  * @param operationLogs Operation log list
+ * @param sqlLogs SQL log list
  * @author 林创科技
  * @since 2026-05-11
  */
 public record TraceDetailResponse(
     AccessLogDetailResponse accessLog,
     ErrorLogDetailResponse errorLog,
-    List<OperationLogDetailResponse> operationLogs) {}
+    List<OperationLogDetailResponse> operationLogs,
+    List<SqlLogDetailResponse> sqlLogs) {}

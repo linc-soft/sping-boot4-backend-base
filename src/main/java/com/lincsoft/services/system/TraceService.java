@@ -3,6 +3,7 @@ package com.lincsoft.services.system;
 import com.lincsoft.entity.system.SysAccessLog;
 import com.lincsoft.entity.system.SysErrorLog;
 import com.lincsoft.entity.system.SysOperationLog;
+import com.lincsoft.entity.system.SysSqlLog;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ public class TraceService {
   private final AccessLogService accessLogService;
   private final ErrorLogService errorLogService;
   private final OperationLogService operationLogService;
+  private final SqlLogService sqlLogService;
 
   /**
    * Get access log by trace ID.
@@ -52,5 +54,15 @@ public class TraceService {
    */
   public List<SysOperationLog> getOperationLogs(String traceId) {
     return operationLogService.getListByTraceId(traceId);
+  }
+
+  /**
+   * Get SQL logs by trace ID.
+   *
+   * @param traceId Trace ID
+   * @return List of SQL log entities
+   */
+  public List<SysSqlLog> getSqlLogs(String traceId) {
+    return sqlLogService.getListByTraceId(traceId);
   }
 }

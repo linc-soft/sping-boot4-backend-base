@@ -296,6 +296,7 @@ CREATE EVENT IF NOT EXISTS evt_monthly_partition_maintenance
     CALL sp_create_monthly_partitions('sys_access_log', 'your_schema', 3);
     CALL sp_create_monthly_partitions('sys_error_log', 'your_schema', 3);
     CALL sp_create_monthly_partitions('sys_operation_log', 'your_schema', 3);
+    CALL sp_create_monthly_partitions('sys_sql_log', 'your_schema', 3);
   END;
 */
 
@@ -309,6 +310,7 @@ CREATE EVENT IF NOT EXISTS evt_yearly_partition_maintenance
     CALL sp_create_yearly_partitions('sys_access_log', 'your_schema', 2);
     CALL sp_create_yearly_partitions('sys_error_log', 'your_schema', 2);
     CALL sp_create_yearly_partitions('sys_operation_log', 'your_schema', 2);
+    CALL sp_create_yearly_partitions('sys_sql_log', 'your_schema', 2);
   END;
 */
 
@@ -322,6 +324,7 @@ CREATE EVENT IF NOT EXISTS evt_drop_expired_partitions
     CALL sp_drop_expired_partitions('sys_access_log', 'your_schema', 180);
     CALL sp_drop_expired_partitions('sys_error_log', 'your_schema', 180);
     CALL sp_drop_expired_partitions('sys_operation_log', 'your_schema', 180);
+    CALL sp_drop_expired_partitions('sys_sql_log', 'your_schema', 180);
   END;
 */
 
@@ -335,5 +338,6 @@ CREATE EVENT IF NOT EXISTS evt_archive_expired_partitions
     CALL sp_archive_expired_partitions('sys_access_log', 'your_schema', 180);
     CALL sp_archive_expired_partitions('sys_error_log', 'your_schema', 180);
     CALL sp_archive_expired_partitions('sys_operation_log', 'your_schema', 180);
+    CALL sp_archive_expired_partitions('sys_sql_log', 'your_schema', 180);
   END;
 */
