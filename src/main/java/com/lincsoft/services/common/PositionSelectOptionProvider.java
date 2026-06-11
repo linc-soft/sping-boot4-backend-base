@@ -40,7 +40,7 @@ public class PositionSelectOptionProvider implements SelectOptionProvider {
     queryWrapper.eq("status", "1");
     queryWrapper.orderByAsc("sort_order").orderByAsc("id");
     return positionMapper.selectList(queryWrapper).stream()
-        .map(pos -> new SelectOption(pos.getId(), pos.getPositionName(), pos.getPositionCode()))
+        .map(pos -> SelectOption.of(pos.getId(), pos.getPositionName(), pos.getPositionCode()))
         .toList();
   }
 }

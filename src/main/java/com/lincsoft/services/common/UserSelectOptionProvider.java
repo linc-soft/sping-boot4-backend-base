@@ -29,13 +29,14 @@ public class UserSelectOptionProvider implements SelectOptionProvider {
         userMapper.selectJoinList(
             MstUser.class,
             new MPJLambdaWrapper<MstUser>()
-                .select(MstUser::getId)
+                .select(MstUser::getUsername)
                 .select(MstUser::getRealName)
                 .selectAs(MstPosition::getPositionName, MstUser::getPositionName)
                 .leftJoin(MstPosition.class, MstPosition::getId, MstUser::getPositionId));
 
     return users.stream()
-        .map(user -> new SelectOption(user.getId(), user.getRealName(), user.getPositionName()))
+        .map(
+            user -> SelectOption.of(user.getUsername(), user.getRealName(), user.getPositionName()))
         .toList();
   }
 }
