@@ -55,7 +55,11 @@ public class RoleController {
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_READ.roleCode)")
   public List<RoleListResponseItem> getRoleList(RoleListRequest request) {
     return roleMapper.toListResponse(
-        roleService.getRoleList(request.roleName(), request.roleCode(), request.description()));
+        roleService.getRoleList(
+            request.roleName(),
+            request.roleCode(),
+            request.description(),
+            request.aggregatedOnly()));
   }
 
   /**

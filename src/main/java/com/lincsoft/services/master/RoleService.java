@@ -93,9 +93,11 @@ public class RoleService {
    * @param roleName Role name (partial match)
    * @param roleCode Role code (prefix match, recursive through inheritance)
    * @param description Description (partial match)
+   * @param aggregatedOnly Only include aggregated roles (roles with null role_code)
    * @return List of roles with their direct parent role IDs
    */
-  public List<RoleWithParents> getRoleList(String roleName, String roleCode, String description) {
+  public List<RoleWithParents> getRoleList(
+      String roleName, String roleCode, String description, Boolean aggregatedOnly) {
     QueryWrapper<MstRole> queryWrapper = new QueryWrapper<>();
 
     // Partial match for role name
@@ -116,6 +118,10 @@ public class RoleService {
     // Partial match for description
     if (description != null && !description.isBlank()) {
       queryWrapper.like("description", description);
+    }
+
+    if (Boolean.TRUE.equals(aggregatedOnly)) {
+      queryWrapper.isNull("role_code");
     }
 
     // Order by update time descending
