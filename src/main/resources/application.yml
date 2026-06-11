@@ -143,6 +143,19 @@ app:
     batch-size: 100
     flush-interval-ms: 5000
     max-batches-per-flush: 20
+  # SQL log settings
+  sql-log:
+    enabled: true
+    slow-sql-threshold-ms: 0
+    exclude-mapper-classes:
+      - SysAccessLogMapper
+      - SysErrorLogMapper
+      - SysFileUploadMapper
+      - SysOperationLogMapper
+      - SysSqlLogMapper
+    batch-size: 200
+    flush-interval-ms: 3000
+    max-batches-per-flush: 30
 
 # ========================================
 # Actuator & Monitoring settings
