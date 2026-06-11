@@ -79,7 +79,7 @@ public class PositionService {
    * @return The created position ID
    */
   @OperationLog(
-      module = Module.OA,
+      module = Module.MASTER,
       subModule = SubModule.POSITION,
       type = OperationType.CREATE,
       description = "Position created: #{#position.positionName}")
@@ -100,7 +100,7 @@ public class PositionService {
    * @throws BusinessException if the code is duplicate or optimistic lock fails
    */
   @OperationLog(
-      module = Module.OA,
+      module = Module.MASTER,
       subModule = SubModule.POSITION,
       type = OperationType.UPDATE,
       description = "Position updated: #{#position.positionName}")
@@ -126,7 +126,7 @@ public class PositionService {
    * @throws BusinessException if the position has users or optimistic lock fails
    */
   @OperationLog(
-      module = Module.OA,
+      module = Module.MASTER,
       subModule = SubModule.POSITION,
       type = OperationType.DELETE,
       description = "Position deleted: #{#position.positionName}")

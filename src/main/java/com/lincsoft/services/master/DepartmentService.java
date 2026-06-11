@@ -87,7 +87,7 @@ public class DepartmentService {
    * @return The created department ID
    */
   @OperationLog(
-      module = Module.OA,
+      module = Module.MASTER,
       subModule = SubModule.DEPARTMENT,
       type = OperationType.CREATE,
       description = "Department created: #{#department.deptName}")
@@ -111,7 +111,7 @@ public class DepartmentService {
    * @throws BusinessException if validation fails or optimistic lock fails
    */
   @OperationLog(
-      module = Module.OA,
+      module = Module.MASTER,
       subModule = SubModule.DEPARTMENT,
       type = OperationType.UPDATE,
       description = "Department updated: #{#department.deptName}")
@@ -141,7 +141,7 @@ public class DepartmentService {
    * @throws BusinessException if the department has children, has users, or optimistic lock fails
    */
   @OperationLog(
-      module = Module.OA,
+      module = Module.MASTER,
       subModule = SubModule.DEPARTMENT,
       type = OperationType.DELETE,
       description = "Department deleted: #{#department.deptName}")
