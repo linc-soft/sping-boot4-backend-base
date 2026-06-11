@@ -1,24 +1,16 @@
 package com.lincsoft.services.common;
 
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.lincsoft.annotation.SelectOptionPermission;
 import com.lincsoft.common.SelectOption;
 import com.lincsoft.common.SelectOptionProvider;
+import com.lincsoft.entity.master.MstPosition;
+import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.mapper.master.MstUserMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * Select option provider for users.
- *
- * <p>Provides user select options with {@code id} as value and {@code username} as label.
- *
- * <p>Requires {@code USER_READ} permission since user options are typically needed when managing
- * roles (e.g., assigning users to roles).
- *
- * @author 林创科技
- * @since 2026-04-21
- */
 @Component
 @SelectOptionPermission("USER_READ")
 @RequiredArgsConstructor
@@ -33,8 +25,17 @@ public class UserSelectOptionProvider implements SelectOptionProvider {
 
   @Override
   public List<SelectOption> getOptions() {
-    return userMapper.selectList(null).stream()
-        .map(user -> new SelectOption(user.getId(), user.getUsername(), null))
+    List<MstUser> users =
+        userMapper.selectJoinList(
+            MstUser.class,
+            new MPJLambdaWrapper<MstUser>()
+                .select(MstUser::getId)
+                .select(MstUser::getRealName)
+                .selectAs(MstPosition::getPositionName, MstUser::getPositionName)
+                .leftJoin(MstPosition.class, MstPosition::getId, MstUser::getPositionId));
+
+    return users.stream()
+        .map(user -> new SelectOption(user.getId(), user.getRealName(), user.getPositionName()))
         .toList();
   }
 }

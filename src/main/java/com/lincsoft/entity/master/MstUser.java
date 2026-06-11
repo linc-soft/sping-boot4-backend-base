@@ -1,5 +1,6 @@
 package com.lincsoft.entity.master;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.lincsoft.common.VersionedEntity;
 import java.time.LocalDate;
@@ -45,4 +46,8 @@ public class MstUser extends VersionedEntity {
 
   /** Birthday */
   private LocalDate birthday;
+
+  /** Position name (non-persistent, populated by JOIN query) */
+  @TableField(exist = false)
+  private String positionName;
 }

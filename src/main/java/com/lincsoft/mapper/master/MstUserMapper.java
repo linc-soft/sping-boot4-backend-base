@@ -1,6 +1,6 @@
 package com.lincsoft.mapper.master;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
 import com.lincsoft.entity.master.MstUser;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -11,4 +11,4 @@ import org.apache.ibatis.annotations.Mapper;
  * @since 2026-04-08
  */
 @Mapper
-public interface MstUserMapper extends BaseMapper<MstUser> {}
+public interface MstUserMapper extends MPJBaseMapper<MstUser> {}
