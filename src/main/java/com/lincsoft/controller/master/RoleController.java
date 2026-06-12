@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2026-04-14
  */
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/master/roles")
 @RequiredArgsConstructor
 public class RoleController {
 

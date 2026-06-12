@@ -78,10 +78,6 @@ app:
       - /swagger-ui.html
       - /doc.html
       - /webjars/**
-  # SQL log: record all SQL in development (threshold = 0)
-  sql-log:
-    slow-sql-threshold-ms: 0
-
 # Actuator: expose more endpoints for development debugging
 management:
   endpoints:

@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
  * @param mapperMethod Mapper method
  * @param duration Processing duration (milliseconds)
  * @param username Username
- * @param isSlow Whether this is a slow query
  * @param createdAt Created at
  * @author 林创科技
  * @since 2026-06-11
@@ -23,5 +22,4 @@ public record SqlLogPageResponseItem(
     String mapperMethod,
     Long duration,
     String username,
-    Boolean isSlow,
     LocalDateTime createdAt) {}

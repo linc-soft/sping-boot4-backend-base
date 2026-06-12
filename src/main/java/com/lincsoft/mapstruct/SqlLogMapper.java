@@ -22,7 +22,6 @@ public interface SqlLogMapper {
    * @param entity SysSqlLog entity
    * @return SqlLogPageResponseItem VO
    */
-  @Mapping(target = "isSlow", ignore = true)
   @Mapping(target = "createdAt", source = "createTime")
   SqlLogPageResponseItem toPageResponseItem(SysSqlLog entity);
 
@@ -48,7 +47,7 @@ public interface SqlLogMapper {
    * Convert list of SysSqlLog to list of SqlLogDetailResponse.
    *
    * @param entities List of SysSqlLog entities
-   * @return List of SqlLogDetailResponse VO
+   * @return List of SqlLogDetailResponse
    */
   List<SqlLogDetailResponse> toDetailResponseList(List<SysSqlLog> entities);
 }

@@ -1,7 +1,6 @@
 package com.lincsoft.controller.log;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.lincsoft.config.AppProperties;
 import com.lincsoft.controller.log.vo.SqlLogDetailResponse;
 import com.lincsoft.controller.log.vo.SqlLogPageRequest;
 import com.lincsoft.controller.log.vo.SqlLogPageResponseItem;
@@ -31,7 +30,6 @@ public class SqlLogController {
 
   private final SqlLogService sqlLogService;
   private final SqlLogMapper sqlLogMapper;
-  private final AppProperties appProperties;
 
   /**
    * Get SQL log page by query conditions with pagination.
@@ -45,29 +43,7 @@ public class SqlLogController {
   @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
   @GetMapping("/page")
   public IPage<SqlLogPageResponseItem> getPage(@Valid SqlLogPageRequest request) {
-    IPage<SqlLogPageResponseItem> page =
-        sqlLogMapper.toPageResponse(sqlLogService.getPage(request));
-    long threshold = appProperties.getSqlLog().getSlowSqlThresholdMs();
-    if (threshold > 0) {
-      for (int i = 0; i < page.getRecords().size(); i++) {
-        SqlLogPageResponseItem item = page.getRecords().get(i);
-        if (item.duration() != null) {
-          page.getRecords()
-              .set(
-                  i,
-                  new SqlLogPageResponseItem(
-                      item.id(),
-                      item.traceId(),
-                      item.sqlType(),
-                      item.mapperMethod(),
-                      item.duration(),
-                      item.username(),
-                      item.duration() > threshold,
-                      item.createdAt()));
-        }
-      }
-    }
-    return page;
+    return sqlLogMapper.toPageResponse(sqlLogService.getPage(request));
   }
 
   /**

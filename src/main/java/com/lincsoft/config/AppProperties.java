@@ -808,8 +808,8 @@ public class AppProperties {
   /**
    * SQL log configuration inner class.
    *
-   * <p>Binds properties under the {@code app.sql-log} prefix. Controls SQL logging, slow SQL
-   * detection thresholds, mapper exclusion, and batch persistence parameters.
+   * <p>Binds properties under the {@code app.sql-log} prefix. Controls SQL logging, mapper
+   * exclusion, path-based inclusion, and batch persistence parameters.
    */
   @Data
   public static class SqlLog {
@@ -821,16 +821,6 @@ public class AppProperties {
     private boolean enabled = true;
 
     /**
-     * Slow SQL threshold in milliseconds.
-     *
-     * <p>SQL statements exceeding this duration are flagged as slow. A value of 0 means all SQL
-     * statements are recorded regardless of execution time.
-     *
-     * <p>Default: 0 (record all SQL)
-     */
-    private long slowSqlThresholdMs = 0;
-
-    /**
      * Mapper class simple names to exclude from SQL logging.
      *
      * <p>Useful for excluding mappers that generate high-volume, low-value log entries (e.g., the
@@ -839,6 +829,17 @@ public class AppProperties {
      * <p>Default: empty list (no exclusions)
      */
     private List<String> excludeMapperClasses = new ArrayList<>();
+
+    /**
+     * Request path patterns (Ant style) for which SQL logging is enabled.
+     *
+     * <p>When non-empty, only SQL statements executed within HTTP requests whose URI matches one of
+     * these patterns are logged. Patterns use Spring's Ant path syntax (e.g. {@code
+     * /api/master/**}). If empty, SQL logging is not restricted by request path.
+     *
+     * <p>Default: empty list (no path restriction)
+     */
+    private List<String> includePathPatterns = new ArrayList<>();
 
     /**
      * Maximum number of log entries per batch INSERT.

@@ -31,6 +31,8 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.slf4j.MDC;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -55,6 +57,7 @@ public class SqlLogInterceptor implements Interceptor {
 
   private final SqlLogService sqlLogService;
   private final AppProperties appProperties;
+  private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
   @Override
   public Object intercept(Invocation invocation) throws Throwable {
@@ -68,9 +71,6 @@ public class SqlLogInterceptor implements Interceptor {
     long duration = System.currentTimeMillis() - startTime;
 
     try {
-      if (isBelowThreshold(duration)) {
-        return result;
-      }
       saveSqlLog(invocation, mappedStatement, result, duration);
     } catch (Exception e) {
       log.error("Error occurred while recording SQL log: {}", e.getMessage(), e);
@@ -105,23 +105,40 @@ public class SqlLogInterceptor implements Interceptor {
     String mapperClass = extractMapperClass(statementId);
     String simpleMapperClass = extractSimpleClassName(mapperClass);
     List<String> excludedMapperClasses = sqlLogProperties.getExcludeMapperClasses();
-    if (excludedMapperClasses == null || excludedMapperClasses.isEmpty()) {
+    if (excludedMapperClasses != null && !excludedMapperClasses.isEmpty()) {
+      boolean excluded =
+          excludedMapperClasses.stream()
+              .filter(
+                  excludedMapperClass ->
+                      excludedMapperClass != null && !excludedMapperClass.isBlank())
+              .map(String::trim)
+              .anyMatch(
+                  excludedMapperClass ->
+                      excludedMapperClass.equals(mapperClass)
+                          || excludedMapperClass.equals(simpleMapperClass));
+      if (excluded) {
+        return true;
+      }
+    }
+
+    return !matchesIncludePathPatterns(sqlLogProperties.getIncludePathPatterns());
+  }
+
+  private boolean matchesIncludePathPatterns(List<String> includePathPatterns) {
+    if (CollectionUtils.isEmpty(includePathPatterns)) {
+      return true;
+    }
+
+    RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+    if (!(requestAttributes instanceof ServletRequestAttributes servletRequestAttributes)) {
       return false;
     }
 
-    return excludedMapperClasses.stream()
-        .filter(
-            excludedMapperClass -> excludedMapperClass != null && !excludedMapperClass.isBlank())
+    String requestUri = servletRequestAttributes.getRequest().getRequestURI();
+    return includePathPatterns.stream()
+        .filter(pattern -> pattern != null && !pattern.isBlank())
         .map(String::trim)
-        .anyMatch(
-            excludedMapperClass ->
-                excludedMapperClass.equals(mapperClass)
-                    || excludedMapperClass.equals(simpleMapperClass));
-  }
-
-  private boolean isBelowThreshold(long duration) {
-    long threshold = appProperties.getSqlLog().getSlowSqlThresholdMs();
-    return threshold > 0 && duration < threshold;
+        .anyMatch(pattern -> pathMatcher.match(pattern, requestUri));
   }
 
   private void saveSqlLog(
