@@ -40,7 +40,7 @@ public class DepartmentSelectOptionProvider implements SelectOptionProvider {
     queryWrapper.eq("status", "1");
     queryWrapper.orderByAsc("sort_order").orderByAsc("id");
     return departmentMapper.selectList(queryWrapper).stream()
-        .map(dept -> new SelectOption(dept.getId(), dept.getDeptName(), dept.getDeptCode()))
+        .map(dept -> SelectOption.of(dept.getId(), dept.getDeptName(), dept.getDeptCode()))
         .toList();
   }
 }

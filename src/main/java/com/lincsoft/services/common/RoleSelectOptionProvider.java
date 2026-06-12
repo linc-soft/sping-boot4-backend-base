@@ -34,7 +34,7 @@ public class RoleSelectOptionProvider implements SelectOptionProvider {
   @Override
   public List<SelectOption> getOptions() {
     return roleMapper.selectList(null).stream()
-        .map(role -> new SelectOption(role.getId(), role.getRoleName(), role.getRoleCode()))
+        .map(role -> SelectOption.of(role.getId(), role.getRoleName(), role.getRoleCode()))
         .toList();
   }
 }
