@@ -279,10 +279,26 @@ public class SqlLogInterceptor implements Interceptor {
   }
 
   private Long resolveRowCount(SqlCommandType sqlCommandType, Object result) {
-    if (sqlCommandType == SqlCommandType.SELECT || !(result instanceof Number rowCount)) {
-      return null;
+    if (sqlCommandType == SqlCommandType.SELECT) {
+      return resolveSelectRowCount(result);
     }
-    return rowCount.longValue();
+    if (result instanceof Number rowCount) {
+      return rowCount.longValue();
+    }
+    return null;
+  }
+
+  private Long resolveSelectRowCount(Object result) {
+    if (result == null) {
+      return 0L;
+    }
+    if (result instanceof List<?> list) {
+      return (long) list.size();
+    }
+    if (result instanceof Object[]) {
+      return (long) ((Object[]) result).length;
+    }
+    return 1L;
   }
 
   private void populateRequestInfo(SysSqlLog sqlLog) {
