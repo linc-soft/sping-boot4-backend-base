@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * @param id ID
  * @param traceId Trace ID
  * @param sqlType SQL type (SELECT/INSERT/UPDATE/DELETE)
- * @param mapperMethod Mapper method
+ * @param requestUrl API path
  * @param duration Processing duration (milliseconds)
  * @param username Username
  * @param createdAt Created at
@@ -19,7 +19,7 @@ public record SqlLogPageResponseItem(
     Long id,
     String traceId,
     String sqlType,
-    String mapperMethod,
+    String requestUrl,
     Long duration,
     String username,
     LocalDateTime createdAt) {}

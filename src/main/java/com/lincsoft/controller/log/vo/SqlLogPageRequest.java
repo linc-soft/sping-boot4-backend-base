@@ -24,11 +24,8 @@ public class SqlLogPageRequest extends PageRequest {
   /** SQL type filter (SELECT/INSERT/UPDATE/DELETE) */
   private String sqlType;
 
-  /** Mapper class (partial match) */
-  private String mapperClass;
-
-  /** Mapper method (partial match) */
-  private String mapperMethod;
+  /** API path (partial match) */
+  private String requestUrl;
 
   /** Minimum duration in milliseconds */
   private Long minDuration;

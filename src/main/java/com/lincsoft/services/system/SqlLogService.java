@@ -57,12 +57,10 @@ public class SqlLogService {
             "id",
             "trace_id",
             "sql_type",
-            "mapper_class",
-            "mapper_method",
-            "duration",
-            "username",
             "request_url",
             "request_method",
+            "duration",
+            "username",
             "client_ip",
             "row_count",
             "create_time"),
@@ -218,12 +216,8 @@ public class SqlLogService {
       queryWrapper.eq("sql_type", request.getSqlType());
     }
 
-    if (request.getMapperClass() != null && !request.getMapperClass().isBlank()) {
-      queryWrapper.like("mapper_class", request.getMapperClass());
-    }
-
-    if (request.getMapperMethod() != null && !request.getMapperMethod().isBlank()) {
-      queryWrapper.like("mapper_method", request.getMapperMethod());
+    if (request.getRequestUrl() != null && !request.getRequestUrl().isBlank()) {
+      queryWrapper.like("request_url", request.getRequestUrl());
     }
 
     if (request.getMinDuration() != null) {
