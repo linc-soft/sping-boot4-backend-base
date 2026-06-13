@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -59,5 +60,21 @@ public class SqlLogController {
   @GetMapping("/{id}")
   public SqlLogDetailResponse getById(@Parameter(description = "Log ID") @PathVariable Long id) {
     return sqlLogMapper.toDetailResponse(sqlLogService.getById(id));
+  }
+
+  /**
+   * Get SQL logs by trace ID.
+   *
+   * @param traceId Trace ID
+   * @return List of SQL log detail responses
+   */
+  @Operation(
+      summary = "Get SQL logs by trace ID",
+      description = "Retrieve all SQL logs associated with the given trace ID")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @GetMapping("/trace/{traceId}")
+  public List<SqlLogDetailResponse> getByTraceId(
+      @Parameter(description = "Trace ID") @PathVariable String traceId) {
+    return sqlLogMapper.toDetailResponseList(sqlLogService.getListByTraceId(traceId));
   }
 }
