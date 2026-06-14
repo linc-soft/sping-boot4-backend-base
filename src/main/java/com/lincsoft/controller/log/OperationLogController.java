@@ -78,18 +78,4 @@ public class OperationLogController {
       @Parameter(description = "Trace ID") @PathVariable String traceId) {
     return operationLogMapper.toDetailResponseList(operationLogService.getListByTraceId(traceId));
   }
-
-  /**
-   * Get distinct module list for filtering dropdown.
-   *
-   * @return List of module names
-   */
-  @Operation(
-      summary = "Get module list",
-      description = "Return all operation log modules for filter dropdown")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
-  @GetMapping("/modules")
-  public List<String> getModules() {
-    return operationLogService.getModules();
-  }
 }

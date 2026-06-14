@@ -1,6 +1,7 @@
 package com.lincsoft.controller.common;
 
 import com.lincsoft.constant.Module;
+import com.lincsoft.constant.OperationType;
 import com.lincsoft.constant.RoleCodeEnums;
 import com.lincsoft.constant.SubModule;
 import com.lincsoft.constant.UserStatusEnum;
@@ -38,6 +39,7 @@ public class EnumController {
       case "role-code" -> RoleCodeEnums.getList();
       case "module" -> Module.getList();
       case "sub-module" -> SubModule.getList();
+      case "operation-type" -> OperationType.getList();
       default -> throw new IllegalArgumentException("Unsupported enum type: " + type);
     };
   }

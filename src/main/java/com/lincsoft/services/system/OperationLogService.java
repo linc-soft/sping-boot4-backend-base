@@ -84,23 +84,6 @@ public class OperationLogService {
     return operationLogMapper.selectList(queryWrapper);
   }
 
-  /**
-   * Get distinct module list for filtering dropdown.
-   *
-   * @return List of module names
-   */
-  public List<String> getModules() {
-    return operationLogMapper
-        .selectObjs(
-            new QueryWrapper<SysOperationLog>()
-                .select("DISTINCT module")
-                .isNotNull("module")
-                .ne("module", ""))
-        .stream()
-        .map(Object::toString)
-        .toList();
-  }
-
   // ==================== Write Operations ====================
 
   /**

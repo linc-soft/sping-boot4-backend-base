@@ -1,5 +1,8 @@
 package com.lincsoft.constant;
 
+import com.lincsoft.common.BaseEnum;
+import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,14 +14,32 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum OperationType {
-  QUERY(),
-  CREATE(),
-  UPDATE(),
-  DELETE(),
-  LOGIN(),
-  LOGOUT(),
-  IMPORT(),
-  EXPORT(),
-  OTHER()
+public enum OperationType implements BaseEnum<String> {
+  QUERY("QUERY", "Query"),
+  CREATE("CREATE", "Create"),
+  UPDATE("UPDATE", "Update"),
+  DELETE("DELETE", "Delete"),
+  LOGIN("LOGIN", "Login"),
+  LOGOUT("LOGOUT", "Logout"),
+  IMPORT("IMPORT", "Import"),
+  EXPORT("EXPORT", "Export"),
+  OTHER("OTHER", "Other");
+
+  /** Operation type code. */
+  private final String code;
+
+  /** Operation type display name. */
+  private final String name;
+
+  /** Cached enum list for API responses. */
+  private static final List<Map<String, Object>> LIST = BaseEnum.toList(values());
+
+  /**
+   * Get the list of all operation types.
+   *
+   * @return list of maps with "code" and "name" entries
+   */
+  public static List<Map<String, Object>> getList() {
+    return LIST;
+  }
 }
