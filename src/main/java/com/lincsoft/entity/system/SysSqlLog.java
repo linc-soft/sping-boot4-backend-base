@@ -45,6 +45,7 @@ public class SysSqlLog implements Serializable {
   private String mapperMethod;
 
   /** SQL Type (SELECT/INSERT/UPDATE/DELETE) */
+  @TableField("sql_type")
   private String sqlType;
 
   /** Operation Username */

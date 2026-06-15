@@ -19,26 +19,26 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum RoleCodeEnums implements BaseEnum<String> {
-  ADMIN("ADMIN", "Administrator"),
-  ROLE_READ("ROLE_READ", "Role Reader"),
-  ROLE_WRITE("ROLE_WRITE", "Role Writer"),
-  ROLE_DELETE("ROLE_DELETE", "Role Deleter"),
-  ROLE_EXPORT("ROLE_EXPORT", "Role Exporter"),
-  USER_READ("USER_READ", "User Reader"),
-  USER_WRITE("USER_WRITE", "User Writer"),
-  USER_DELETE("USER_DELETE", "User Deleter"),
-  USER_EXPORT("USER_EXPORT", "User Exporter"),
-  LOG_READ("LOG_READ", "Log Reader"),
-  LOG_EXPORT("LOG_EXPORT", "Log Exporter"),
-  FILE_READ("FILE_READ", "File Reader"),
-  FILE_WRITE("FILE_WRITE", "File Uploader"),
-  FILE_DELETE("FILE_DELETE", "File Deleter"),
-  DEPT_READ("DEPT_READ", "Department Reader"),
-  DEPT_WRITE("DEPT_WRITE", "Department Writer"),
-  DEPT_DELETE("DEPT_DELETE", "Department Deleter"),
-  POSITION_READ("POSITION_READ", "Position Reader"),
-  POSITION_WRITE("POSITION_WRITE", "Position Writer"),
-  POSITION_DELETE("POSITION_DELETE", "Position Deleter");
+  ADMIN("ADMIN", "common.enums.role-code.admin"),
+  ROLE_READ("ROLE_READ", "common.enums.role-code.role-read"),
+  ROLE_WRITE("ROLE_WRITE", "common.enums.role-code.role-write"),
+  ROLE_DELETE("ROLE_DELETE", "common.enums.role-code.role-delete"),
+  ROLE_EXPORT("ROLE_EXPORT", "common.enums.role-code.role-export"),
+  USER_READ("USER_READ", "common.enums.role-code.user-read"),
+  USER_WRITE("USER_WRITE", "common.enums.role-code.user-write"),
+  USER_DELETE("USER_DELETE", "common.enums.role-code.user-delete"),
+  USER_EXPORT("USER_EXPORT", "common.enums.role-code.user-export"),
+  LOG_READ("LOG_READ", "common.enums.role-code.log-read"),
+  LOG_EXPORT("LOG_EXPORT", "common.enums.role-code.log-export"),
+  FILE_READ("FILE_READ", "common.enums.role-code.file-read"),
+  FILE_WRITE("FILE_WRITE", "common.enums.role-code.file-write"),
+  FILE_DELETE("FILE_DELETE", "common.enums.role-code.file-delete"),
+  DEPT_READ("DEPT_READ", "common.enums.role-code.dept-read"),
+  DEPT_WRITE("DEPT_WRITE", "common.enums.role-code.dept-write"),
+  DEPT_DELETE("DEPT_DELETE", "common.enums.role-code.dept-delete"),
+  POSITION_READ("POSITION_READ", "common.enums.role-code.position-read"),
+  POSITION_WRITE("POSITION_WRITE", "common.enums.role-code.position-write"),
+  POSITION_DELETE("POSITION_DELETE", "common.enums.role-code.position-delete");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;

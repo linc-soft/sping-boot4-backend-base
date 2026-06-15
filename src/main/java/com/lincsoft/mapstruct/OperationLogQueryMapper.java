@@ -1,7 +1,7 @@
 package com.lincsoft.mapstruct;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.OperationEnums;
 import com.lincsoft.controller.log.vo.OperationLogDetailResponse;
 import com.lincsoft.controller.log.vo.OperationLogPageResponseItem;
 import com.lincsoft.entity.system.SysOperationLog;
@@ -57,16 +57,16 @@ public interface OperationLogQueryMapper {
    * Parse operation type string to enum.
    *
    * @param value operation type string
-   * @return OperationType enum
+   * @return OperationEnums enum
    */
-  default OperationType parseOperationType(String value) {
+  default OperationEnums parseOperationType(String value) {
     if (value == null) {
       return null;
     }
     try {
-      return OperationType.valueOf(value);
+      return OperationEnums.valueOf(value);
     } catch (IllegalArgumentException e) {
-      return OperationType.OTHER;
+      return OperationEnums.OTHER;
     }
   }
 }

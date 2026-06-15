@@ -16,10 +16,10 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum UserStatusEnum implements BaseEnum<String> {
-  ENABLED("1", "enabled"),
-  DISABLED("0", "disabled"),
-  INACTIVE("2", "inactive");
+public enum UserStatusType implements BaseEnum<String> {
+  ENABLED("1", "common.enums.user-status.enabled"),
+  DISABLED("0", "common.enums.user-status.disabled"),
+  INACTIVE("2", "common.enums.user-status.inactive");
 
   /** status code. */
   private final String code;
@@ -29,7 +29,7 @@ public enum UserStatusEnum implements BaseEnum<String> {
 
   /** Cached list of all status entries for API responses. */
   private static final List<Map<String, Object>> STATUS_LIST =
-      BaseEnum.toList(UserStatusEnum.values());
+      BaseEnum.toList(UserStatusType.values());
 
   /**
    * Get the list of all user status entries.

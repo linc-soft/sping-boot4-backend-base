@@ -1,8 +1,8 @@
 package com.lincsoft.annotation;
 
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
-import com.lincsoft.constant.SubModule;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.SubModuleEnums;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -25,21 +25,21 @@ public @interface OperationLog {
    *
    * @return the module enum, default is MASTER
    */
-  Module module() default Module.MASTER;
+  ModuleEnums module() default ModuleEnums.MASTER;
 
   /**
    * Gets the submodule.
    *
    * @return the submodule enum, default is SESSION
    */
-  SubModule subModule() default SubModule.SESSION;
+  SubModuleEnums subModule() default SubModuleEnums.SESSION;
 
   /**
    * Gets the operation type.
    *
    * @return the type of operation being performed, default is OTHER
    */
-  OperationType type() default OperationType.OTHER;
+  OperationEnums type() default OperationEnums.OTHER;
 
   /**
    * Gets the operation description.

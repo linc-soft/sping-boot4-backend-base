@@ -1,10 +1,14 @@
 package com.lincsoft.controller.common;
 
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.CommonStatusType;
+import com.lincsoft.constant.GenderType;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.ResultCodeEnums;
 import com.lincsoft.constant.RoleCodeEnums;
-import com.lincsoft.constant.SubModule;
-import com.lincsoft.constant.UserStatusEnum;
+import com.lincsoft.constant.SqlTypeEnums;
+import com.lincsoft.constant.SubModuleEnums;
+import com.lincsoft.constant.UserStatusType;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,11 +39,15 @@ public class EnumController {
   @GetMapping
   public List<Map<String, Object>> getEnumList(@RequestParam String type) {
     return switch (type) {
-      case "user-status" -> UserStatusEnum.getList();
+      case "user-status" -> UserStatusType.getList();
       case "role-code" -> RoleCodeEnums.getList();
-      case "module" -> Module.getList();
-      case "sub-module" -> SubModule.getList();
-      case "operation-type" -> OperationType.getList();
+      case "module" -> ModuleEnums.getList();
+      case "sub-module" -> SubModuleEnums.getList();
+      case "operation" -> OperationEnums.getList();
+      case "common-status" -> CommonStatusType.getList();
+      case "gender" -> GenderType.getList();
+      case "sql-type" -> SqlTypeEnums.getList();
+      case "result-code" -> ResultCodeEnums.getList();
       default -> throw new IllegalArgumentException("Unsupported enum type: " + type);
     };
   }

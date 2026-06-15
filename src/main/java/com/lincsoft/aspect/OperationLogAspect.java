@@ -167,8 +167,8 @@ public class OperationLogAspect {
       OperationLog annotation, String description, long duration) {
     SysOperationLog logEntity = new SysOperationLog();
     logEntity.setTraceId(MDC.get(CommonConstants.MDC_TRACE_ID_KEY));
-    logEntity.setModule(annotation.module().getName());
-    logEntity.setSubModule(annotation.subModule().getName());
+    logEntity.setModule(annotation.module().getCode());
+    logEntity.setSubModule(annotation.subModule().getCode());
     logEntity.setOperationType(annotation.type().name());
     logEntity.setDescription(description);
     logEntity.setDuration(duration);

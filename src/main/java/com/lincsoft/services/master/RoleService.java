@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.MessageEnums;
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
-import com.lincsoft.constant.SubModule;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.SubModuleEnums;
 import com.lincsoft.dto.master.RoleWithParents;
 import com.lincsoft.entity.master.MstRole;
 import com.lincsoft.entity.master.MstRoleInheritance;
@@ -170,9 +170,9 @@ public class RoleService {
    * @return The created role ID
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.ROLE,
-      type = OperationType.CREATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.ROLE,
+      type = OperationEnums.CREATE,
       description = "Role created: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
   public Long createRole(MstRole role, List<Long> parentRoleIds) {
@@ -201,9 +201,9 @@ public class RoleService {
    * @throws BusinessException if the role code is duplicate or optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.ROLE,
-      type = OperationType.UPDATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.ROLE,
+      type = OperationEnums.UPDATE,
       description = "Role updated: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
   public void updateRole(MstRole role, List<Long> parentRoleIds) {
@@ -233,9 +233,9 @@ public class RoleService {
    *     optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.ROLE,
-      type = OperationType.DELETE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.ROLE,
+      type = OperationEnums.DELETE,
       description = "Role deleted: #{#role.roleName}")
   @Transactional(rollbackFor = Exception.class)
   public void deleteRole(MstRole role, Integer version) {
@@ -355,9 +355,9 @@ public class RoleService {
    * @param parentRoleId Parent role ID (the role being inherited)
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.ROLE,
-      type = OperationType.CREATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.ROLE,
+      type = OperationEnums.CREATE,
       description = "Added role inheritance: #{#result.roleName}")
   @Transactional(rollbackFor = Exception.class)
   public MstRole addRoleInheritance(Long childRoleId, Long parentRoleId) {
@@ -391,9 +391,9 @@ public class RoleService {
    * @param parentRoleId Parent role ID
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.ROLE,
-      type = OperationType.DELETE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.ROLE,
+      type = OperationEnums.DELETE,
       description = "Delete role inheritance: #{#result.roleName}")
   @Transactional(rollbackFor = Exception.class)
   public MstRole removeRoleInheritance(Long childRoleId, Long parentRoleId) {

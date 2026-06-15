@@ -4,9 +4,9 @@ import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
-import com.lincsoft.constant.SubModule;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.SubModuleEnums;
 import com.lincsoft.controller.auth.vo.LoginRequest;
 import com.lincsoft.controller.auth.vo.LoginResponse;
 import com.lincsoft.controller.auth.vo.RefreshResponse;
@@ -90,9 +90,9 @@ public class AuthService {
    * @return LoginResponse containing the access token
    */
   @OperationLog(
-      module = Module.AUTH,
-      subModule = SubModule.SESSION,
-      type = OperationType.LOGIN,
+      module = ModuleEnums.AUTH,
+      subModule = SubModuleEnums.SESSION,
+      type = OperationEnums.LOGIN,
       description = "User login")
   public LoginResponse login(
       LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
@@ -256,9 +256,9 @@ public class AuthService {
    * @param response the HTTP response for clearing the refresh token cookie
    */
   @OperationLog(
-      module = Module.AUTH,
-      subModule = SubModule.SESSION,
-      type = OperationType.LOGOUT,
+      module = ModuleEnums.AUTH,
+      subModule = SubModuleEnums.SESSION,
+      type = OperationEnums.LOGOUT,
       description = "User logout")
   public void logout(HttpServletRequest request, HttpServletResponse response) {
     String secret = appProperties.getJwt().getSecret();

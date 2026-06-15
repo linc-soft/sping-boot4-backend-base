@@ -2,9 +2,9 @@ package com.lincsoft.services.report.user;
 
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.config.AppProperties;
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
-import com.lincsoft.constant.SubModule;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.SubModuleEnums;
 import com.lincsoft.controller.master.vo.UserListReportRequest;
 import com.lincsoft.dto.master.UserListGroupDto;
 import com.lincsoft.dto.master.UserReportItem;
@@ -66,9 +66,9 @@ public class UserListReportDataFetcher implements ReportDataFetcher<UserListRepo
    */
   @Override
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.USER,
-      type = OperationType.EXPORT,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.USER,
+      type = OperationEnums.EXPORT,
       description = "User list report exported: #{#request}")
   public Map<String, Object> fetchData(UserListReportRequest request, Locale locale) {
     log.debug("Fetching user list report data, filters: {}", request);

@@ -7,9 +7,9 @@ import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.config.AppProperties;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
-import com.lincsoft.constant.SubModule;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.SubModuleEnums;
 import com.lincsoft.controller.master.vo.UserPageRequest;
 import com.lincsoft.dto.CacheableUserDetails;
 import com.lincsoft.dto.master.UserWithRoles;
@@ -294,9 +294,9 @@ public class UserService implements UserDetailsService {
    * @return The created user ID
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.USER,
-      type = OperationType.CREATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.USER,
+      type = OperationEnums.CREATE,
       description = "User created: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
   public Long createUser(MstUser user, List<Integer> roleIds) {
@@ -362,9 +362,9 @@ public class UserService implements UserDetailsService {
    * @throws BusinessException if the username is duplicate or optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.USER,
-      type = OperationType.UPDATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.USER,
+      type = OperationEnums.UPDATE,
       description = "User updated: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
   public void updateUser(MstUser user, List<Integer> roleIds) {
@@ -488,9 +488,9 @@ public class UserService implements UserDetailsService {
    * @throws BusinessException if the user is not found or optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.USER,
-      type = OperationType.DELETE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.USER,
+      type = OperationEnums.DELETE,
       description = "User deleted: #{#user.username}")
   @Transactional(rollbackFor = Exception.class)
   public void deleteUser(MstUser user, Integer version) {
@@ -522,9 +522,9 @@ public class UserService implements UserDetailsService {
    * @param role The role to assign
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.USER,
-      type = OperationType.CREATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.USER,
+      type = OperationEnums.CREATE,
       description = "Assigned role #{#role.roleName} to user: #{#user.username}")
   public void assignRoleToUser(MstUser user, MstRole role) {
     MstUserRole userRole = new MstUserRole();
@@ -543,9 +543,9 @@ public class UserService implements UserDetailsService {
    * @param role The role to revoke
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.USER,
-      type = OperationType.DELETE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.USER,
+      type = OperationEnums.DELETE,
       description = "Revoked role #{#role.roleName} from user: #{#user.username}")
   public void revokeRoleFromUser(MstUser user, MstRole role) {
     QueryWrapper<MstUserRole> queryWrapper = new QueryWrapper<>();

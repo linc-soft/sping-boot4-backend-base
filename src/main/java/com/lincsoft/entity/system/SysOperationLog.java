@@ -1,6 +1,7 @@
 package com.lincsoft.entity.system;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serial;
@@ -34,6 +35,7 @@ public class SysOperationLog implements Serializable {
   private String subModule;
 
   /** Operation Type (CREATE/UPDATE/DELETE/QUERY) */
+  @TableField("operation_type")
   private String operationType;
 
   /** Operation Description */

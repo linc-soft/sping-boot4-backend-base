@@ -1,6 +1,6 @@
 package com.lincsoft.controller.log.vo;
 
-import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.OperationEnums;
 import java.time.LocalDateTime;
 
 /**
@@ -26,7 +26,7 @@ public record OperationLogDetailResponse(
     String traceId,
     String module,
     String subModule,
-    OperationType operationType,
+    OperationEnums operationType,
     String description,
     Long duration,
     String requestMethod,

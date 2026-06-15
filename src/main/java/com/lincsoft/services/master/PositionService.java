@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.MessageEnums;
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
-import com.lincsoft.constant.SubModule;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.SubModuleEnums;
 import com.lincsoft.entity.master.MstPosition;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.master.MstPositionMapper;
@@ -79,9 +79,9 @@ public class PositionService {
    * @return The created position ID
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.POSITION,
-      type = OperationType.CREATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.POSITION,
+      type = OperationEnums.CREATE,
       description = "Position created: #{#position.positionName}")
   @Transactional(rollbackFor = Exception.class)
   public Long createPosition(MstPosition position) {
@@ -100,9 +100,9 @@ public class PositionService {
    * @throws BusinessException if the code is duplicate or optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.POSITION,
-      type = OperationType.UPDATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.POSITION,
+      type = OperationEnums.UPDATE,
       description = "Position updated: #{#position.positionName}")
   @Transactional(rollbackFor = Exception.class)
   public void updatePosition(MstPosition position) {
@@ -126,9 +126,9 @@ public class PositionService {
    * @throws BusinessException if the position has users or optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.POSITION,
-      type = OperationType.DELETE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.POSITION,
+      type = OperationEnums.DELETE,
       description = "Position deleted: #{#position.positionName}")
   @Transactional(rollbackFor = Exception.class)
   public void deletePosition(MstPosition position, Integer version) {

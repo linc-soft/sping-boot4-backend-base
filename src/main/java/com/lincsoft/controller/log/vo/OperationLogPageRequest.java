@@ -1,7 +1,7 @@
 package com.lincsoft.controller.log.vo;
 
 import com.lincsoft.common.PageRequest;
-import com.lincsoft.constant.OperationType;
+import com.lincsoft.constant.OperationEnums;
 import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,12 +20,12 @@ public class OperationLogPageRequest extends PageRequest {
   private String traceId;
 
   /** Operation type */
-  private OperationType operationType;
+  private OperationEnums operationType;
 
-  /** Module (partial match) */
+  /** Module code (exact match) */
   private String module;
 
-  /** Sub module (partial match) */
+  /** Sub-module code (exact match) */
   private String subModule;
 
   /** Username (partial match) */

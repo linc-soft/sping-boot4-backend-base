@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.MessageEnums;
-import com.lincsoft.constant.Module;
-import com.lincsoft.constant.OperationType;
-import com.lincsoft.constant.SubModule;
+import com.lincsoft.constant.ModuleEnums;
+import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.SubModuleEnums;
 import com.lincsoft.controller.master.vo.DepartmentTreeResponse;
 import com.lincsoft.entity.master.MstDepartment;
 import com.lincsoft.exception.BusinessException;
@@ -87,9 +87,9 @@ public class DepartmentService {
    * @return The created department ID
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.DEPARTMENT,
-      type = OperationType.CREATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.DEPARTMENT,
+      type = OperationEnums.CREATE,
       description = "Department created: #{#department.deptName}")
   @Transactional(rollbackFor = Exception.class)
   public Long createDepartment(MstDepartment department) {
@@ -111,9 +111,9 @@ public class DepartmentService {
    * @throws BusinessException if validation fails or optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.DEPARTMENT,
-      type = OperationType.UPDATE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.DEPARTMENT,
+      type = OperationEnums.UPDATE,
       description = "Department updated: #{#department.deptName}")
   @Transactional(rollbackFor = Exception.class)
   public void updateDepartment(MstDepartment department) {
@@ -141,9 +141,9 @@ public class DepartmentService {
    * @throws BusinessException if the department has children, has users, or optimistic lock fails
    */
   @OperationLog(
-      module = Module.MASTER,
-      subModule = SubModule.DEPARTMENT,
-      type = OperationType.DELETE,
+      module = ModuleEnums.MASTER,
+      subModule = SubModuleEnums.DEPARTMENT,
+      type = OperationEnums.DELETE,
       description = "Department deleted: #{#department.deptName}")
   @Transactional(rollbackFor = Exception.class)
   public void deleteDepartment(MstDepartment department, Integer version) {

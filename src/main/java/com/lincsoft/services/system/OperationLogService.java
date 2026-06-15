@@ -123,11 +123,11 @@ public class OperationLogService {
     }
 
     if (request.getModule() != null && !request.getModule().isBlank()) {
-      queryWrapper.like("module", request.getModule());
+      queryWrapper.eq("module", request.getModule());
     }
 
     if (request.getSubModule() != null && !request.getSubModule().isBlank()) {
-      queryWrapper.like("sub_module", request.getSubModule());
+      queryWrapper.eq("sub_module", request.getSubModule());
     }
 
     if (request.getUsername() != null && !request.getUsername().isBlank()) {
