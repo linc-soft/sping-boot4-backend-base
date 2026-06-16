@@ -4,7 +4,6 @@ import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.lincsoft.annotation.SelectOptionPermission;
 import com.lincsoft.common.SelectOption;
 import com.lincsoft.common.SelectOptionProvider;
-import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.entity.master.MstPosition;
 import com.lincsoft.entity.master.MstUser;
 import com.lincsoft.mapper.master.MstUserMapper;
@@ -13,27 +12,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * Select option provider for active users.
+ * Select option provider for usernames.
  *
- * <p>Provides user select options with {@code id} as value and {@code realName} as label. Only
- * active users ({@code status='1'}) are included, so disabled/inactive users cannot be selected as
- * department leaders.
+ * <p>Provides user select options with {@code username} as value and {@code realName} as label. All
+ * non-deleted users are included, regardless of status, so log filters can match historical
+ * records.
  *
  * <p>Requires {@code USER_READ} permission.
  *
  * @author 林创科技
- * @since 2026-04-21
+ * @since 2026-06-16
  */
 @Component
 @SelectOptionPermission("USER_READ")
 @RequiredArgsConstructor
-public class UserSelectOptionProvider implements SelectOptionProvider {
+public class UsernameSelectOptionProvider implements SelectOptionProvider {
 
   private final MstUserMapper userMapper;
 
   @Override
   public String getType() {
-    return "user";
+    return "username";
   }
 
   @Override
@@ -42,14 +41,14 @@ public class UserSelectOptionProvider implements SelectOptionProvider {
         userMapper.selectJoinList(
             MstUser.class,
             new MPJLambdaWrapper<MstUser>()
-                .select(MstUser::getId)
+                .select(MstUser::getUsername)
                 .select(MstUser::getRealName)
                 .selectAs(MstPosition::getPositionName, MstUser::getPositionName)
-                .eq(MstUser::getStatus, CommonConstants.USER_STATUS_ACTIVE)
                 .leftJoin(MstPosition.class, MstPosition::getId, MstUser::getPositionId));
 
     return users.stream()
-        .map(user -> SelectOption.of(user.getId(), user.getRealName(), user.getPositionName()))
+        .map(
+            user -> SelectOption.of(user.getUsername(), user.getRealName(), user.getPositionName()))
         .toList();
   }
 }
