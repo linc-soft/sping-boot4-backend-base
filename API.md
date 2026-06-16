@@ -162,7 +162,7 @@ Creates a new user with username uniqueness validation. Password is encrypted vi
 
 - `username` (required): Username, alphanumeric and underscore only (`^[a-zA-Z0-9_]+$`), max 64 characters
 - `password` (required): Password, 8–128 characters
-- `status` (required): User status (`0` inactive / `1` active), must be a valid `UserStatusEnum` value
+- `status` (required): User status (`0` inactive / `1` active), must be a valid `UserStatusType` value
 - `roleIds` (optional): List of role IDs to assign
 
 ---
@@ -624,7 +624,7 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 - `username`（必填）：用户名，仅允许字母、数字和下划线（`^[a-zA-Z0-9_]+$`），最长 64 字符
 - `password`（必填）：密码，8–128 字符
-- `status`（必填）：用户状态（`0` 禁用 / `1` 启用），必须为合法的 `UserStatusEnum` 值
+- `status`（必填）：用户状态（`0` 禁用 / `1` 启用），必须为合法的 `UserStatusType` 值
 - `roleIds`（可选）：要分配的角色 ID 列表
 
 ---
@@ -1086,7 +1086,7 @@ ID でユーザーを取得します。ID、ユーザー名、ステータス、
 
 - `username`（必須）：ユーザー名、英数字とアンダースコアのみ（`^[a-zA-Z0-9_]+$`）、最大 64 文字
 - `password`（必須）：パスワード、8～128 文字
-- `status`（必須）：ユーザーステータス（`0` 無効 / `1` 有効）、有効な `UserStatusEnum` 値である必要があります
+- `status`（必須）：ユーザーステータス（`0` 無効 / `1` 有効）、有効な `UserStatusType` 値である必要があります
 - `roleIds`（任意）：割り当てるロール ID リスト
 
 ---
