@@ -187,7 +187,7 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
       # Allow updateById to write null values (e.g. clearing leaderUserId/deptCode)
-      update-strategy: ignored
+      update-strategy: ALWAYS
 
 # SpringDoc OpenAPI settings
 springdoc:

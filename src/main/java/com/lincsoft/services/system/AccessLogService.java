@@ -275,7 +275,10 @@ public class AccessLogService {
 
     if (request.getStatusCode() != null && !request.getStatusCode().isBlank()) {
       String sc = request.getStatusCode().toUpperCase();
-      if ("4XX".equals(sc)) {
+      if ("2XX".equals(sc)) {
+        // Match plain 200–299 and module-prefixed XXX_200–XXX_299
+        queryWrapper.apply("response_status % 1000 >= 200 AND response_status % 1000 < 300");
+      } else if ("4XX".equals(sc)) {
         // Match plain 400–499 and module-prefixed XXX_400–XXX_499
         queryWrapper.apply("response_status % 1000 >= 400 AND response_status % 1000 < 500");
       } else if ("5XX".equals(sc)) {
