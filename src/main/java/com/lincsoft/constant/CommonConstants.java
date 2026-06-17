@@ -60,6 +60,9 @@ public interface CommonConstants {
   /** Cache name for UserDetails entries, used by {@code @Cacheable} in UserService. */
   String REDIS_USER_DETAILS_PREFIX = "user:details";
 
+  /** Cache name for the full resource tree, used by {@code @Cacheable} in ResourceService. */
+  String REDIS_RESOURCE_TREE_PREFIX = "resource:tree";
+
   /** Trace ID response header name */
   String HEADER_TRACE_ID = "X-Trace-Id";
 

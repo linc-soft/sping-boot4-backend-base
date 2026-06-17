@@ -96,7 +96,17 @@ public enum MessageEnums {
   POSITION_NOT_FOUND(104_404, "error.position.not_found"),
   POSITION_CODE_EXISTS(104_409, "error.position.code_exists"),
   POSITION_OPTIMISTIC_LOCK_FAILED(104_412, "error.position.optimistic_lock_failed"),
-  POSITION_HAS_USERS(104_424, "error.position.has_users");
+  POSITION_HAS_USERS(104_424, "error.position.has_users"),
+
+  // ========== 105: System - Resource page ==========
+  RESOURCE_NOT_FOUND(105_404, "error.resource.not_found"),
+  RESOURCE_CODE_EXISTS(105_409, "error.resource.code_exists"),
+  RESOURCE_OPTIMISTIC_LOCK_FAILED(105_412, "error.resource.optimistic_lock_failed"),
+  RESOURCE_INVALID_ROLE_CODE(105_400, "error.resource.invalid_role_code"),
+  RESOURCE_INVALID_PARENT(105_401, "error.resource.invalid_parent"),
+  RESOURCE_DIRECTORY_ROLE_CODE_MUST_BE_NULL(
+      105_402, "error.resource.directory_role_code_must_null"),
+  RESOURCE_HAS_CHILDREN(105_423, "error.resource.has_children");
 
   @Getter private final int code;
 

@@ -38,7 +38,9 @@ public enum RoleCodeEnums implements BaseEnum<String> {
   DEPT_DELETE("DEPT_DELETE", "common.enums.role-code.dept-delete"),
   POSITION_READ("POSITION_READ", "common.enums.role-code.position-read"),
   POSITION_WRITE("POSITION_WRITE", "common.enums.role-code.position-write"),
-  POSITION_DELETE("POSITION_DELETE", "common.enums.role-code.position-delete");
+  POSITION_DELETE("POSITION_DELETE", "common.enums.role-code.position-delete"),
+  RESOURCE_READ("RESOURCE_READ", "common.enums.role-code.resource-read"),
+  RESOURCE_WRITE("RESOURCE_WRITE", "common.enums.role-code.resource-write");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;
