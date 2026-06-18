@@ -406,7 +406,7 @@ public class UserService implements UserDetailsService {
     }
 
     // Evict UserDetails cache
-    evictUserDetailsCache(existingUser.getUsername());
+    self.evictUserDetailsCache(existingUser.getUsername());
   }
 
   private void mergeProfileFieldsForPartialUpdate(MstUser user, MstUser existingUser) {
@@ -510,7 +510,7 @@ public class UserService implements UserDetailsService {
     }
 
     // Evict UserDetails cache
-    evictUserDetailsCache(user.getUsername());
+    self.evictUserDetailsCache(user.getUsername());
   }
 
   /**

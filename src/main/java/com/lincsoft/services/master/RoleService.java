@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.lincsoft.annotation.OperationLog;
+import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
 import com.lincsoft.constant.ModuleEnums;
 import com.lincsoft.constant.OperationEnums;
@@ -20,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -217,6 +219,7 @@ public class RoleService {
     // Update role inheritance relationships if parentRoleIds are provided
     if (parentRoleIds != null) {
       updateRoleInheritance(role.getId(), parentRoleIds);
+      self.evictAllUserDetailsCache();
     }
   }
 
@@ -268,6 +271,9 @@ public class RoleService {
     // Clean up inheritance relationships where this role is a child
     deleteChildRoleInheritances(role.getId());
   }
+
+  @CacheEvict(cacheNames = CommonConstants.REDIS_USER_DETAILS_PREFIX, allEntries = true)
+  public void evictAllUserDetailsCache() {}
 
   /**
    * Resolve all ancestor (parent) roles for a given list of direct role IDs.
