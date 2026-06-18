@@ -191,6 +191,10 @@ VALUES
   (24, 'log:sql:read', 'nav.sqlLogs', 1, 2, '/logs/sql', 'mdi-database-search-outline', 24, 'LOG_READ', '1', 'system', 'system'),
   (25, 'log:trace:read', 'log.nav.trace', 1, 2, '/logs/trace/:traceId', NULL, 25, 'LOG_READ', '1', 'system', 'system');
 
+INSERT INTO sys_resource (id, resource_code, resource_name, type, parent_id, route_path, icon, sort_order, role_code, status, create_by, update_by)
+VALUES
+  (26, 'resource:read', 'nav.resources', 1, 1, '/master/resources', 'mdi-view-module-outline', 15, 'RESOURCE_READ', '1', 'system', 'system');
+
 -- Buttons (type=2)
 INSERT INTO sys_resource (id, resource_code, resource_name, type, parent_id, route_path, icon, sort_order, role_code, status, create_by, update_by)
 VALUES
@@ -217,6 +221,10 @@ VALUES
   (212, 'log:error:export', 'resource.log.export', 2, 22, NULL, NULL, 1, 'LOG_EXPORT', '1', 'system', 'system'),
   (213, 'log:operation:export', 'resource.log.export', 2, 23, NULL, NULL, 1, 'LOG_EXPORT', '1', 'system', 'system'),
   (214, 'log:sql:export', 'resource.log.export', 2, 24, NULL, NULL, 1, 'LOG_EXPORT', '1', 'system', 'system');
+
+INSERT INTO sys_resource (id, resource_code, resource_name, type, parent_id, route_path, icon, sort_order, role_code, status, create_by, update_by)
+VALUES
+  (141, 'resource:update', 'resourceManagement.actions.edit', 2, 26, NULL, NULL, 1, 'RESOURCE_WRITE', '1', 'system', 'system');
 
 -- ============================================================
 -- sys_file_upload table

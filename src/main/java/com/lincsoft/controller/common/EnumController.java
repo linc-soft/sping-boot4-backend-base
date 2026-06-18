@@ -4,6 +4,7 @@ import com.lincsoft.constant.CommonStatusType;
 import com.lincsoft.constant.GenderType;
 import com.lincsoft.constant.ModuleEnums;
 import com.lincsoft.constant.OperationEnums;
+import com.lincsoft.constant.ResourceType;
 import com.lincsoft.constant.ResultCodeEnums;
 import com.lincsoft.constant.RoleCodeEnums;
 import com.lincsoft.constant.SqlTypeEnums;
@@ -45,6 +46,7 @@ public class EnumController {
       case "sub-module" -> SubModuleEnums.getList();
       case "operation" -> OperationEnums.getList();
       case "common-status" -> CommonStatusType.getList();
+      case "resource-type" -> ResourceType.getList();
       case "gender" -> GenderType.getList();
       case "sql-type" -> SqlTypeEnums.getList();
       case "result-code" -> ResultCodeEnums.getList();
