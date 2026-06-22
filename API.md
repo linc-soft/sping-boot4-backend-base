@@ -161,7 +161,7 @@ Creates a new user with username uniqueness validation. Password is encrypted vi
 **Request Body:**
 
 - `username` (required): Username, alphanumeric and underscore only (`^[a-zA-Z0-9_]+$`), max 64 characters
-- `password` (required): Password, 8 E28 characters
+- `password` (required): Password, 8–28 characters
 - `status` (required): User status (`0` inactive / `1` active), must be a valid `UserStatusType` value
 - `roleIds` (optional): List of role IDs to assign
 
@@ -180,7 +180,7 @@ Updates user information. Username cannot be modified. Password is encrypted if 
 
 - `id` (required): User ID
 - `username` (optional): Username (read-only, must equal current value), alphanumeric and underscore only, max 64 characters
-- `password` (optional): New password, 8 E28 characters; omit to keep unchanged
+- `password` (optional): New password, 8–28 characters; omit to keep unchanged
 - `status` (optional): User status (`0` inactive / `1` active)
 - `roleIds` (optional): Target role ID list; omit to keep current roles, pass `[]` to revoke all
 - `version` (required): Version for optimistic locking
@@ -213,9 +213,9 @@ Deletes a user with optimistic locking. Evicts UserDetails cache after deletion 
 
 Generates a PDF report of users matching the username filter. The `groupBy` parameter controls how users are grouped in the report:
 
-- **null or blank**  ENo grouping; all matching users are listed in a single table.
-- **`role`**  EGroups users by their directly assigned roles. A user with multiple roles appears in each role's group, and each group starts on a new page.
-- **`baseRole`**  EGroups users by base roles (ancestor roles in the inheritance chain). For each user, all ancestor roles of the user's direct roles are collected. A user with multiple base roles appears in each base role's group, and each group starts on a new page. If a direct role has no ancestors, the user appears under that direct role's group.
+- **null or blank** — No grouping; all matching users are listed in a single table.
+- **`role`** — Groups users by their directly assigned roles. A user with multiple roles appears in each role's group, and each group starts on a new page.
+- **`baseRole`** — Groups users by base roles (ancestor roles in the inheritance chain). For each user, all ancestor roles of the user's direct roles are collected. A user with multiple base roles appears in each base role's group, and each group starts on a new page. If a direct role has no ancestors, the user appears under that direct role's group.
 
 Returns a PDF file with `Content-Type: application/pdf` and `Content-Disposition: attachment` header. Report labels are automatically localized based on the client's `Accept-Language` header. The maximum number of exported records is limited by configuration (`app.report.max-export-records`, default 10,000).
 
@@ -229,7 +229,7 @@ Returns a PDF file with `Content-Type: application/pdf` and `Content-Disposition
 | ------------ | ----------------------------------------------------- |
 | **Endpoint** | `GET /api/common/enums`                               |
 | **Auth**     | Public (No authentication required)                   |
-| **Params**   | `type`  Esupported values: `user-status`, `role-code`, `module`, `sub-module` |
+| **Params**   | `type` — supported values: `user-status`, `role-code`, `module`, `sub-module` |
 
 Returns enumeration data list by type. Supports `user-status` (user status options), `role-code` (role code options), `module` (module options), and `sub-module` (sub-module options). Each item contains `code` and `name` fields.
 
@@ -241,9 +241,9 @@ Returns enumeration data list by type. Supports `user-status` (user status optio
 | ------------ | ------------------------------------------------------------------------------------------------- |
 | **Endpoint** | `GET /api/common/select-options`                                                                  |
 | **Auth**     | Class-level `@PreAuthorize` with `LIST_OPTIONS` applies to all types                              |
-| **Params**   | `type`  Edynamically registered via `SelectOptionProvider` implementations (e.g., `role`, `user`) |
+| **Params**   | `type` — dynamically registered via `SelectOptionProvider` implementations (e.g., `role`, `user`) |
 
-Returns select option list for frontend dropdown/select components. Provider implementations are auto-discovered via Spring DI. To add a new type, simply create a new `SelectOptionProvider` bean  Eno controller modification required. Each option contains `value`, `label`, and `description`.
+Returns select option list for frontend dropdown/select components. Provider implementations are auto-discovered via Spring DI. To add a new type, simply create a new `SelectOptionProvider` bean — no controller modification required. Each option contains `value`, `label`, and `description`.
 
 All `SelectOptionProvider` types require the `LIST_OPTIONS` authority, enforced by the class-level `@PreAuthorize` annotation on `SelectOptionController`.
 
@@ -255,7 +255,7 @@ All `SelectOptionProvider` types require the `LIST_OPTIONS` authority, enforced 
 | ------------ | ----------------------------------------------------------------------------------------------------------- |
 | **Endpoint** | `POST /api/common/files`                                                                                    |
 | **Auth**     | Requires `UPLOAD_FILE` permission                                                                            |
-| **Params**   | `file` (required)  Emultipart file, `associateType` (optional)  Eassociation type, `associateId` (optional)  Eassociated entity ID |
+| **Params**   | `file` (required) — multipart file, `associateType` (optional) — association type, `associateId` (optional) — associated entity ID |
 | **Content-Type** | `multipart/form-data`                                                                                   |
 
 Uploads a single file to the server. The file is stored under a date-based subdirectory (`yyyy/MM/dd`) with a UUID-based filename to prevent conflicts and path traversal attacks. MD5 hash is computed during upload via `DigestInputStream` and stored in the database for integrity verification. File type is auto-detected from extension (1=image, 2=document, 3=archive, 9=other). Extension must be in the allowed list configured in `app.upload.allowed-extensions`. File size must not exceed `app.upload.max-file-size-mb`.
@@ -270,7 +270,7 @@ Returns: `id`, `storedName`, `originalFilename`, `datePath`, `dateUrl`, `size`, 
 | ------------ | --------------------------------------------------------------------------------------------------------------- |
 | **Endpoint** | `POST /api/common/files/batch`                                                                                  |
 | **Auth**     | Requires `UPLOAD_FILE` permission                                                                                |
-| **Params**   | `files` (required)  Emultipart file array, `associateType` (optional), `associateId` (optional)                |
+| **Params**   | `files` (required) — multipart file array, `associateType` (optional), `associateId` (optional)                |
 | **Content-Type** | `multipart/form-data`                                                                                       |
 
 Uploads multiple files in a single request. Each file is processed independently with the same rules as single upload. Total number of files must not exceed `app.upload.max-files-per-request`.
@@ -460,403 +460,463 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 ---
 
-# API 参老E��档
+# API 参考文档
 
-## 认证E
-### 登彁E
-| 项目         | 详惁E                  |
+## 认证
+
+### 登录
+
+| 项目         | 详细                  |
 | ------------ | ---------------------- |
 | **接口地址** | `POST /api/auth/login` |
-| **杁E��**     | 公开�E�无需认证E��E      |
+| **权限**     | 公开（无需认证）        |
 
-通迁ESpring Security 皁EAuthenticationManager 验证用户凭证。认证�E功后生�E JWT 访问令牌（在响应体中返回�E�和刷新令牌（通迁EHttpOnly Cookie 设置�E�。包含暴力破解防护�E�按账户咁EIP 两个维度记录登录失败�E�趁E��E�E值后锁定账户�E�非白名单 IP 自动封禁。在 Redis 中注册活跁E��话（若已有会话�E踢出旧会话）、E
+通过 Spring Security 的 AuthenticationManager 验证用户凭证。认证成功后生成 JWT 访问令牌（在响应体中返回）和刷新令牌（通过 HttpOnly Cookie 设置）。包含暴力破解防护：按账户和 IP 两个维度记录登录失败次数，超过阈值后锁定账户，非白名单 IP 自动封禁。在 Redis 中注册活动会话（若已有会话则踢出旧会话）。
+
 ---
 
-### 刷新令牁E
-| 项目         | 详惁E                    |
+### 刷新令牌
+
+| 项目         | 详细                    |
 | ------------ | ------------------------ |
 | **接口地址** | `POST /api/auth/refresh` |
-| **杁E��**     | CSRF 保护�E�无需认证E     |
+| **权限**     | CSRF 保护，无需认证       |
 
-实现令牌轮换机制。仁EHttpOnly Cookie 中读取刷新令牌，验证�E有效性�E�类型、迁E��时间、撤销状态E��，撤销旧皁E��新令牌，重新加载用户信息以验证用户仍夁E��活跁E��态E��生成新皁E��牌对�E�并在 Redis 中更新活跁E��话、E
+实现令牌轮换机制。从 HttpOnly Cookie 中读取刷新令牌，验证其有效性（类型、过期时间、撤销状态），撤销旧的刷新令牌，重新加载用户信息以验证用户仍处于活动状态，生成新的令牌对，并在 Redis 中更新活动会话。
+
 ---
 
 ### 登出
 
-| 项目         | 详惁E                   |
+| 项目         | 详细                   |
 | ------------ | ----------------------- |
 | **接口地址** | `POST /api/auth/logout` |
-| **杁E��**     | 需要认证E+ CSRF 保护    |
+| **权限**     | 需要认证 + CSRF 保护    |
 
-通迁E��EJTI 添加到 Redis 黑名单来撤销访问令牌（来自 Authorization 头�E�和刷新令牌（来自 Cookie�E�。渁E��刷新令牁ECookie�E�仁ERedis 移除活跁E��话记录，并渁E�� UserDetails 缓存、E
+通过将 JTI 添加到 Redis 黑名单来撤销访问令牌（来自 Authorization 头）和刷新令牌（来自 Cookie）。清除刷新令牌 Cookie，从 Redis 移除活动会话记录，并清除 UserDetails 缓存。
+
 ---
 
-## 角色管琁E
-### 获取角色详惁E
-| 项目         | 详惁E                 |
+## 角色管理
+
+### 获取角色详情
+
+| 项目         | 详细                 |
 | ------------ | --------------------- |
 | **接口地址** | `GET /api/roles/{id}` |
-| **杁E��**     | 需要E`VIEW_ROLE` 杁E�� |
+| **权限**     | 需要 `VIEW_ROLE` 权限 |
 
-根据 ID 从数据库中获取单个角色。返回角色详惁E��包括 ID、名称、代码、描述和版本号。未找到时抛�E 404 异常、E
+根据 ID 从数据库中获取单个角色。返回角色详细信息，包括 ID、名称、代码、描述和版本号。未找到时抛出 404 异常。
+
 ---
 
 ### 获取角色列表
 
-| 项目         | 详惁E                                                                     |
+| 项目         | 详细                                                                     |
 | ------------ | ------------------------------------------------------------------------- |
 | **接口地址** | `GET /api/roles`                                                          |
-| **杁E��**     | 需要E`VIEW_ROLE` 杁E��                                                     |
-| **参数**     | `roleName`�E�模糊匹配）、`roleCode`�E�前缀匹配）、`description`�E�模糊匹配！E|
+| **权限**     | 需要 `VIEW_ROLE` 权限                                                     |
+| **参数**     | `roleName`（模糊匹配）、`roleCode`（前缀匹配）、`description`（模糊匹配）|
 
-根据可选条件查询角色�E�名称模糊匹配、代码前缀匹配、描述模糊匹配）。返回角色列表�E�包含吁E��色皁E��接父角色 ID 和版本号�E�用于删除时皁E��观锁�E�，通迁E��次批量查询解析以避允EN+1 问题。结果按更新时间降序排列、E
+根据可选条件查询角色（名称模糊匹配、代码前缀匹配、描述模糊匹配）。返回角色列表，包含各角色的直接父角色 ID 和版本号（用于删除时的乐观锁），通过一次批量查询解析以避免 N+1 问题。结果按更新时间降序排列。
+
 ---
 
 ### 创建角色
 
-| 项目         | 详惁E                |
+| 项目         | 详细                |
 | ------------ | -------------------- |
 | **接口地址** | `POST /api/roles`    |
-| **杁E��**     | 需要E`CREATE_ROLE` 杁E�� |
+| **权限**     | 需要 `CREATE_ROLE` 权限 |
 
-使用提供的名称、描述和可选的父角色 ID 创建新角色。角色代码不是忁E��皁E- 宁E��E��于基础角色。�E定义角色通迁E��承父角色获得权限。返回创建皁E��色 ID、E
-**请求体！E*
+使用提供的名称、描述和可选的父角色 ID 创建新角色。角色代码不是必需的——仅用于基础角色。自定义角色通过继承父角色获得权限。返回创建的角色 ID。
 
-- `roleName`�E�忁E���E�：角色名称�E�最长 64 字符
-- `description`�E�可选）：角色描述�E�最长 255 字符
-- `parentRoleIds`�E�可选）：父角色 ID 列表�E�用于继承关系
+**请求体：**
+
+- `roleName`（必需）：角色名称，最长 64 字符
+- `description`（可选）：角色描述，最长 255 字符
+- `parentRoleIds`（可选）：父角色 ID 列表，用于继承关系
 
 ---
 
 ### 更新角色
 
-| 项目         | 详惁E                 |
+| 项目         | 详细                 |
 | ------------ | --------------------- |
 | **接口地址** | `PUT /api/roles`      |
-| **杁E��**     | 需要E`CREATE_ROLE` 杁E�� |
+| **权限**     | 需要 `CREATE_ROLE` 权限 |
 
-更新现有角色皁E��称、描述和继承关系。通迁E��本字段使用乐观锁确保并发安�E。如果角色被其他事务修改则抛出异常、E
-**请求体！E*
+更新现有角色的名称、描述和继承关系。通过版本字段使用乐观锁确保并发安全。如果角色被其他事务修改则抛出异常。
 
-- `id`�E�忁E���E�：角色 ID
-- `roleName`�E�忁E���E�：角色名称�E�最长 64 字符
-- `description`�E�可选）：角色描述�E�最长 255 字符
-- `parentRoleIds`�E�可选）：父角色 ID 列表�E�用于继承关系�E�替换现有�E系�E�E- `version`�E�忁E���E�：版本号�E�用于乐观锁
+**请求体：**
+
+- `id`（必需）：角色 ID
+- `roleName`（必需）：角色名称，最长 64 字符
+- `description`（可选）：角色描述，最长 255 字符
+- `parentRoleIds`（可选）：父角色 ID 列表，用于继承关系（替换现有关系）
+- `version`（必需）：版本号，用于乐观锁
 
 ---
 
 ### 删除角色
 
-| 项目         | 详惁E                |
+| 项目         | 详细                |
 | ------------ | -------------------- |
 | **接口地址** | `DELETE /api/roles`  |
-| **杁E��**     | 需要E`DELETE_ROLE` 杁E�� |
+| **权限**     | 需要 `DELETE_ROLE` 权限 |
 
-验证角色未被任何用户使用且未被其他角色继承后删除角色。使用乐观锁。删除后渁E��该角色作为子角色皁E��有继承关系、E
-**请求体！E*
+验证角色未被任何用户使用且未被其他角色继承后删除角色。使用乐观锁。删除后清除该角色作为子角色的所有继承关系。
 
-- `id`�E�忁E���E�：角色 ID
-- `version`�E�忁E���E�：版本号�E�用于乐观锁
+**请求体：**
+
+- `id`（必需）：角色 ID
+- `version`（必需）：版本号，用于乐观锁
 
 ---
 
-## 用户管琁E
-### 获取用户详惁E
-| 项目         | 详惁E                 |
+## 用户管理
+
+### 获取用户详情
+
+| 项目         | 详细                 |
 | ------------ | --------------------- |
 | **接口地址** | `GET /api/users/{id}` |
-| **杁E��**     | 需要E`VIEW_USER` 杁E�� |
+| **权限**     | 需要 `VIEW_USER` 权限 |
 
-根据 ID 获取单个用户。返回用户详惁E��包括 ID、用户名、状态、版本号�E�以及直接刁E�E皁E��色 ID 列表�E�EroleIds`�E�不为 null�E�用户无角色时为空数绁E��。未找到时抛�E 404 异常、E
+根据 ID 获取单个用户。返回用户详细信息，包括 ID、用户名、状态、版本号，以及直接分配的角色 ID 列表（`roleIds`，不为 null，用户无角色时为空数组）。未找到时抛出 404 异常。
+
 ---
 
 ### 获取用户列表
 
-| 项目         | 详惁E                                        |
+| 项目         | 详细                                        |
 | ------------ | -------------------------------------------- |
 | **接口地址** | `GET /api/users`                             |
-| **杁E��**     | 需要E`VIEW_USER` 杁E��                        |
-| **参数**     | `username`�E�模糊匹配）、`status`�E�精确匹配！E|
+| **权限**     | 需要 `VIEW_USER` 权限                        |
+| **参数**     | `username`（模糊匹配）、`status`（精确匹配）|
 
-根据可选条件查询用户�E�用户名模糊匹配、状态精确匹配）。返回按更新时间降序排列的列表�E�每项匁E��版本号�E�用于删除/更新时皁E��观锁�E�、E
+根据可选条件查询用户（用户名模糊匹配、状态精确匹配）。返回按更新时间降序排列的列表，每项包含版本号（用于删除/更新时的乐观锁）。
+
 ---
 
-### 获取用户刁E��
+### 获取用户分页
 
-| 项目         | 详惁E                                                        |
+| 项目         | 详细                                                        |
 | ------------ | ------------------------------------------------------------ |
 | **接口地址** | `GET /api/users/page`                                        |
-| **杁E��**     | 需要E`VIEW_USER` 杁E��                                        |
-| **参数**     | `page`、`size`、`username`�E�模糊匹配）、`status`�E�精确匹配！E|
+| **权限**     | 需要 `VIEW_USER` 权限                                        |
+| **参数**     | `page`、`size`、`username`（模糊匹配）、`status`（精确匹配）|
 
-支持�E页查询用户。接受页码、E��大小和可选迁E��条件。返回带有总数皁E�E页结果�E�每项匁E��版本号�E�用于删除/更新时皁E��观锁�E�、E
+支持分页查询用户。接受页码、页大小和可选的过滤条件。返回带有总数的分页结果，每项包含版本号（用于删除/更新时的乐观锁）。
+
 ---
 
 ### 创建用户
 
-| 项目         | 详惁E                |
+| 项目         | 详细                |
 | ------------ | -------------------- |
 | **接口地址** | `POST /api/users`    |
-| **杁E��**     | 需要E`CREATE_USER` 杁E�� |
+| **权限**     | 需要 `CREATE_USER` 权限 |
 
-创建新用户�E�验证用户名唯一性。寁E��E��迁EPasswordEncoder 加寁E��存储。支持E��迁EroleIds 同时刁E�E角色。返回创建皁E��户 ID、E
-**请求体！E*
+创建新用户，验证用户名唯一性。密码通过 PasswordEncoder 加密存储。支持通过 roleIds 同时分配角色。返回创建的用户 ID。
 
-- `username`�E�忁E���E�：用户名，仁E�E许字母、数字和下�E线�E�E^[a-zA-Z0-9_]+$`�E�，最长 64 字符
-- `password`�E�忁E���E�：寁E��E��E E28 字符
-- `status`�E�忁E���E�：用户状态E��E0` 禁用 / `1` 启用�E�，忁E��为合法的 `UserStatusType` 值
-- `roleIds`�E�可选）：要�E配的角色 ID 列表
+**请求体：**
+
+- `username`（必需）：用户名，仅允许字母、数字和下划线（`^[a-zA-Z0-9_]+$`），最长 64 字符
+- `password`（必需）：密码，8–28 字符
+- `status`（必需）：用户状态（`0` 禁用 / `1` 启用），必须为合法的 `UserStatusType` 值
+- `roleIds`（可选）：要分配的角色 ID 列表
 
 ---
 
 ### 更新用户
 
-| 项目         | 详惁E                 |
+| 项目         | 详细                 |
 | ------------ | --------------------- |
 | **接口地址** | `PUT /api/users`      |
-| **杁E��**     | 需要E`CREATE_USER` 杁E�� |
+| **权限**     | 需要 `CREATE_USER` 权限 |
 
-更新用户信息。用户名不可修改。如果提供寁E���E加寁E��储�E�否则保持不变。通迁E��本字段使用乐观锁。当传入 `roleIds` 时�E�按列表同步用户皁E��色刁E�E�E�新增缺失皁E��移除多余的�E�；未传入�E�Eull�E�时保持现有角色不变。更新后渁E�� UserDetails 缓存、E
-**请求体！E*
+更新用户信息。用户名不可修改。如果提供密码则加密存储，否则保持不变。通过版本字段使用乐观锁。当传入 `roleIds` 时，按列表同步用户的角色分配（新增缺失的，移除多余的）；未传入（null）时保持现有角色不变。更新后清除 UserDetails 缓存。
 
-- `id`�E�忁E���E�：用户 ID
-- `username`�E�可选）：用户名（只读�E�需与当前值一致�E�，仁E�E许字母、数字和下�E线�E�最长 64 字符
-- `password`�E�可选）：新寁E��E��E E28 字符�E�未传则保持不变
-- `status`�E�可选）：用户状态E��E0` 禁用 / `1` 启用�E�E- `roleIds`�E�可选）：目栁E��色 ID 列表�E�未传保持现有角色�E�传 `[]` 封E��除所有角色
-- `version`�E�忁E���E�：版本号�E�用于乐观锁
+**请求体：**
+
+- `id`（必需）：用户 ID
+- `username`（可选）：用户名（只读，需与当前值一致），仅允许字母、数字和下划线，最长 64 字符
+- `password`（可选）：新密码，8–28 字符，未传则保持不变
+- `status`（可选）：用户状态（`0` 禁用 / `1` 启用）
+- `roleIds`（可选）：目标角色 ID 列表，未传保持现有角色，传 `[]` 则移除所有角色
+- `version`（必需）：版本号，用于乐观锁
 
 ---
 
 ### 删除用户
 
-| 项目         | 详惁E                |
+| 项目         | 详细                |
 | ------------ | -------------------- |
 | **接口地址** | `DELETE /api/users`  |
-| **杁E��**     | 需要E`DELETE_USER` 杁E�� |
+| **权限**     | 需要 `DELETE_USER` 权限 |
 
-使用乐观锁删除用户。删除后渁E�� UserDetails 缓存以确保一致性、E
-**请求体！E*
+使用乐观锁删除用户。删除后清除 UserDetails 缓存以确保一致性。
 
-- `id`�E�忁E���E�：用户 ID
-- `version`�E�忁E���E�：版本号�E�用于乐观锁
+**请求体：**
+
+- `id`（必需）：用户 ID
+- `version`（必需）：版本号，用于乐观锁
 
 ---
 
-### 生�E用户列表报表
+### 生成用户列表报表
 
-| 项目         | 详惁E                                                   |
-| ------------ | ------------------------------------------------------- |
-| **接口地址** | `GET /api/users/report`                                 |
-| **杁E��**     | 需要E`EXPORT_USER` 杁E��                               |
-| **参数**     | `username`�E�模糊匹配）、`groupBy`�E�可选！E              |
+| 项目         | 详细                                                      |
+| ------------ | ---------------------------------------------------------- |
+| **接口地址** | `GET /api/users/report`                                    |
+| **权限**     | 需要 `EXPORT_USER` 权限                                   |
+| **参数**     | `username`（模糊匹配）、`groupBy`（可选）                  |
 
-根据用户名筛选条件生�E用户列表 PDF 报表。`groupBy` 参数控制报表中用户皁E�E绁E��式！E
-- **null 或空**  E无刁E��E��所有匹配用户以单一表格列�E、E- **`role`**  E按用户直接刁E�E皁E��色刁E��E��拥有多个角色皁E��户会�E现在每个角色刁E��E���E�每个刁E��E��新页开始、E- **`baseRole`**  E按基础角色�E�继承链中皁E���E角色�E��E绁E��对于每个用户�E�收雁E�E直接角色皁E��有祖�E角色�E�用户会�E现在每个基础角色刁E��E���E�每个刁E��E��新页开始。如果直接角色没有祖�E角色�E��E用户出现在该直接角色皁E�E绁E��、E
-返回 PDF 斁E���E�`Content-Type` 为 `application/pdf`�E�附带 `Content-Disposition: attachment` 头。报表栁E��根据客户端 `Accept-Language` 请求头自动本地化。导出记录数上限由配置控制�E�Eapp.report.max-export-records`�E�默认 10,000�E�、E
+根据用户名筛选条件生成用户列表 PDF 报表。`groupBy` 参数控制报表中用户的分组方式：
+
+- **null 或空** — 无分组，所有匹配用户以单一表格列出。
+- **`role`** — 按用户直接分配的角色分组。拥有多个角色的用户会出现在每个角色分组中，每个分组从新页开始。
+- **`baseRole`** — 按基础角色（继承链中的祖先角色）分组。对于每个用户，收集其直接角色的所有祖先角色。用户会出现在每个基础角色分组中，每个分组从新页开始。如果直接角色没有祖先角色，则该用户出现在该直接角色的分组中。
+
+返回 PDF 文件，`Content-Type` 为 `application/pdf`，附带 `Content-Disposition: attachment` 头。报表标签根据客户端 `Accept-Language` 请求头自动本地化。导出记录数上限由配置控制（`app.report.max-export-records`，默认 10,000）。
+
 ---
 
 ## 公共接口
 
 ### 获取枚举列表
 
-| 项目         | 详惁E                                       |
-| ------------ | ------------------------------------------- |
-| **接口地址** | `GET /api/common/enums`                     |
-| **杁E��**     | 公开�E�无需认证E��E                           |
-| **参数**     | `type`  E支持值�E�`user-status`、`role-code`、`module`、`sub-module` |
+| 项目         | 详细                                           |
+| ------------ | ----------------------------------------------- |
+| **接口地址** | `GET /api/common/enums`                         |
+| **权限**     | 公开（无需认证）                                |
+| **参数**     | `type` — 支持值：`user-status`、`role-code`、`module`、`sub-module` |
 
-根据类型返回枚举数据列表。支持E`user-status`�E�用户状态E��项�E�、`role-code`�E�角色代码E��项�E�、`module`�E�模块选项�E�和 `sub-module`�E�子模块选项�E�。每项匁E�� `code` 咁E`name` 字段、E
+根据类型返回枚举数据列表。支持 `user-status`（用户状态选项）、`role-code`（角色代码选项）、`module`（模块选项）和 `sub-module`（子模块选项）。每项包含 `code` 和 `name` 字段。
+
 ---
 
 ### 获取下拉选项
 
-| 项目         | 详惁E                                                                  |
-| ------------ | ---------------------------------------------------------------------- |
-| **接口地址** | `GET /api/common/select-options`                                       |
+| 项目         | 详细                                                                   |
+| ------------ | ----------------------------------------------------------------------- |
+| **接口地址** | `GET /api/common/select-options`                                        |
 | **权限**     | 控制器类级别 `@PreAuthorize`，所有类型都需要 `LIST_OPTIONS` 权限        |
-| **参数**     | `type` — 通过 `SelectOptionProvider` 实现动态注册（如 `role`、`user`）|
+| **参数**     | `type` — 通过 `SelectOptionProvider` 实现动态注册（如 `role`、`user`） |
 
 返回前端下拉/选择组件的选项列表。Provider 实现通过 Spring DI 自动发现。添加新类型只需创建新的 `SelectOptionProvider` Bean，无需修改控制器。每个选项包含 `value`、`label` 和 `description`。
+
 所有 `SelectOptionProvider` 类型都需要 `LIST_OPTIONS` 权限，通过在 `SelectOptionController` 类级别添加 `@PreAuthorize` 注解统一控制。
+
 ---
 
-### 上传斁E��
+### 上传文件
 
-| 项目           | 详惁E                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------- |
-| **接口地址**   | `POST /api/common/files`                                                                               |
-| **杁E��**       | 需要E`UPLOAD_FILE` 杁E��                                                                                  |
-| **参数**       | `file`�E�忁E���E� E上传斁E���E�`associateType`�E�可选） E关联类型，`associateId`�E�可选） E关联业务实佁EID |
+| 项目           | 详细                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| **接口地址**   | `POST /api/common/files`                                                                                |
+| **权限**       | 需要 `UPLOAD_FILE` 权限                                                                                  |
+| **参数**       | `file`（必需）— 上传文件，`associateType`（可选）— 关联类型，`associateId`（可选）— 关联业务实体 ID |
 | **Content-Type** | `multipart/form-data`                                                                                |
 
-上传单个斁E��到服务器。文件存储在按日期绁E��E��子目录！Eyyyy/MM/dd`�E�下，使用 UUID 斁E��名防止冲突和路征E��厁E��击。上传迁E��中通迁E`DigestInputStream` 计箁EMD5 哈希并存储到数据库，用于完整性校验。文件类型根据扩展名自动检测！E=图牁E��E=斁E���E�E=压缩匁E��E=其他）。扩展名忁E��在 `app.upload.allowed-extensions` 配置皁E�E许列表中。文件大小不得趁E��E`app.upload.max-file-size-mb`、E
-返回�E�`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5`、E
+上传单个文件到服务器。文件存储在按日期组织的子目录（`yyyy/MM/dd`）下，使用 UUID 文件名防止冲突和路径遍历攻击。上传过程中通过 `DigestInputStream` 计算 MD5 哈希并存储到数据库，用于完整性校验。文件类型根据扩展名自动检测（1=图片，2=文档，3=压缩包，9=其他）。扩展名必须在 `app.upload.allowed-extensions` 配置的允许列表中。文件大小不得超过 `app.upload.max-file-size-mb`。
+
+返回：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5`。
+
 ---
 
-### 批量上传斁E��
+### 批量上传文件
 
-| 项目           | 详惁E                                                                                             |
+| 项目           | 详细                                                                                             |
 | -------------- | ------------------------------------------------------------------------------------------------- |
 | **接口地址**   | `POST /api/common/files/batch`                                                                   |
-| **杁E��**       | 需要E`UPLOAD_FILE` 杁E��                                                                            |
-| **参数**       | `files`�E�忁E���E� E上传斁E��数绁E��`associateType`�E�可选），`associateId`�E�可选！E                  |
+| **权限**       | 需要 `UPLOAD_FILE` 权限                                                                           |
+| **参数**       | `files`（必需）— 上传文件数组，`associateType`（可选），`associateId`（可选）                  |
 | **Content-Type** | `multipart/form-data`                                                                          |
 
-批量上传多个斁E��。每个斁E��独立夁E���E�见E�E与单斁E��上传相同。文件总数不得趁E��E`app.upload.max-files-per-request`、E
-返回�E�`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5` 皁E��绁E��E
+批量上传多个文件。每个文件独立处理，规则与单文件上传相同。文件总数不得超过 `app.upload.max-files-per-request`。
+
+返回：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5` 的数组。
+
 ---
 
-### 下载斁E��
+### 下载文件
 
-| 项目           | 详惁E                                               |
-| -------------- | --------------------------------------------------- |
-| **接口地址**   | `GET /api/common/files/{dateUrl}/{storedName}`      |
-| **杁E��**       | 需要E`DOWNLOAD_FILE` 杁E��                               |
-| **响庁E*       | 二进制斁E��冁E���E�包含 `Content-Disposition: attachment` |
+| 项目           | 详细                                                  |
+| -------------- | ------------------------------------------------------ |
+| **接口地址**   | `GET /api/common/files/{dateUrl}/{storedName}`         |
+| **权限**       | 需要 `DOWNLOAD_FILE` 权限                              |
+| **响应**       | 二进制文件内容，包含 `Content-Disposition: attachment` |
 
-通迁E��朁EURL 和存储斁E��名下载斁E��。服务器在返回斁E��前验证EMD5 完整性�E�如果磁盘斁E��与存储皁EMD5 哈希不匹配，返回 `FILE_MD5_MISMATCH` 错误。响应包含 `X-File-MD5` 头�E�用于客户端完整性校验、E
+通过日期 URL 和存储文件名下载文件。服务器在返回文件前验证 MD5 完整性：如果磁盘文件与存储的 MD5 哈希不匹配，返回 `FILE_MD5_MISMATCH` 错误。响应包含 `X-File-MD5` 头，用于客户端完整性校验。
+
 ---
 
 ### 验证文件完整性
 
-| 项目           | 详惁E                                                     |
-| -------------- | --------------------------------------------------------- |
-| **接口地址**   | `GET /api/common/files/{dateUrl}/{storedName}/verify`     |
-| **杁E��**       | 需要E`DOWNLOAD_FILE` 杁E��                                      |
+| 项目           | 详细                                                      |
+| -------------- | ---------------------------------------------------------- |
+| **接口地址**   | `GET /api/common/files/{dateUrl}/{storedName}/verify`      |
+| **权限**       | 需要 `DOWNLOAD_FILE` 权限                                  |
 
-验证磁盘斁E��与数据库存储皁EMD5 哈希是否匹配。重新计算物琁E��件皁EMD5 并与数据库记录比辁E��E
-返回�E�`{ "match": true/false, "storedMd5": "..." }`
+验证磁盘文件与数据库存储的 MD5 哈希是否匹配。重新计算物理文件的 MD5 并与数据库记录比较。
+
+返回：`{ "match": true/false, "storedMd5": "..." }`
 
 ---
 
-### 删除斁E��
+### 删除文件
 
-| 项目           | 详惁E                                          |
-| -------------- | ---------------------------------------------- |
+| 项目           | 详细                                             |
+| -------------- | ------------------------------------------------- |
 | **接口地址**   | `DELETE /api/common/files/{dateUrl}/{storedName}` |
-| **杁E��**       | 需要E`REMOVE_FILE` 杁E��                        |
+| **权限**       | 需要 `REMOVE_FILE` 权限                           |
 
-从磁盘删除斁E��并逻辑删除数据库记录。物琁E��件从文件系统中移除�E�数据库记录通迁E`@TableLogic` 软删除�E�Edeleted` 栁E��设为 1�E�、E
+从磁盘删除文件并逻辑删除数据库记录。物理文件从文件系统中移除，数据库记录通过 `@TableLogic` 软删除（`deleted` 标志设为 1）。
+
 ---
 
-## 日志系绁E
-### 获取访问日志�E页
+## 日志系统
 
-| 项目         | 详惁E                                                                                                                             |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+### 获取访问日志分页
+
+| 项目         | 详细                                                                                                                              |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
 | **接口地址** | `GET /api/logs/access/page`                                                                                                       |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��                                                                                                              |
-| **参数**     | `page`、`size`、`traceId`�E�精确匹配）、`username`�E�模糊匹配）、`method`、`path`�E�模糊匹配）、`statusCode`、`startTime`、`endTime` |
+| **权限**     | 需要 `VIEW_LOG` 权限                                                                                                              |
+| **参数**     | `page`、`size`、`traceId`（精确匹配）、`username`（模糊匹配）、`method`、`path`（模糊匹配）、`statusCode`、`startTime`、`endTime` |
 
-刁E��查询访问日志。结果按�E建时间降序排列。每项匁E���E�`id`、`traceId`、`username`、`method`、`path`、`statusCode`、`duration`、`clientIp`、`createdAt`、E
+分页查询访问日志。结果按创建时间降序排列。每项包含：`id`、`traceId`、`username`、`method`、`path`、`statusCode`、`duration`、`clientIp`、`createdAt`。
+
 ---
 
-### 获取访问日志详惁E
-| 项目         | 详惁E                       |
-| ------------ | --------------------------- |
+### 获取访问日志详情
+
+| 项目         | 详细                        |
+| ------------ | ---------------------------- |
 | **接口地址** | `GET /api/logs/access/{id}` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��        |
+| **权限**     | 需要 `VIEW_LOG` 权限         |
 
-根据 ID 获取访问日志完整信息。返回�E�`id`、`traceId`、`username`、`method`、`path`、`queryString`、`requestBody`、`responseBody`、`statusCode`、`duration`、`clientIp`、`userAgent`、`createdAt`。未找到时抛�E 404 异常、E
+根据 ID 获取访问日志完整信息。返回：`id`、`traceId`、`username`、`method`、`path`、`queryString`、`requestBody`、`responseBody`、`statusCode`、`duration`、`clientIp`、`userAgent`、`createdAt`。未找到时抛出 404 异常。
+
 ---
 
-### 持ETraceId 获取访问日忁E
-| 项目         | 详惁E                                  |
-| ------------ | -------------------------------------- |
-| **接口地址** | `GET /api/logs/access/trace/{traceId}` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��                   |
+### 通过 TraceId 获取访问日志
 
-根据链路追踪 ID 获取访问日志。用于谁E��请求链路。未找到时抛�E 404 异常、E
+| 项目         | 详细                                   |
+| ------------ | --------------------------------------- |
+| **接口地址** | `GET /api/logs/access/trace/{traceId}`  |
+| **权限**     | 需要 `VIEW_LOG` 权限                    |
+
+根据链路追踪 ID 获取访问日志。用于调试请求链路。未找到时抛出 404 异常。
+
 ---
 
-### 导出访问日忁E
-| 项目         | 详惁E                         |
-| ------------ | ----------------------------- |
-| **接口地址** | `GET /api/logs/access/export` |
-| **杁E��**     | 需要E`EXPORT_LOG` 杁E��        |
+### 导出访问日志
 
-导出符合条件皁E��问日志为 CSV 斁E��。限制最夁E10,000 条记录以避免�E存问题。返回 `text/csv` 冁E��类型，包含 UTF-8 BOM 以兼容 Excel、E
----
-
-### 获取错误日志�E页
-
-| 项目         | 详惁E                                                                                                              |
-| ------------ | ------------------------------------------------------------------------------------------------------------------ |
-| **接口地址** | `GET /api/logs/error/page`                                                                                         |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��                                                                                               |
-| **参数**     | `page`、`size`、`traceId`�E�精确匹配）、`keyword`�E�多字段模糊搜索�E�、`username`�E�模糊匹配）、`startTime`、`endTime` |
-
-刁E��查询错误日志。结果按�E建时间降序排列。每项匁E���E�`id`、`traceId`、`errorType`、`message`、`username`、`createdAt`。`keyword` 参数支持在以下字段中模糊搜索�E�`exception_file`、`exception_class`、`exception_method`、`exception_message`、`root_cause_message`、`stack_trace`�E�ER 条件�E�满足任一字段即可�E�、E
----
-
-### 获取错误日志详惁E
-| 项目         | 详惁E                      |
-| ------------ | -------------------------- |
-| **接口地址** | `GET /api/logs/error/{id}` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��       |
-
-根据 ID 获取错误日志完整信息。返回�E�`id`、`traceId`、`errorType`、`message`、`stackTrace`、`username`、`requestMethod`、`requestPath`、`requestBody`、`createdAt`。未找到时抛�E 404 异常、E
----
-
-### 持ETraceId 获取错误日忁E
-| 项目         | 详惁E                                 |
-| ------------ | ------------------------------------- |
-| **接口地址** | `GET /api/logs/error/trace/{traceId}` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��                  |
-
-根据链路追踪 ID 获取错误日志。如果请求未出错�E返回 null、E
----
-
-### 获取操作日志�E页
-
-| 项目         | 详惁E                                                                                                                                                 |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **接口地址** | `GET /api/logs/operation/page`                                                                                                                        |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��                                                                                                                                  |
-| **参数**     | `page`、`size`、`traceId`�E�精确匹配）、`operationType`、`module`�E�模糊匹配）、`subModule`�E�模糊匹配）、`username`�E�模糊匹配）、`startTime`、`endTime` |
-
-刁E��查询操作日志。结果按�E建时间降序排列。每项匁E���E�`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`username`、`createdAt`、E
----
-
-### 获取操作日志详惁E
-| 项目         | 详惁E                          |
+| 项目         | 详细                          |
 | ------------ | ------------------------------ |
-| **接口地址** | `GET /api/logs/operation/{id}` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��           |
+| **接口地址** | `GET /api/logs/access/export` |
+| **权限**     | 需要 `EXPORT_LOG` 权限         |
 
-根据 ID 获取操作日志完整信息。返回�E�`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`requestMethod`、`requestUrl`、`clientIp`、`username`、`createdAt`。未找到时抛�E 404 异常、E
+导出符合条件的访问日志为 CSV 文件。限制最多 10,000 条记录以避免内存问题。返回 `text/csv` 内容类型，包含 UTF-8 BOM 以兼容 Excel。
+
 ---
 
-### 持ETraceId 获取操作日志�E表
+### 获取错误日志分页
 
-| 项目         | 详惁E                                     |
-| ------------ | ----------------------------------------- |
-| **接口地址** | `GET /api/logs/operation/trace/{traceId}` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��                      |
+| 项目         | 详细                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **接口地址** | `GET /api/logs/error/page`                                                                                         |
+| **权限**     | 需要 `VIEW_LOG` 权限                                                                                                |
+| **参数**     | `page`、`size`、`traceId`（精确匹配）、`keyword`（多字段模糊搜索）、`username`（模糊匹配）、`startTime`、`endTime` |
 
-根据链路追踪 ID 获取所有操作日志。结果按�E建时间十E��排列（时间顺序）。用于查看单次请求�E皁E��作序�E、E
+分页查询错误日志。结果按创建时间降序排列。每项包含：`id`、`traceId`、`errorType`、`message`、`username`、`createdAt`。`keyword` 参数支持在以下字段中模糊搜索：`exception_file`、`exception_class`、`exception_method`、`exception_message`、`root_cause_message`、`stack_trace`（OR 条件，满足任一字段即可）。
+
 ---
 
-### 获取模块�E表
+### 获取错误日志详情
 
-| 项目         | 详惁E                             |
-| ------------ | --------------------------------- |
-| **接口地址** | `GET /api/logs/operation/modules` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��              |
+| 项目         | 详细                       |
+| ------------ | --------------------------- |
+| **接口地址** | `GET /api/logs/error/{id}` |
+| **权限**     | 需要 `VIEW_LOG` 权限        |
 
-返回去重的模块名称列表�E�用于筛选下拉桁E��仁E��含有操作日志记录的模块、E
+根据 ID 获取错误日志完整信息。返回：`id`、`traceId`、`errorType`、`message`、`stackTrace`、`username`、`requestMethod`、`requestPath`、`requestBody`、`createdAt`。未找到时抛出 404 异常。
+
 ---
 
-### 获取链路追踪详惁E
-| 项目         | 详惁E                           |
+### 通过 TraceId 获取错误日志
+
+| 项目         | 详细                                  |
+| ------------ | -------------------------------------- |
+| **接口地址** | `GET /api/logs/error/trace/{traceId}` |
+| **权限**     | 需要 `VIEW_LOG` 权限                   |
+
+根据链路追踪 ID 获取错误日志。如果请求未出错则返回 null。
+
+---
+
+### 获取操作日志分页
+
+| 项目         | 详细                                                                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **接口地址** | `GET /api/logs/operation/page`                                                                                                                         |
+| **权限**     | 需要 `VIEW_LOG` 权限                                                                                                                                   |
+| **参数**     | `page`、`size`、`traceId`（精确匹配）、`operationType`、`module`（模糊匹配）、`subModule`（模糊匹配）、`username`（模糊匹配）、`startTime`、`endTime` |
+
+分页查询操作日志。结果按创建时间降序排列。每项包含：`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`username`、`createdAt`。
+
+---
+
+### 获取操作日志详情
+
+| 项目         | 详细                           |
 | ------------ | ------------------------------- |
-| **接口地址** | `GET /api/logs/trace/{traceId}` |
-| **杁E��**     | 需要E`VIEW_LOG` 杁E��            |
+| **接口地址** | `GET /api/logs/operation/{id}` |
+| **权限**     | 需要 `VIEW_LOG` 权限            |
 
-根据链路追踪 ID 获取完整皁E��路信息。绁E��返回�E�E
-- **访问日忁E*�E�原始请求详惁E- **错误日忁E*�E�请求失败时皁E��误信息�E��E功�E为 null�E�E- **操作日志�E表**�E�该请求期间执行的所有操佁E
-此接口提供请求生命周期的完整见E���E�用于谁E��和审计、E
+根据 ID 获取操作日志完整信息。返回：`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`requestMethod`、`requestUrl`、`clientIp`、`username`、`createdAt`。未找到时抛出 404 异常。
+
 ---
+
+### 通过 TraceId 获取操作日志列表
+
+| 项目         | 详细                                      |
+| ------------ | ------------------------------------------ |
+| **接口地址** | `GET /api/logs/operation/trace/{traceId}` |
+| **权限**     | 需要 `VIEW_LOG` 权限                       |
+
+根据链路追踪 ID 获取所有操作日志。结果按创建时间升序排列（时间顺序）。用于查看单次请求内的操作序列。
+
+---
+
+### 获取模块列表
+
+| 项目         | 详细                              |
+| ------------ | ---------------------------------- |
+| **接口地址** | `GET /api/logs/operation/modules` |
+| **权限**     | 需要 `VIEW_LOG` 权限               |
+
+返回去重的模块名称列表，用于筛选下拉框。仅包含有操作日志记录的模块。
+
+---
+
+### 获取链路追踪详情
+
+| 项目         | 详细                            |
+| ------------ | -------------------------------- |
+| **接口地址** | `GET /api/logs/trace/{traceId}` |
+| **权限**     | 需要 `VIEW_LOG` 权限             |
+
+根据链路追踪 ID 获取完整的链路信息。组合返回：
+
+- **访问日志**：原始请求详情
+- **错误日志**：请求失败时的错误信息（成功时为 null）
+- **操作日志列表**：该请求期间执行的所有操作
+
+此接口提供请求生命周期的完整视图，用于调试和审计。
 
 ---
 
@@ -866,372 +926,454 @@ This endpoint provides a complete view of a request's lifecycle for debugging an
 
 ### ログイン
 
-| 頁E��               | 詳細                   |
+| 項目               | 詳細                   |
 | ------------------ | ---------------------- |
-| **エンド�EインチE* | `POST /api/auth/login` |
-| **認可**           | 公開（認証不要E��E      |
+| **エンドポイント**  | `POST /api/auth/login` |
+| **認可**           | 公開（認証不要）        |
 
-Spring Security の AuthenticationManager を介してユーザー認証惁E��を検証します。認証成功時に JWT アクセスト�Eクン�E�レスポンスボディで返却�E�とリフレチE��ュト�Eクン�E�EttpOnly Cookie で設定）を生�Eします。ブルートフォース保護機�Eを含み、アカウントおよ�E IP ごとにログイン失敗を記録し、E��値趁E��後にアカウントをロチE��、�Eワイトリスト外�E IP を�E動ブロチE��します。Redis にアクチE��ブセチE��ョンを登録します（既存セチE��ョンがある場合�E強制退出�E�、E
+Spring Security の AuthenticationManager を介してユーザー認証情報を検証します。認証成功時に JWT アクセストークン（レスポンスボディで返却）とリフレッシュトークン（HttpOnly Cookie で設定）を生成します。ブルートフォース保護機構を含み、アカウントおよび IP ごとにログイン失敗を記録し、閾値超過後にアカウントをロック、ホワイトリスト外の IP を自動ブロックします。Redis にアクティブセッションを登録します（既存セッションがある場合は強制終了）。
+
 ---
 
-### ト�EクンリフレチE��ュ
+### トークンリフレッシュ
 
-| 頁E��               | 詳細                     |
+| 項目               | 詳細                     |
 | ------------------ | ------------------------ |
-| **エンド�EインチE* | `POST /api/auth/refresh` |
-| **認可**           | CSRF 保護、認証不要E     |
+| **エンドポイント**  | `POST /api/auth/refresh` |
+| **認可**           | CSRF 保護、認証不要       |
 
-ト�EクンローチE�Eションを実裁E��ます、EttpOnly Cookie からリフレチE��ュト�Eクンを読み取り、有効性�E�タイプ、有効期限、失効状態）を検証し、古ぁE��フレチE��ュト�Eクンを失効させ、ユーザー惁E��を�E読み込みしてユーザーがアクチE��ブであることを確認し、新しいト�Eクンペアを生成し、Redis のアクチE��ブセチE��ョンを更新します、E
+トークンローテーションを実装します。HttpOnly Cookie からリフレッシュトークンを読み取り、有効性（タイプ、有効期限、失効状態）を検証し、古いリフレッシュトークンを失効させ、ユーザー情報を再読み込みしてユーザーがアクティブであることを確認し、新しいトークンペアを生成し、Redis のアクティブセッションを更新します。
+
 ---
 
-### ログアウチE
-| 頁E��               | 詳細                    |
+### ログアウト
+
+| 項目               | 詳細                    |
 | ------------------ | ----------------------- |
-| **エンド�EインチE* | `POST /api/auth/logout` |
-| **認可**           | 認証忁E��E+ CSRF 保護    |
+| **エンドポイント**  | `POST /api/auth/logout` |
+| **認可**           | 認証必要 + CSRF 保護     |
 
-Authorization ヘッダーのアクセスト�Eクンと Cookie のリフレチE��ュト�Eクンの JTI めERedis ブラチE��リストに追加して失効させます。リフレチE��ュト�Eクン Cookie をクリアし、Redis からアクチE��ブセチE��ョンレコードを削除し、UserDetails キャチE��ュを無効化します、E
+Authorization ヘッダーのアクセストークンと Cookie のリフレッシュトークンの JTI を Redis ブラックリストに追加して失効させます。リフレッシュトークン Cookie をクリアし、Redis からアクティブセッションレコードを削除し、UserDetails キャッシュを無効化します。
+
 ---
 
-## ロール管琁E
-### ロール詳細取征E
-| 頁E��               | 詳細                   |
+## ロール管理
+
+### ロール詳細取得
+
+| 項目               | 詳細                   |
 | ------------------ | ---------------------- |
-| **エンド�EインチE* | `GET /api/roles/{id}`  |
-| **認可**           | `VIEW_ROLE` 権限が忁E��E|
+| **エンドポイント**  | `GET /api/roles/{id}`  |
+| **認可**           | `VIEW_ROLE` 権限が必要 |
 
-ID でチE�Eタベ�Eスから単一のロールを取得します、ED、名前、コード、説明、バージョンを含むロール詳細を返します。見つからなぁE��合�E 404 例外をスローします、E
+ID でデータベースから単一のロールを取得します。ID、名前、コード、説明、バージョンを含むロール詳細を返します。見つからない場合は 404 例外をスローします。
+
 ---
 
-### ロール一覧取征E
-| 頁E��               | 詳細                                                                      |
-| ------------------ | ------------------------------------------------------------------------- |
-| **エンド�EインチE* | `GET /api/roles`                                                          |
-| **認可**           | `VIEW_ROLE` 権限が忁E��E                                                   |
-| **パラメータ**     | `roleName`�E�部刁E��致�E�、`roleCode`�E�前方一致�E�、`description`�E�部刁E��致�E�E|
+### ロール一覧取得
 
-オプション条件�E�名前部刁E��致、コード前方一致、説明部刁E��致�E�でロールを検索します。各ロールの直接親ロール ID とバ�Eジョン�E�削除時�E楽観皁E��チE��用�E�を含むリストを返し、N+1 問題を回避するため単一バッチクエリで解決します。結果は更新日時�E降頁E��並べられます、E
+| 項目               | 詳細                                                                     |
+| ------------------ | ------------------------------------------------------------------------ |
+| **エンドポイント**  | `GET /api/roles`                                                         |
+| **認可**           | `VIEW_ROLE` 権限が必要                                                   |
+| **パラメータ**     | `roleName`（部分一致）、`roleCode`（前方一致）、`description`（部分一致）|
+
+オプション条件（名前部分一致、コード前方一致、説明部分一致）でロールを検索します。各ロールの直接親ロール ID とバージョン（削除時の楽観ロック用）を含むリストを返し、N+1 問題を回避するため単一バッチクエリで解決します。結果は更新日時の降順で並べられます。
+
 ---
 
-### ロール作�E
+### ロール作成
 
-| 頁E��               | 詳細                  |
+| 項目               | 詳細                  |
 | ------------------ | --------------------- |
-| **エンド�EインチE* | `POST /api/roles`     |
-| **認可**           | `CREATE_ROLE` 権限が忁E��E|
+| **エンドポイント**  | `POST /api/roles`     |
+| **認可**           | `CREATE_ROLE` 権限が必要 |
 
-提供された名前、説明、およ�Eオプションの親ロール ID で新しいロールを作�Eします。ロールコード�E忁E��ではありません - ベ�Eスロールのみで使用されます。カスタムロールは親ロールから権限を継承します。作�Eされたロール ID を返します、E
-**リクエスト�EチE���E�E*
+提供された名前、説明、およびオプションの親ロール ID で新しいロールを作成します。ロールコードは必須ではありません — ベースロールのみで使用されます。カスタムロールは親ロールから権限を継承します。作成されたロール ID を返します。
 
-- `roleName`�E�忁E��）：ロール名、最大 64 斁E��E- `description`�E�オプション�E�：ロールの説明、最大 255 斁E��E- `parentRoleIds`�E�オプション�E�：継承用の親ロール ID リスチE
+**リクエストボディ：**
+
+- `roleName`（必須）：ロール名、最大 64 文字
+- `description`（オプション）：ロールの説明、最大 255 文字
+- `parentRoleIds`（オプション）：継承用の親ロール ID リスト
+
 ---
 
 ### ロール更新
 
-| 頁E��               | 詳細                   |
+| 項目               | 詳細                   |
 | ------------------ | ---------------------- |
-| **エンド�EインチE* | `PUT /api/roles`       |
-| **認可**           | `CREATE_ROLE` 権限が忁E��E|
+| **エンドポイント**  | `PUT /api/roles`       |
+| **認可**           | `CREATE_ROLE` 権限が必要 |
 
-既存ロールの名前、説明、およ�E継承関係を更新します。バージョンフィールドによる楽観皁E��チE��で並行�E琁E�E安�E性を確保します。他�Eトランザクションによって変更された場合�E例外をスローします、E
-**リクエスト�EチE���E�E*
+既存ロールの名前、説明、および継承関係を更新します。バージョンフィールドによる楽観ロックで並行処理の安全性を確保します。他のトランザクションによって変更された場合は例外をスローします。
 
-- `id`�E�忁E��）：ロール ID
-- `roleName`�E�忁E��）：ロール名、最大 64 斁E��E- `description`�E�オプション�E�：ロールの説明、最大 255 斁E��E- `parentRoleIds`�E�オプション�E�：継承用の親ロール ID リスト（既存�E関係を置換！E- `version`�E�忁E��）：楽観皁E��チE��用のバ�Eジョン
+**リクエストボディ：**
+
+- `id`（必須）：ロール ID
+- `roleName`（必須）：ロール名、最大 64 文字
+- `description`（オプション）：ロールの説明、最大 255 文字
+- `parentRoleIds`（オプション）：継承用の親ロール ID リスト（既存の関係を置換）
+- `version`（必須）：楽観ロック用のバージョン
 
 ---
 
 ### ロール削除
 
-| 頁E��               | 詳細                  |
+| 項目               | 詳細                  |
 | ------------------ | --------------------- |
-| **エンド�EインチE* | `DELETE /api/roles`   |
-| **認可**           | `DELETE_ROLE` 権限が忁E��E|
+| **エンドポイント**  | `DELETE /api/roles`   |
+| **認可**           | `DELETE_ROLE` 権限が必要 |
 
-ロールがユーザーに割り当てられておらず、他�Eロールに継承されてぁE��ぁE��とを検証後に削除します。楽観皁E��チE��を使用します。削除後、このロールが子ロールである全ての継承関係をクリーンアチE�Eします、E
-**リクエスト�EチE���E�E*
+ロールがユーザーに割り当てられておらず、他のロールに継承されていないことを検証後に削除します。楽観ロックを使用します。削除後、このロールが子ロールである全ての継承関係をクリーンアップします。
 
-- `id`�E�忁E��）：ロール ID
-- `version`�E�忁E��）：楽観皁E��チE��用のバ�Eジョン
+**リクエストボディ：**
+
+- `id`（必須）：ロール ID
+- `version`（必須）：楽観ロック用のバージョン
 
 ---
 
-## ユーザー管琁E
-### ユーザー詳細取征E
-| 頁E��               | 詳細                   |
+## ユーザー管理
+
+### ユーザー詳細取得
+
+| 項目               | 詳細                   |
 | ------------------ | ---------------------- |
-| **エンド�EインチE* | `GET /api/users/{id}`  |
-| **認可**           | `VIEW_USER` 権限が忁E��E|
+| **エンドポイント**  | `GET /api/users/{id}`  |
+| **認可**           | `VIEW_USER` 権限が必要 |
 
-ID でユーザーを取得します、ED、ユーザー名、スチE�Eタス、バージョン、およ�E直接割り当てられたロール ID リスト！EroleIds`、null にならず、ロールがなぁE��合�E空配�E�E�を含むユーザー詳細を返します。見つからなぁE��合�E 404 例外をスローします、E
+ID でユーザーを取得します。ID、ユーザー名、ステータス、バージョン、および直接割り当てられたロール ID リスト（`roleIds`、null にならず、ロールがない場合は空配列）を含むユーザー詳細を返します。見つからない場合は 404 例外をスローします。
+
 ---
 
-### ユーザー一覧取征E
-| 頁E��               | 詳細                                         |
+### ユーザー一覧取得
+
+| 項目               | 詳細                                         |
 | ------------------ | -------------------------------------------- |
-| **エンド�EインチE* | `GET /api/users`                             |
-| **認可**           | `VIEW_USER` 権限が忁E��E                      |
-| **パラメータ**     | `username`�E�部刁E��致�E�、`status`�E�完�E一致�E�E|
+| **エンドポイント**  | `GET /api/users`                             |
+| **認可**           | `VIEW_USER` 権限が必要                       |
+| **パラメータ**     | `username`（部分一致）、`status`（完全一致）|
 
-オプション条件�E�ユーザー名部刁E��致、スチE�Eタス完�E一致�E�でユーザーを検索します。各頁E��にバ�Eジョン�E�削除・更新時�E楽観皁E��チE��用�E�を含み、更新日時�E降頁E��リストを返します、E
+オプション条件（ユーザー名部分一致、ステータス完全一致）でユーザーを検索します。各項目にバージョン（削除・更新時の楽観ロック用）を含み、更新日時の降順リストを返します。
+
 ---
 
-### ユーザーペ�Eジング取征E
-| 頁E��               | 詳細                                                         |
+### ユーザーページング取得
+
+| 項目               | 詳細                                                         |
 | ------------------ | ------------------------------------------------------------ |
-| **エンド�EインチE* | `GET /api/users/page`                                        |
-| **認可**           | `VIEW_USER` 権限が忁E��E                                      |
-| **パラメータ**     | `page`、`size`、`username`�E�部刁E��致�E�、`status`�E�完�E一致�E�E|
+| **エンドポイント**  | `GET /api/users/page`                                        |
+| **認可**           | `VIEW_USER` 権限が必要                                       |
+| **パラメータ**     | `page`、`size`、`username`（部分一致）、`status`（完全一致） |
 
-ペ�Eジネ�Eション付きでユーザーを検索します。�Eージ番号、�Eージサイズ、オプションのフィルター条件を受け付けます。各頁E��にバ�Eジョン�E�削除・更新時�E楽観皁E��チE��用�E�を含み、総数を含むペ�Eジング結果を返します、E
+ページネーション付きでユーザーを検索します。ページ番号、ページサイズ、オプションのフィルター条件を受け付けます。各項目にバージョン（削除・更新時の楽観ロック用）を含み、総数を含むページング結果を返します。
+
 ---
 
-### ユーザー作�E
+### ユーザー作成
 
-| 頁E��               | 詳細                  |
+| 項目               | 詳細                  |
 | ------------------ | --------------------- |
-| **エンド�EインチE* | `POST /api/users`     |
-| **認可**           | `CREATE_USER` 権限が忁E��E|
+| **エンドポイント**  | `POST /api/users`     |
+| **認可**           | `CREATE_USER` 権限が必要 |
 
-ユーザー名�E一意性を検証して新規ユーザーを作�Eします。パスワード�E PasswordEncoder で暗号化して保存します。roleIds による同時ロール割り当てをサポ�Eトします。作�Eされたユーザー ID を返します、E
-**リクエスト�EチE���E�E*
+ユーザー名の一意性を検証して新規ユーザーを作成します。パスワードは PasswordEncoder で暗号化して保存します。roleIds による同時ロール割り当てをサポートします。作成されたユーザー ID を返します。
 
-- `username`�E�忁E��）：ユーザー名、英数字とアンダースコアのみ�E�E^[a-zA-Z0-9_]+$`�E�、最大 64 斁E��E- `password`�E�忁E��）：パスワード、E�E�E28 斁E��E- `status`�E�忁E��）：ユーザースチE�Eタス�E�E0` 無効 / `1` 有効�E�、有効な `UserStatusType` 値である忁E��がありまぁE- `roleIds`�E�任意）：割り当てるロール ID リスチE
+**リクエストボディ：**
+
+- `username`（必須）：ユーザー名、英数字とアンダースコアのみ（`^[a-zA-Z0-9_]+$`）、最大 64 文字
+- `password`（必須）：パスワード、8–28 文字
+- `status`（必須）：ユーザーステータス（`0` 無効 / `1` 有効）、有効な `UserStatusType` 値である必要があります
+- `roleIds`（任意）：割り当てるロール ID リスト
+
 ---
 
 ### ユーザー更新
 
-| 頁E��               | 詳細                   |
+| 項目               | 詳細                   |
 | ------------------ | ---------------------- |
-| **エンド�EインチE* | `PUT /api/users`       |
-| **認可**           | `CREATE_USER` 権限が忁E��E|
+| **エンドポイント**  | `PUT /api/users`       |
+| **認可**           | `CREATE_USER` 権限が必要 |
 
-ユーザー惁E��を更新します。ユーザー名�E変更できません。パスワードが提供された場合�E暗号化して保存し、そぁE��なければ変更しません。バージョンフィールドによる楽観皁E��チE��を使用します。`roleIds` が指定された場合、ユーザーのロール割り当てをそのリストに同期します（不足刁E��追加、余�Eを削除�E�。省略�E�Eull�E��E場合�E既存ロールをそのままとします。更新後に UserDetails キャチE��ュを無効化します、E
-**リクエスト�EチE���E�E*
+ユーザー情報を更新します。ユーザー名は変更できません。パスワードが提供された場合は暗号化して保存し、それ以外の場合は変更しません。バージョンフィールドによる楽観ロックを使用します。`roleIds` が指定された場合、ユーザーのロール割り当てをそのリストに同期します（不足分を追加、余分を削除）。省略（null）の場合は既存ロールをそのまま維持します。更新後に UserDetails キャッシュを無効化します。
 
-- `id`�E�忁E��）：ユーザー ID
-- `username`�E�任意）：ユーザー名（読み取り専用、現在の値と同じである忁E��E��、英数字とアンダースコアのみ、最大 64 斁E��E- `password`�E�任意）：新しいパスワード、E�E�E28 斁E��。省略時�E変更されません
-- `status`�E�任意）：ユーザースチE�Eタス�E�E0` 無効 / `1` 有効�E�E- `roleIds`�E�任意）：目標ロール ID リスト。省略時�E現在のロールを維持、`[]` を渡すと全て削除
-- `version`�E�忁E��）：楽観皁E��チE��用のバ�Eジョン
+**リクエストボディ：**
+
+- `id`（必須）：ユーザー ID
+- `username`（任意）：ユーザー名（読み取り専用、現在の値と同じである必要あり）、英数字とアンダースコアのみ、最大 64 文字
+- `password`（任意）：新しいパスワード、8–28 文字。省略時は変更されません
+- `status`（任意）：ユーザーステータス（`0` 無効 / `1` 有効）
+- `roleIds`（任意）：目標ロール ID リスト。省略時は現在のロールを維持、`[]` を渡すと全て削除
+- `version`（必須）：楽観ロック用のバージョン
 
 ---
 
 ### ユーザー削除
 
-| 頁E��               | 詳細                  |
+| 項目               | 詳細                  |
 | ------------------ | --------------------- |
-| **エンド�EインチE* | `DELETE /api/users`   |
-| **認可**           | `DELETE_USER` 権限が忁E��E|
+| **エンドポイント**  | `DELETE /api/users`   |
+| **認可**           | `DELETE_USER` 権限が必要 |
 
-楽観皁E��チE��を使用してユーザーを削除します。削除後に UserDetails キャチE��ュを無効化して整合性を確保します、E
-**リクエスト�EチE���E�E*
+楽観ロックを使用してユーザーを削除します。削除後に UserDetails キャッシュを無効化して整合性を確保します。
 
-- `id`�E�忁E��）：ユーザー ID
-- `version`�E�忁E��）：楽観皁E��チE��用のバ�Eジョン
+**リクエストボディ：**
+
+- `id`（必須）：ユーザー ID
+- `version`（必須）：楽観ロック用のバージョン
 
 ---
 
-### ユーザー一覧レポ�Eト生戁E
-| 頁E��               | 詳細                                                      |
+### ユーザー一覧レポート生成
+
+| 項目               | 詳細                                                      |
 | ------------------ | --------------------------------------------------------- |
-| **エンド�EインチE* | `GET /api/users/report`                                   |
-| **認可**           | `EXPORT_USER` 権限が忁E��E                               |
-| **パラメータ**     | `username`�E�部刁E��致�E�、`groupBy`�E�オプション�E�E          |
+| **エンドポイント**  | `GET /api/users/report`                                   |
+| **認可**           | `EXPORT_USER` 権限が必要                                 |
+| **パラメータ**     | `username`（部分一致）、`groupBy`（オプション）            |
 
-ユーザー名フィルタに一致するユーザーの PDF レポ�Eトを生�Eします。`groupBy` パラメータはレポ�Eト�Eのグループ化方法を制御します！E
-- **null また�E空白**  Eグループ化なし。一致する全ユーザーを単一チE�Eブルで表示します、E- **`role`**  Eユーザーの直接割り当てロールでグループ化します。褁E��ロールを持つユーザーは吁E��ールグループに表示され、各グループ�E改ペ�Eジから開始します、E- **`baseRole`**  Eベ�Eスロール�E�継承チェーンの祖�Eロール�E�でグループ化します。各ユーザーの直接ロールの全祖�Eロールを収雁E��、ユーザーは吁E�Eースロールグループに表示されます。各グループ�E改ペ�Eジから開始します。直接ロールに祖�EがなぁE��合、ユーザーはそ�E直接ロールのグループに表示されます、E
-`Content-Type: application/pdf` および `Content-Disposition: attachment` ヘッダー付きの PDF ファイルを返します。レポ�Eトラベルはクライアント�E `Accept-Language` ヘッダーに基づぁE��自動的にローカライズされます。エクスポ�Eトレコード数の上限は設定で制御されます！Eapp.report.max-export-records`、デフォルチE10,000�E�、E
+ユーザー名フィルタに一致するユーザーの PDF レポートを生成します。`groupBy` パラメータはレポート内のグループ化方法を制御します：
+
+- **null または空白** — グループ化なし。一致する全ユーザーを単一テーブルで表示します。
+- **`role`** — ユーザーの直接割り当てロールでグループ化します。複数のロールを持つユーザーは各ロールグループに表示され、各グループは改ページから開始します。
+- **`baseRole`** — ベースロール（継承チェーンの祖先ロール）でグループ化します。各ユーザーの直接ロールの全祖先ロールを収集し、ユーザーは各ベースロールグループに表示されます。各グループは改ページから開始します。直接ロールに祖先がない場合、ユーザーはその直接ロールのグループに表示されます。
+
+`Content-Type: application/pdf` および `Content-Disposition: attachment` ヘッダー付きの PDF ファイルを返します。レポートラベルはクライアントの `Accept-Language` ヘッダーに基づいて自動的にローカライズされます。エクスポートレコード数の上限は設定で制御されます（`app.report.max-export-records`、デフォルト 10,000）。
+
 ---
 
-## 共送E
-### 列挙リスト取征E
-| 頁E��               | 詳細                                            |
+## 共通
+
+### 列挙リスト取得
+
+| 項目               | 詳細                                            |
 | ------------------ | ----------------------------------------------- |
-| **エンド�EインチE* | `GET /api/common/enums`                         |
-| **認可**           | 公開（認証不要E��E                               |
-| **パラメータ**     | `type`  Eサポ�Eト値�E�`user-status`、`role-code`、`module`、`sub-module` |
+| **エンドポイント**  | `GET /api/common/enums`                         |
+| **認可**           | 公開（認証不要）                                |
+| **パラメータ**     | `type` — サポート値：`user-status`、`role-code`、`module`、`sub-module` |
 
-タイプ別に列挙チE�Eタリストを返します。`user-status`�E�ユーザースチE�Eタスオプション�E�、`role-code`�E�ロールコードオプション�E�、`module`�E�モジュールオプション�E�、`sub-module`�E�サブモジュールオプション�E�をサポ�Eトします。各頁E��には `code` と `name` フィールドが含まれます、E
+タイプ別に列挙データリストを返します。`user-status`（ユーザーステータスオプション）、`role-code`（ロールコードオプション）、`module`（モジュールオプション）、`sub-module`（サブモジュールオプション）をサポートします。各項目には `code` と `name` フィールドが含まれます。
+
 ---
 
-### セレクトオプション取征E
-| 頁E��               | 詳細                                                                     |
+### セレクトオプション取得
+
+| 項目               | 詳細                                                                     |
 | ------------------ | ------------------------------------------------------------------------ |
-| **エンド�EインチE* | `GET /api/common/select-options`                                         |
+| **エンドポイント**  | `GET /api/common/select-options`                                         |
 | **認可**           | コントローラクラスレベルの `@PreAuthorize` により全タイプに `LIST_OPTIONS` が必要 |
 | **パラメータ**     | `type` — `SelectOptionProvider` 実装により動的登録（例：`role`、`user`）|
 
 フロントエンドのドロップダウン/セレクトコンポーネント用のオプションリストを返します。Provider 実装は Spring DI により自動検出されます。新しいタイプを追加するには、新しい `SelectOptionProvider` Bean を作成するだけで、コントローラーの変更は不要です。各オプションには `value`、`label`、`description` が含まれます。
+
 すべての `SelectOptionProvider` タイプに `LIST_OPTIONS` 権限が必要です。`SelectOptionController` のクラスレベルで `@PreAuthorize` により適用されます。
+
 ---
 
-### ファイルアチE�EローチE
-| 頁E��               | 詳細                                                                                                  |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **エンド�EインチE* | `POST /api/common/files`                                                                              |
-| **認可**           | `UPLOAD_FILE` 権限が忁E��E                                                                             |
-| **パラメータ**     | `file`�E�忁E��） Eマルチパートファイル、`associateType`�E�任意） E関連タイプ、`associateId`�E�任意） E関連エンチE��チE�� ID |
-| **Content-Type**   | `multipart/form-data`                                                                                |
+### ファイルアップロード
 
-単一ファイルをサーバ�EにアチE�Eロードします。ファイルは日付�Eースのサブディレクトリ�E�Eyyyy/MM/dd`�E�に UUID ベ�Eスのファイル名で保存され、競合とパストラバ�Eサル攻撁E��防止します。アチE�Eロード中に `DigestInputStream` で MD5 ハッシュを計算し、整合性検証のためチE�Eタベ�Eスに保存します。ファイルタイプ�E拡張子から�E動検�Eされます！E=画像、E=ドキュメント、E=アーカイブ、E=そ�E他）。拡張子�E `app.upload.allowed-extensions` で設定された許可リストに含まれてぁE��忁E��があります。ファイルサイズは `app.upload.max-file-size-mb` を趁E��ることはできません、E
-戻り値�E�`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5`、E
+| 項目             | 詳細                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| **エンドポイント**| `POST /api/common/files`                                                                              |
+| **認可**         | `UPLOAD_FILE` 権限が必要                                                                              |
+| **パラメータ**   | `file`（必須）— マルチパートファイル、`associateType`（任意）— 関連タイプ、`associateId`（任意）— 関連エンティティ ID |
+| **Content-Type** | `multipart/form-data`                                                                                |
+
+単一ファイルをサーバーにアップロードします。ファイルは日付ベースのサブディレクトリ（`yyyy/MM/dd`）に UUID ベースのファイル名で保存され、競合とパストラバーサル攻撃を防止します。アップロード中に `DigestInputStream` で MD5 ハッシュを計算し、整合性検証のためデータベースに保存します。ファイルタイプは拡張子から自動検出されます（1=画像、2=ドキュメント、3=アーカイブ、9=その他）。拡張子は `app.upload.allowed-extensions` で設定された許可リストに含まれている必要があります。ファイルサイズは `app.upload.max-file-size-mb` を超えることはできません。
+
+戻り値：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5`。
+
 ---
 
-### ファイル一括アチE�EローチE
-| 頁E��               | 詳細                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------- |
-| **エンド�EインチE* | `POST /api/common/files/batch`                                                                   |
-| **認可**           | `UPLOAD_FILE` 権限が忁E��E                                                                         |
-| **パラメータ**     | `files`�E�忁E��） Eマルチパートファイル配�E、`associateType`�E�任意）、`associateId`�E�任意！E      |
-| **Content-Type**   | `multipart/form-data`                                                                            |
+### ファイル一括アップロード
 
-褁E��ファイルを一括アチE�Eロードします。各ファイルは単一アチE�Eロードと同じルールで独立して処琁E��れます。ファイル総数は `app.upload.max-files-per-request` を趁E��ることはできません、E
-戻り値�E�`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5` の配�E、E
+| 項目             | 詳細                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| **エンドポイント**| `POST /api/common/files/batch`                                                                   |
+| **認可**         | `UPLOAD_FILE` 権限が必要                                                                          |
+| **パラメータ**   | `files`（必須）— マルチパートファイル配列、`associateType`（任意）、`associateId`（任意）        |
+| **Content-Type** | `multipart/form-data`                                                                            |
+
+複数ファイルを一括アップロードします。各ファイルは単一アップロードと同じルールで独立して処理されます。ファイル総数は `app.upload.max-files-per-request` を超えることはできません。
+
+戻り値：`id`、`storedName`、`originalFilename`、`datePath`、`dateUrl`、`size`、`contentType`、`md5` の配列。
+
 ---
 
-### ファイルダウンローチE
-| 頁E��               | 詳細                                                    |
-| ------------------ | ------------------------------------------------------- |
-| **エンド�EインチE* | `GET /api/common/files/{dateUrl}/{storedName}`           |
-| **認可**           | `DOWNLOAD_FILE` 権限が忁E��E                                 |
-| **レスポンス**     | `Content-Disposition: attachment` ヘッダー付きのバイナリファイル |
+### ファイルダウンロード
 
-日仁EURL と保存名でファイルをダウンロードします。サーバ�Eは返却前に MD5 整合性を検証します。ディスク上�Eファイルが保存された MD5 ハッシュと一致しなぁE��合、`FILE_MD5_MISMATCH` エラーが返されます。レスポンスには `X-File-MD5` ヘッダーが含まれ、クライアント�Eで整合性検証に使用できます、E
+| 項目             | 詳細                                                    |
+| ---------------- | ------------------------------------------------------- |
+| **エンドポイント**| `GET /api/common/files/{dateUrl}/{storedName}`          |
+| **認可**         | `DOWNLOAD_FILE` 権限が必要                              |
+| **レスポンス**   | `Content-Disposition: attachment` ヘッダー付きのバイナリファイル |
+
+日付 URL と保存名でファイルをダウンロードします。サーバーは返却前に MD5 整合性を検証します。ディスク上のファイルが保存された MD5 ハッシュと一致しない場合、`FILE_MD5_MISMATCH` エラーが返されます。レスポンスには `X-File-MD5` ヘッダーが含まれ、クライアント側で整合性検証に使用できます。
+
 ---
 
 ### ファイル整合性検証
 
-| 頁E��               | 詳細                                                          |
-| ------------------ | ------------------------------------------------------------- |
-| **エンド�EインチE* | `GET /api/common/files/{dateUrl}/{storedName}/verify`         |
-| **認可**           | `DOWNLOAD_FILE` 権限が忁E��E                                       |
+| 項目             | 詳細                                                          |
+| ---------------- | ------------------------------------------------------------- |
+| **エンドポイント**| `GET /api/common/files/{dateUrl}/{storedName}/verify`         |
+| **認可**         | `DOWNLOAD_FILE` 権限が必要                                    |
 
-チE��スク上�Eファイルがデータベ�Eスに保存された MD5 ハッシュと一致するか検証します。物琁E��ァイルの MD5 を�E計算し、データベ�Eスレコードと比輁E��ます、E
-戻り値�E�`{ "match": true/false, "storedMd5": "..." }`
+ディスク上のファイルがデータベースに保存された MD5 ハッシュと一致するか検証します。物理ファイルの MD5 を再計算し、データベースレコードと比較します。
+
+戻り値：`{ "match": true/false, "storedMd5": "..." }`
 
 ---
 
 ### ファイル削除
 
-| 頁E��               | 詳細                                                |
-| ------------------ | --------------------------------------------------- |
-| **エンド�EインチE* | `DELETE /api/common/files/{dateUrl}/{storedName}`   |
-| **認可**           | `REMOVE_FILE` 権限が忁E��E                           |
+| 項目             | 詳細                                                |
+| ---------------- | --------------------------------------------------- |
+| **エンドポイント**| `DELETE /api/common/files/{dateUrl}/{storedName}`   |
+| **認可**         | `REMOVE_FILE` 権限が必要                            |
 
-チE��スクからファイルを削除し、データベ�Eスレコードを論理削除します。物琁E��ァイルはファイルシスチE��から削除され、データベ�Eスレコード�E `@TableLogic` により論理削除�E�Edeleted` フラグめE1 に設定）されます、E
+ディスクからファイルを削除し、データベースレコードを論理削除します。物理ファイルはファイルシステムから削除され、データベースレコードは `@TableLogic` により論理削除（`deleted` フラグが 1 に設定）されます。
+
 ---
 
-## ログシスチE��
+## ログシステム
 
-### アクセスログペ�Eジング取征E
-| 頁E��               | 詳細                                                                                                                              |
+### アクセスログページング取得
+
+| 項目               | 詳細                                                                                                                              |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **エンド�EインチE* | `GET /api/logs/access/page`                                                                                                       |
-| **認可**           | `VIEW_LOG` 権限が忁E��E                                                                                                            |
-| **パラメータ**     | `page`、`size`、`traceId`�E�完�E一致�E�、`username`�E�部刁E��致�E�、`method`、`path`�E�部刁E��致�E�、`statusCode`、`startTime`、`endTime` |
+| **エンドポイント**  | `GET /api/logs/access/page`                                                                                                       |
+| **認可**           | `VIEW_LOG` 権限が必要                                                                                                             |
+| **パラメータ**     | `page`、`size`、`traceId`（完全一致）、`username`（部分一致）、`method`、`path`（部分一致）、`statusCode`、`startTime`、`endTime` |
 
-ペ�Eジネ�Eション付きでアクセスログを検索します。結果は作�E日時�E降頁E��並べられます。各頁E��には `id`、`traceId`、`username`、`method`、`path`、`statusCode`、`duration`、`clientIp`、`createdAt` が含まれます、E
+ページネーション付きでアクセスログを検索します。結果は作成日時の降順で並べられます。各項目には `id`、`traceId`、`username`、`method`、`path`、`statusCode`、`duration`、`clientIp`、`createdAt` が含まれます。
+
 ---
 
-### アクセスログ詳細取征E
-| 頁E��               | 詳細                        |
+### アクセスログ詳細取得
+
+| 項目               | 詳細                        |
 | ------------------ | --------------------------- |
-| **エンド�EインチE* | `GET /api/logs/access/{id}` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E      |
+| **エンドポイント**  | `GET /api/logs/access/{id}` |
+| **認可**           | `VIEW_LOG` 権限が必要       |
 
-ID でアクセスログの完�Eな惁E��を取得します。`id`、`traceId`、`username`、`method`、`path`、`queryString`、`requestBody`、`responseBody`、`statusCode`、`duration`、`clientIp`、`userAgent`、`createdAt` を返します。見つからなぁE��合�E 404 例外をスローします、E
+ID でアクセスログの完全な情報を取得します。`id`、`traceId`、`username`、`method`、`path`、`queryString`、`requestBody`、`responseBody`、`statusCode`、`duration`、`clientIp`、`userAgent`、`createdAt` を返します。見つからない場合は 404 例外をスローします。
+
 ---
 
-### TraceId でアクセスログ取征E
-| 頁E��               | 詳細                                   |
+### TraceId でアクセスログ取得
+
+| 項目               | 詳細                                   |
 | ------------------ | -------------------------------------- |
-| **エンド�EインチE* | `GET /api/logs/access/trace/{traceId}` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E                 |
+| **エンドポイント**  | `GET /api/logs/access/trace/{traceId}` |
+| **認可**           | `VIEW_LOG` 権限が必要                  |
 
-トレース ID でアクセスログを取得します。リクエストチェーンのチE��チE��に使用します。見つからなぁE��合�E 404 例外をスローします、E
+トレース ID でアクセスログを取得します。リクエストチェーンのデバッグに使用します。見つからない場合は 404 例外をスローします。
+
 ---
 
-### アクセスログエクスポ�EチE
-| 頁E��               | 詳細                          |
+### アクセスログエクスポート
+
+| 項目               | 詳細                          |
 | ------------------ | ----------------------------- |
-| **エンド�EインチE* | `GET /api/logs/access/export` |
-| **認可**           | `EXPORT_LOG` 権限が忁E��E      |
+| **エンドポイント**  | `GET /api/logs/access/export` |
+| **認可**           | `EXPORT_LOG` 権限が必要       |
 
-条件に一致するアクセスログめECSV ファイルとしてエクスポ�Eトします。メモリ問題を避けるため最大 10,000 件に制限されます、Excel 互換性のため UTF-8 BOM 付きの `text/csv` コンチE��チE��イプを返します、E
+条件に一致するアクセスログを CSV ファイルとしてエクスポートします。メモリ問題を避けるため最大 10,000 件に制限されます。Excel 互換性のため UTF-8 BOM 付きの `text/csv` コンテンツタイプを返します。
+
 ---
 
-### エラーログペ�Eジング取征E
-| 頁E��               | 詳細                                                                                                                           |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| **エンド�EインチE* | `GET /api/logs/error/page`                                                                                                     |
-| **認可**           | `VIEW_LOG` 権限が忁E��E                                                                                                         |
-| **パラメータ**     | `page`、`size`、`traceId`�E�完�E一致�E�、`keyword`�E�褁E��フィールドあぁE��ぁE��索�E�、`username`�E�部刁E��致�E�、`startTime`、`endTime` |
+### エラーログページング取得
 
-ペ�Eジネ�Eション付きでエラーログを検索します。結果は作�E日時�E降頁E��並べられます。各頁E��には `id`、`traceId`、`errorType`、`message`、`username`、`createdAt` が含まれます。`keyword` パラメータは `exception_file`、`exception_class`、`exception_method`、`exception_message`、`root_cause_message`、`stack_trace` フィールドをあいまぁE��索します！ER 条件�E�、E
+| 項目               | 詳細                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **エンドポイント**  | `GET /api/logs/error/page`                                                                                         |
+| **認可**           | `VIEW_LOG` 権限が必要                                                                                              |
+| **パラメータ**     | `page`、`size`、`traceId`（完全一致）、`keyword`（複数フィールドあいまい検索）、`username`（部分一致）、`startTime`、`endTime` |
+
+ページネーション付きでエラーログを検索します。結果は作成日時の降順で並べられます。各項目には `id`、`traceId`、`errorType`、`message`、`username`、`createdAt` が含まれます。`keyword` パラメータは `exception_file`、`exception_class`、`exception_method`、`exception_message`、`root_cause_message`、`stack_trace` フィールドをあいまい検索します（OR 条件）。
+
 ---
 
-### エラーログ詳細取征E
-| 頁E��               | 詳細                       |
+### エラーログ詳細取得
+
+| 項目               | 詳細                       |
 | ------------------ | -------------------------- |
-| **エンド�EインチE* | `GET /api/logs/error/{id}` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E     |
+| **エンドポイント**  | `GET /api/logs/error/{id}` |
+| **認可**           | `VIEW_LOG` 権限が必要      |
 
-ID でエラーログの完�Eな惁E��を取得します。`id`、`traceId`、`errorType`、`message`、`stackTrace`、`username`、`requestMethod`、`requestPath`、`requestBody`、`createdAt` を返します。見つからなぁE��合�E 404 例外をスローします、E
+ID でエラーログの完全な情報を取得します。`id`、`traceId`、`errorType`、`message`、`stackTrace`、`username`、`requestMethod`、`requestPath`、`requestBody`、`createdAt` を返します。見つからない場合は 404 例外をスローします。
+
 ---
 
-### TraceId でエラーログ取征E
-| 頁E��               | 詳細                                  |
+### TraceId でエラーログ取得
+
+| 項目               | 詳細                                  |
 | ------------------ | ------------------------------------- |
-| **エンド�EインチE* | `GET /api/logs/error/trace/{traceId}` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E                |
+| **エンドポイント**  | `GET /api/logs/error/trace/{traceId}` |
+| **認可**           | `VIEW_LOG` 権限が必要                 |
 
-トレース ID でエラーログを取得します。リクエストがエラーで終亁E��なかった場合�E null を返します、E
+トレース ID でエラーログを取得します。リクエストがエラーで終了しなかった場合は null を返します。
+
 ---
 
-### 操作ログペ�Eジング取征E
-| 頁E��               | 詳細                                                                                                                                                  |
+### 操作ログページング取得
+
+| 項目               | 詳細                                                                                                                                                  |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **エンド�EインチE* | `GET /api/logs/operation/page`                                                                                                                        |
-| **認可**           | `VIEW_LOG` 権限が忁E��E                                                                                                                                |
-| **パラメータ**     | `page`、`size`、`traceId`�E�完�E一致�E�、`operationType`、`module`�E�部刁E��致�E�、`subModule`�E�部刁E��致�E�、`username`�E�部刁E��致�E�、`startTime`、`endTime` |
+| **エンドポイント**  | `GET /api/logs/operation/page`                                                                                                                        |
+| **認可**           | `VIEW_LOG` 権限が必要                                                                                                                                 |
+| **パラメータ**     | `page`、`size`、`traceId`（完全一致）、`operationType`、`module`（部分一致）、`subModule`（部分一致）、`username`（部分一致）、`startTime`、`endTime` |
 
-ペ�Eジネ�Eション付きで操作ログを検索します。結果は作�E日時�E降頁E��並べられます。各頁E��には `id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`username`、`createdAt` が含まれます、E
+ページネーション付きで操作ログを検索します。結果は作成日時の降順で並べられます。各項目には `id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`username`、`createdAt` が含まれます。
+
 ---
 
-### 操作ログ詳細取征E
-| 頁E��               | 詳細                           |
+### 操作ログ詳細取得
+
+| 項目               | 詳細                           |
 | ------------------ | ------------------------------ |
-| **エンド�EインチE* | `GET /api/logs/operation/{id}` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E         |
+| **エンドポイント**  | `GET /api/logs/operation/{id}` |
+| **認可**           | `VIEW_LOG` 権限が必要          |
 
-ID で操作ログの完�Eな惁E��を取得します。`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`requestMethod`、`requestUrl`、`clientIp`、`username`、`createdAt` を返します。見つからなぁE��合�E 404 例外をスローします、E
+ID で操作ログの完全な情報を取得します。`id`、`traceId`、`module`、`subModule`、`operationType`、`description`、`duration`、`requestMethod`、`requestUrl`、`clientIp`、`username`、`createdAt` を返します。見つからない場合は 404 例外をスローします。
+
 ---
 
-### TraceId で操作ログリスト取征E
-| 頁E��               | 詳細                                      |
+### TraceId で操作ログリスト取得
+
+| 項目               | 詳細                                      |
 | ------------------ | ----------------------------------------- |
-| **エンド�EインチE* | `GET /api/logs/operation/trace/{traceId}` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E                    |
+| **エンドポイント**  | `GET /api/logs/operation/trace/{traceId}` |
+| **認可**           | `VIEW_LOG` 権限が必要                     |
 
-トレース ID ですべての操作ログを取得します。結果は作�E日時�E昁E��E��時系列頁E��で並べられます。単一リクエスト�Eの操作シーケンスを表示するために使用します、E
+トレース ID ですべての操作ログを取得します。結果は作成日時の昇順（時系列順）で並べられます。単一リクエスト内の操作シーケンスを表示するために使用します。
+
 ---
 
-### モジュールリスト取征E
-| 頁E��               | 詳細                              |
+### モジュールリスト取得
+
+| 項目               | 詳細                              |
 | ------------------ | --------------------------------- |
-| **エンド�EインチE* | `GET /api/logs/operation/modules` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E            |
+| **エンドポイント**  | `GET /api/logs/operation/modules` |
+| **認可**           | `VIEW_LOG` 権限が必要             |
 
-フィルタリング用ドロチE�Eダウンのための重褁E��除されたモジュール名リストを返します。操作ログレコードが存在するモジュールのみが含まれます、E
+フィルタリング用ドロップダウンのための重複除去されたモジュール名リストを返します。操作ログレコードが存在するモジュールのみが含まれます。
+
 ---
 
-### トレース詳細取征E
-| 頁E��               | 詳細                            |
-| ------------------ | ------------------------------- |
-| **エンド�EインチE* | `GET /api/logs/trace/{traceId}` |
-| **認可**           | `VIEW_LOG` 権限が忁E��E          |
+### トレース詳細取得
 
-トレース ID で完�Eなトレース惁E��を取得します。以下を絁E��合わせて返します！E
-- **アクセスログ**�E��Eのリクエスト詳細
-- **エラーログ**�E�リクエスト失敗時のエラー惁E���E��E功時は null�E�E- **操作ログリスチE*�E�このリクエスト中に実行されたすべての操佁E
-こ�Eエンド�Eイント�E、デバッグおよび監査目皁E��リクエスト�Eライフサイクルの完�Eなビューを提供します、E
+| 項目               | 詳細                            |
+| ------------------ | ------------------------------- |
+| **エンドポイント**  | `GET /api/logs/trace/{traceId}` |
+| **認可**           | `VIEW_LOG` 権限が必要           |
+
+トレース ID で完全なトレース情報を取得します。以下を組み合わせて返します：
+
+- **アクセスログ**：元のリクエスト詳細
+- **エラーログ**：リクエスト失敗時のエラー情報（成功時は null）
+- **操作ログリスト**：このリクエスト中に実行されたすべての操作
+
+このエンドポイントは、デバッグおよび監査目的のリクエストのライフサイクルの完全なビューを提供します。
