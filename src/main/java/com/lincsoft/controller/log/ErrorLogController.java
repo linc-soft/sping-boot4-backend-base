@@ -41,7 +41,7 @@ public class ErrorLogController {
   @Operation(
       summary = "Get error log page",
       description = "Query error logs with pagination, sorted by time descending")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_LOG.roleCode)")
   @GetMapping("/page")
   public IPage<ErrorLogPageResponseItem> getPage(@Valid ErrorLogPageRequest request) {
     return errorLogMapper.toPageResponse(errorLogService.getPage(request));
@@ -56,7 +56,7 @@ public class ErrorLogController {
   @Operation(
       summary = "Get error log detail",
       description = "Retrieve complete error log information by ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/{id}")
   public ErrorLogDetailResponse getById(@Parameter(description = "Log ID") @PathVariable Long id) {
     return errorLogMapper.toDetailResponse(errorLogService.getById(id));
@@ -71,7 +71,7 @@ public class ErrorLogController {
   @Operation(
       summary = "Get error log by TraceId",
       description = "Retrieve error log by trace ID, returns null if not found")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/trace/{traceId}")
   public ErrorLogDetailResponse getByTraceId(
       @Parameter(description = "Trace ID") @PathVariable String traceId) {

@@ -40,7 +40,7 @@ public class RoleController {
    * @return Role info response
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_ROLE.roleCode)")
   public RoleInfoResponse getRole(@PathVariable Long id) {
     return roleMapper.toInfoResponse(roleService.getRoleWithParentsById(id));
   }
@@ -52,7 +52,7 @@ public class RoleController {
    * @return List of role items
    */
   @GetMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_ROLE.roleCode)")
   public List<RoleListResponseItem> getRoleList(RoleListRequest request) {
     return roleMapper.toListResponse(
         roleService.getRoleList(
@@ -69,7 +69,7 @@ public class RoleController {
    * @return created role ID
    */
   @PostMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).CREATE_ROLE.roleCode)")
   public Long createRole(@Valid @RequestBody RoleCreateRequest request) {
     return roleService.createRole(roleMapper.toEntity(request), request.parentRoleIds());
   }
@@ -80,7 +80,7 @@ public class RoleController {
    * @param request Role update request
    */
   @PutMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).UPDATE_ROLE.roleCode)")
   public void updateRole(@Valid @RequestBody RoleUpdateRequest request) {
     roleService.updateRole(roleMapper.toEntity(request), request.parentRoleIds());
   }
@@ -91,7 +91,7 @@ public class RoleController {
    * @param request Role delete request
    */
   @DeleteMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).ROLE_DELETE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DELETE_ROLE.roleCode)")
   public void deleteRole(@Valid @RequestBody RoleDeleteRequest request) {
     roleService.deleteRole(roleService.getRoleById(request.id()), request.version());
   }

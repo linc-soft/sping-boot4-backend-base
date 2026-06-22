@@ -1,6 +1,5 @@
 package com.lincsoft.services.common;
 
-import com.lincsoft.annotation.SelectOptionPermission;
 import com.lincsoft.common.SelectOption;
 import com.lincsoft.common.SelectOptionProvider;
 import com.lincsoft.mapper.master.MstRoleMapper;
@@ -13,14 +12,10 @@ import org.springframework.stereotype.Component;
  *
  * <p>Provides role select options with {@code id} as value and {@code roleName} as label.
  *
- * <p>Requires {@code ROLE_READ} permission since role options are typically needed when creating or
- * editing users.
- *
  * @author 林创科技
  * @since 2026-04-21
  */
 @Component
-@SelectOptionPermission("ROLE_READ")
 @RequiredArgsConstructor
 public class RoleSelectOptionProvider implements SelectOptionProvider {
 

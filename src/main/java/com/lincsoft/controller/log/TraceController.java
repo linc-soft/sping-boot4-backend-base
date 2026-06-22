@@ -49,7 +49,7 @@ public class TraceController {
   @Operation(
       summary = "Get trace detail",
       description = "Retrieve complete trace information by trace ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/{traceId}")
   public TraceDetailResponse getDetail(
       @Parameter(description = "Trace ID") @PathVariable String traceId) {

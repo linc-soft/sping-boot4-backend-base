@@ -39,7 +39,7 @@ public class PositionController {
    * @return Position info response
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).POSITION_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_POSITION.roleCode)")
   public PositionInfoResponse getPosition(@PathVariable Long id) {
     return positionMapper.toInfoResponse(positionService.getPositionById(id));
   }
@@ -51,7 +51,7 @@ public class PositionController {
    * @return List of position items
    */
   @GetMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).POSITION_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_POSITION.roleCode)")
   public List<PositionInfoResponse> getPositionList(PositionListRequest request) {
     return positionMapper.toInfoResponseList(
         positionService.getPositionList(request.positionName(), request.status()));
@@ -64,7 +64,7 @@ public class PositionController {
    * @return created position ID
    */
   @PostMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).POSITION_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).CREATE_POSITION.roleCode)")
   public Long createPosition(@Valid @RequestBody PositionCreateRequest request) {
     return positionService.createPosition(positionMapper.toEntity(request));
   }
@@ -75,7 +75,7 @@ public class PositionController {
    * @param request Position update request
    */
   @PutMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).POSITION_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).UPDATE_POSITION.roleCode)")
   public void updatePosition(@Valid @RequestBody PositionUpdateRequest request) {
     positionService.updatePosition(positionMapper.toEntity(request));
   }
@@ -86,7 +86,7 @@ public class PositionController {
    * @param request Position delete request
    */
   @DeleteMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).POSITION_DELETE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DELETE_POSITION.roleCode)")
   public void deletePosition(@Valid @RequestBody PositionDeleteRequest request) {
     positionService.deletePosition(
         positionService.getPositionById(request.id()), request.version());

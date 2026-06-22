@@ -39,7 +39,7 @@ public class DepartmentController {
    * @return Department info response
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DEPT_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_DEPARTMENT.roleCode)")
   public DepartmentInfoResponse getDepartment(@PathVariable Long id) {
     return departmentMapper.toInfoResponse(departmentService.getDepartmentById(id));
   }
@@ -50,7 +50,7 @@ public class DepartmentController {
    * @return List of top-level department tree nodes
    */
   @GetMapping("/tree")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DEPT_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_DEPARTMENT.roleCode)")
   public List<DepartmentTreeResponse> getDepartmentTree() {
     return departmentService.getDepartmentTree();
   }
@@ -62,7 +62,7 @@ public class DepartmentController {
    * @return created department ID
    */
   @PostMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DEPT_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).CREATE_DEPARTMENT.roleCode)")
   public Long createDepartment(@Valid @RequestBody DepartmentCreateRequest request) {
     return departmentService.createDepartment(departmentMapper.toEntity(request));
   }
@@ -73,7 +73,7 @@ public class DepartmentController {
    * @param request Department update request
    */
   @PutMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DEPT_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).UPDATE_DEPARTMENT.roleCode)")
   public void updateDepartment(@Valid @RequestBody DepartmentUpdateRequest request) {
     departmentService.updateDepartment(departmentMapper.toEntity(request));
   }
@@ -84,7 +84,7 @@ public class DepartmentController {
    * @param request Department delete request
    */
   @DeleteMapping
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DEPT_DELETE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DELETE_DEPARTMENT.roleCode)")
   public void deleteDepartment(@Valid @RequestBody DepartmentDeleteRequest request) {
     departmentService.deleteDepartment(
         departmentService.getDepartmentById(request.id()), request.version());

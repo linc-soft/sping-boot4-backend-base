@@ -20,27 +20,44 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RoleCodeEnums implements BaseEnum<String> {
   ADMIN("ADMIN", "common.enums.role-code.admin"),
-  ROLE_READ("ROLE_READ", "common.enums.role-code.role-read"),
-  ROLE_WRITE("ROLE_WRITE", "common.enums.role-code.role-write"),
-  ROLE_DELETE("ROLE_DELETE", "common.enums.role-code.role-delete"),
-  ROLE_EXPORT("ROLE_EXPORT", "common.enums.role-code.role-export"),
-  USER_READ("USER_READ", "common.enums.role-code.user-read"),
-  USER_WRITE("USER_WRITE", "common.enums.role-code.user-write"),
-  USER_DELETE("USER_DELETE", "common.enums.role-code.user-delete"),
-  USER_EXPORT("USER_EXPORT", "common.enums.role-code.user-export"),
-  LOG_READ("LOG_READ", "common.enums.role-code.log-read"),
-  LOG_EXPORT("LOG_EXPORT", "common.enums.role-code.log-export"),
-  FILE_READ("FILE_READ", "common.enums.role-code.file-read"),
-  FILE_WRITE("FILE_WRITE", "common.enums.role-code.file-write"),
-  FILE_DELETE("FILE_DELETE", "common.enums.role-code.file-delete"),
-  DEPT_READ("DEPT_READ", "common.enums.role-code.dept-read"),
-  DEPT_WRITE("DEPT_WRITE", "common.enums.role-code.dept-write"),
-  DEPT_DELETE("DEPT_DELETE", "common.enums.role-code.dept-delete"),
-  POSITION_READ("POSITION_READ", "common.enums.role-code.position-read"),
-  POSITION_WRITE("POSITION_WRITE", "common.enums.role-code.position-write"),
-  POSITION_DELETE("POSITION_DELETE", "common.enums.role-code.position-delete"),
-  RESOURCE_READ("RESOURCE_READ", "common.enums.role-code.resource-read"),
-  RESOURCE_WRITE("RESOURCE_WRITE", "common.enums.role-code.resource-write");
+  LIST_OPTIONS("LIST_OPTIONS", "common.enums.role-code.list-options"),
+
+  LIST_ROLE("LIST_ROLE", "common.enums.role-code.list-role"),
+  VIEW_ROLE("VIEW_ROLE", "common.enums.role-code.view-role"),
+  CREATE_ROLE("CREATE_ROLE", "common.enums.role-code.create-role"),
+  UPDATE_ROLE("UPDATE_ROLE", "common.enums.role-code.update-role"),
+  DELETE_ROLE("DELETE_ROLE", "common.enums.role-code.delete-role"),
+
+  LIST_USER("LIST_USER", "common.enums.role-code.list-user"),
+  VIEW_USER("VIEW_USER", "common.enums.role-code.view-user"),
+  CREATE_USER("CREATE_USER", "common.enums.role-code.create-user"),
+  UPDATE_USER("UPDATE_USER", "common.enums.role-code.update-user"),
+  DELETE_USER("DELETE_USER", "common.enums.role-code.delete-user"),
+  EXPORT_USER("EXPORT_USER", "common.enums.role-code.export-user"),
+
+  LIST_DEPARTMENT("LIST_DEPARTMENT", "common.enums.role-code.list-department"),
+  VIEW_DEPARTMENT("VIEW_DEPARTMENT", "common.enums.role-code.view-department"),
+  CREATE_DEPARTMENT("CREATE_DEPARTMENT", "common.enums.role-code.create-department"),
+  UPDATE_DEPARTMENT("UPDATE_DEPARTMENT", "common.enums.role-code.update-department"),
+  DELETE_DEPARTMENT("DELETE_DEPARTMENT", "common.enums.role-code.delete-department"),
+
+  LIST_POSITION("LIST_POSITION", "common.enums.role-code.list-position"),
+  VIEW_POSITION("VIEW_POSITION", "common.enums.role-code.view-position"),
+  CREATE_POSITION("CREATE_POSITION", "common.enums.role-code.create-position"),
+  UPDATE_POSITION("UPDATE_POSITION", "common.enums.role-code.update-position"),
+  DELETE_POSITION("DELETE_POSITION", "common.enums.role-code.delete-position"),
+
+  LIST_RESOURCE("LIST_RESOURCE", "common.enums.role-code.list-resource"),
+  VIEW_RESOURCE("VIEW_RESOURCE", "common.enums.role-code.view-resource"),
+  UPDATE_RESOURCE("UPDATE_RESOURCE", "common.enums.role-code.update-resource"),
+
+  LIST_LOG("LIST_LOG", "common.enums.role-code.list-log"),
+  VIEW_LOG("VIEW_LOG", "common.enums.role-code.view-log"),
+  EXPORT_LOG("EXPORT_LOG", "common.enums.role-code.export-log"),
+
+  UPLOAD_FILE("UPLOAD_FILE", "common.enums.role-code.upload-file"),
+  DOWNLOAD_FILE("DOWNLOAD_FILE", "common.enums.role-code.download-file"),
+  REMOVE_FILE("REMOVE_FILE", "common.enums.role-code.remove-file");
 
   /** Role code (also serves as the BaseEnum code). */
   private final String roleCode;

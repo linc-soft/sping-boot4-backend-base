@@ -1,7 +1,6 @@
 package com.lincsoft.services.system;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.lincsoft.annotation.OperationLog;
 import com.lincsoft.constant.CommonConstants;
 import com.lincsoft.constant.MessageEnums;
@@ -88,21 +87,6 @@ public class ResourceService {
   @OperationLog(
       module = ModuleEnums.SYSTEM,
       subModule = SubModuleEnums.PERMISSION,
-      type = OperationEnums.CREATE,
-      description = "Resource created: #{#resource.resourceCode}")
-  @Transactional(rollbackFor = Exception.class)
-  public Long createResource(SysResource resource) {
-    validateResourceCodeUnique(resource.getResourceCode(), null);
-    validateParent(resource.getParentId(), resource.getType());
-    validateRoleCode(resource.getType(), resource.getRoleCode());
-    resourceMapper.insert(resource);
-    return resource.getId();
-  }
-
-  @CacheEvict(cacheNames = CommonConstants.REDIS_RESOURCE_TREE_PREFIX, key = "'all'")
-  @OperationLog(
-      module = ModuleEnums.SYSTEM,
-      subModule = SubModuleEnums.PERMISSION,
       type = OperationEnums.UPDATE,
       description = "Resource updated: #{#resource.resourceCode}")
   @Transactional(rollbackFor = Exception.class)
@@ -114,24 +98,6 @@ public class ResourceService {
 
     int updated = resourceMapper.updateById(resource);
     if (updated == 0) {
-      throw new BusinessException(MessageEnums.RESOURCE_OPTIMISTIC_LOCK_FAILED);
-    }
-  }
-
-  @CacheEvict(cacheNames = CommonConstants.REDIS_RESOURCE_TREE_PREFIX, key = "'all'")
-  @OperationLog(
-      module = ModuleEnums.SYSTEM,
-      subModule = SubModuleEnums.PERMISSION,
-      type = OperationEnums.DELETE,
-      description = "Resource deleted: #{#resource.resourceCode}")
-  @Transactional(rollbackFor = Exception.class)
-  public void deleteResource(SysResource resource, Integer version) {
-    validateNoChildren(resource.getId());
-
-    LambdaUpdateWrapper<SysResource> deleteWrapper = new LambdaUpdateWrapper<>();
-    deleteWrapper.eq(SysResource::getId, resource.getId()).eq(SysResource::getVersion, version);
-    int deleted = resourceMapper.delete(deleteWrapper);
-    if (deleted == 0) {
       throw new BusinessException(MessageEnums.RESOURCE_OPTIMISTIC_LOCK_FAILED);
     }
   }
@@ -286,14 +252,6 @@ public class ResourceService {
     }
     if (!RoleCodeEnums.getValidCodes().contains(roleCode)) {
       throw new BusinessException(MessageEnums.RESOURCE_INVALID_ROLE_CODE);
-    }
-  }
-
-  private void validateNoChildren(Long id) {
-    QueryWrapper<SysResource> qw = new QueryWrapper<>();
-    qw.eq("parent_id", id);
-    if (resourceMapper.selectCount(qw) > 0) {
-      throw new BusinessException(MessageEnums.RESOURCE_HAS_CHILDREN);
     }
   }
 }
