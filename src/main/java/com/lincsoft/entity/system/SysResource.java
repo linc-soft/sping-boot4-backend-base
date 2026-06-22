@@ -1,5 +1,7 @@
 package com.lincsoft.entity.system;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
 import com.lincsoft.common.BaseEntity;
@@ -35,12 +37,14 @@ public class SysResource extends BaseEntity {
   private String routePath;
 
   /** Menu icon (mdi-*) */
+  @TableField(updateStrategy = FieldStrategy.ALWAYS)
   private String icon;
 
   /** Sort order among siblings */
   private Integer sortOrder;
 
   /** Role code for visibility (NULL for directories) */
+  @TableField(updateStrategy = FieldStrategy.ALWAYS)
   private String roleCode;
 
   /** Status (0 disabled / 1 enabled) */
