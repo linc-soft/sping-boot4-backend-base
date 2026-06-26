@@ -111,6 +111,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     // If Bearer token is not present, skip to the next filter
     if (authHeader == null || !authHeader.startsWith(CommonConstants.BEARER_PREFIX)) {
+      log.debug(
+          "No Bearer token for request: method={}, path={}",
+          request.getMethod(),
+          request.getRequestURI());
       try {
         filterChain.doFilter(request, response);
       } finally {
@@ -129,7 +133,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
       // Reject non-access tokens (e.g., refresh tokens must not be used as access tokens)
       String tokenType = claims.get(CommonConstants.JWT_CLAIM_TOKEN_TYPE_KEY, String.class);
       if (!CommonConstants.TOKEN_TYPE_ACCESS.equals(tokenType)) {
-        log.warn("Non-access token used in Authorization header: type={}", tokenType);
+        log.warn(
+            "Non-access token used in Authorization header: type={}, path={}",
+            tokenType,
+            request.getRequestURI());
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");
         response
@@ -144,7 +151,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
       // Check if the token has been revoked (blacklisted)
       String jti = claims.getId();
       if (jti != null && tokenBlacklistService.isTokenRevoked(jti)) {
-        log.warn("JWT token has been revoked: jti={}", jti);
+        log.warn(
+            "JWT token has been revoked: jti={}, subject={}, path={}",
+            jti,
+            subject,
+            request.getRequestURI());
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");
         response
@@ -202,7 +213,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
       }
     } catch (JwtException e) {
-      log.warn("JWT authentication failed: {}", e.getMessage());
+      log.warn(
+          "JWT authentication failed: path={}, error={}", request.getRequestURI(), e.getMessage());
       response.setStatus(HttpStatus.UNAUTHORIZED.value());
       response.setContentType("application/json;charset=UTF-8");
       response

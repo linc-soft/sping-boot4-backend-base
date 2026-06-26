@@ -276,6 +276,16 @@
       </resource>
     </resources>
     <plugins>
+      <!-- Spring Boot Maven Plugin (run/package) -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <!-- Java 25 implicit main class cannot be auto-detected -->
+          <mainClass>com.lincsoft.Application</mainClass>
+        </configuration>
+      </plugin>
+
       <!-- Mockito dependency for testing -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

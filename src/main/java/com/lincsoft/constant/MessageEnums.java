@@ -56,6 +56,13 @@ public enum MessageEnums {
   SYS_FORCE_PASSWORD_CHANGE_REQUIRED(999_422, "error.sys.force_password_change_required"),
   SYS_FORCE_PASSWORD_CHANGE_SUCCESS(200, "auth.force_password_change_success"),
 
+  // Export task
+  SYS_EXPORT_TASK_NOT_FOUND(999_404, "error.sys.export_task_not_found"),
+  SYS_EXPORT_TASK_FORBIDDEN(999_403, "error.sys.export_task_forbidden"),
+  SYS_EXPORT_MAX_RECORDS_EXCEEDED(999_413, "error.sys.export_max_records_exceeded"),
+  SYS_EXPORT_FILE_NOT_FOUND(999_404, "error.sys.export_file_not_found"),
+  SYS_EXPORT_FILE_EXPIRED(999_410, "error.sys.export_file_expired"),
+
   // File Upload
   SYS_FILE_EMPTY(999_410, "error.sys.file_empty"),
   SYS_FILE_TOO_LARGE(999_411, "error.sys.file_too_large"),

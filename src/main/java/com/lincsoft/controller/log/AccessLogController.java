@@ -1,7 +1,6 @@
 package com.lincsoft.controller.log;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.lincsoft.annotation.IgnoreResultWrapper;
 import com.lincsoft.controller.log.vo.AccessLogDetailResponse;
 import com.lincsoft.controller.log.vo.AccessLogPageRequest;
 import com.lincsoft.controller.log.vo.AccessLogPageResponseItem;
@@ -12,9 +11,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,27 +73,5 @@ public class AccessLogController {
   public AccessLogDetailResponse getByTraceId(
       @Parameter(description = "Trace ID") @PathVariable String traceId) {
     return accessLogMapper.toDetailResponse(accessLogService.getByTraceId(traceId));
-  }
-
-  /**
-   * Export access logs to CSV file.
-   *
-   * @param request Query conditions
-   * @return CSV file response
-   */
-  @Operation(
-      summary = "Export access logs",
-      description = "Export access logs matching the criteria as a CSV file")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).EXPORT_LOG.roleCode)")
-  @IgnoreResultWrapper
-  @GetMapping("/export")
-  public ResponseEntity<byte[]> export(AccessLogPageRequest request) {
-    byte[] csvData = accessLogService.export(request);
-    return ResponseEntity.ok()
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=access_logs_" + System.currentTimeMillis() + ".csv")
-        .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
-        .body(csvData);
   }
 }
