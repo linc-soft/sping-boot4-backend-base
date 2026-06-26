@@ -1,7 +1,6 @@
 package com.lincsoft.services.common;
 
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
-import com.lincsoft.annotation.SelectOptionPermission;
 import com.lincsoft.common.SelectOption;
 import com.lincsoft.common.SelectOptionProvider;
 import com.lincsoft.constant.CommonConstants;
@@ -19,13 +18,10 @@ import org.springframework.stereotype.Component;
  * active users ({@code status='1'}) are included, so disabled/inactive users cannot be selected as
  * department leaders.
  *
- * <p>Requires {@code USER_READ} permission.
- *
  * @author 林创科技
  * @since 2026-04-21
  */
 @Component
-@SelectOptionPermission("USER_READ")
 @RequiredArgsConstructor
 public class UserSelectOptionProvider implements SelectOptionProvider {
 

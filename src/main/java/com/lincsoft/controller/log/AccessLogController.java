@@ -44,7 +44,7 @@ public class AccessLogController {
   @Operation(
       summary = "Get access log page",
       description = "Query access logs with pagination, sorted by time descending")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_LOG.roleCode)")
   @GetMapping("/page")
   public IPage<AccessLogPageResponseItem> getPage(@Valid AccessLogPageRequest request) {
     return accessLogMapper.toPageResponse(accessLogService.getPage(request));
@@ -59,7 +59,7 @@ public class AccessLogController {
   @Operation(
       summary = "Get access log detail",
       description = "Retrieve complete access log information by ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/{id}")
   public AccessLogDetailResponse getById(@Parameter(description = "Log ID") @PathVariable Long id) {
     return accessLogMapper.toDetailResponse(accessLogService.getById(id));
@@ -72,7 +72,7 @@ public class AccessLogController {
    * @return Access log detail response
    */
   @Operation(summary = "Get access log by TraceId", description = "Retrieve access log by trace ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/trace/{traceId}")
   public AccessLogDetailResponse getByTraceId(
       @Parameter(description = "Trace ID") @PathVariable String traceId) {
@@ -88,7 +88,7 @@ public class AccessLogController {
   @Operation(
       summary = "Export access logs",
       description = "Export access logs matching the criteria as a CSV file")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_EXPORT.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).EXPORT_LOG.roleCode)")
   @IgnoreResultWrapper
   @GetMapping("/export")
   public ResponseEntity<byte[]> export(AccessLogPageRequest request) {

@@ -41,7 +41,7 @@ public class SqlLogController {
   @Operation(
       summary = "Get SQL log page",
       description = "Query SQL logs with pagination, sorted by time descending")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_LOG.roleCode)")
   @GetMapping("/page")
   public IPage<SqlLogPageResponseItem> getPage(@Valid SqlLogPageRequest request) {
     return sqlLogMapper.toPageResponse(sqlLogService.getPage(request));
@@ -56,7 +56,7 @@ public class SqlLogController {
   @Operation(
       summary = "Get SQL log detail",
       description = "Retrieve complete SQL log information by ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/{id}")
   public SqlLogDetailResponse getById(@Parameter(description = "Log ID") @PathVariable Long id) {
     return sqlLogMapper.toDetailResponse(sqlLogService.getById(id));
@@ -71,7 +71,7 @@ public class SqlLogController {
   @Operation(
       summary = "Get SQL logs by trace ID",
       description = "Retrieve all SQL logs associated with the given trace ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/trace/{traceId}")
   public List<SqlLogDetailResponse> getByTraceId(
       @Parameter(description = "Trace ID") @PathVariable String traceId) {

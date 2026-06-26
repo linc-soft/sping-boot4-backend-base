@@ -1,5 +1,7 @@
 package com.lincsoft.entity.master;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.lincsoft.common.VersionedEntity;
 import lombok.Data;
@@ -29,6 +31,7 @@ public class MstDepartment extends VersionedEntity {
   private Long parentId;
 
   /** Department head (mst_user.id) */
+  @TableField(updateStrategy = FieldStrategy.ALWAYS)
   private Long leaderUserId;
 
   /** Sort order among siblings */

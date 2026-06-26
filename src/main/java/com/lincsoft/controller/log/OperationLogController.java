@@ -41,7 +41,7 @@ public class OperationLogController {
   @Operation(
       summary = "Get operation log page",
       description = "Query operation logs with pagination, sorted by time descending")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_LOG.roleCode)")
   @GetMapping("/page")
   public IPage<OperationLogPageResponseItem> getPage(@Valid OperationLogPageRequest request) {
     return operationLogMapper.toPageResponse(operationLogService.getPage(request));
@@ -56,7 +56,7 @@ public class OperationLogController {
   @Operation(
       summary = "Get operation log detail",
       description = "Retrieve complete operation log information by ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/{id}")
   public OperationLogDetailResponse getById(
       @Parameter(description = "Log ID") @PathVariable Long id) {
@@ -72,7 +72,7 @@ public class OperationLogController {
   @Operation(
       summary = "Get operation logs by TraceId",
       description = "Retrieve all operation logs by trace ID")
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LOG_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).VIEW_LOG.roleCode)")
   @GetMapping("/trace/{traceId}")
   public List<OperationLogDetailResponse> getListByTraceId(
       @Parameter(description = "Trace ID") @PathVariable String traceId) {

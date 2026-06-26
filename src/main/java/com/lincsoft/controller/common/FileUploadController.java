@@ -50,7 +50,7 @@ public class FileUploadController {
    * @param associateId optional associated business entity ID
    * @return metadata of the stored file, including MD5 hash
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).FILE_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).UPLOAD_FILE.roleCode)")
   @PostMapping
   public FileMetadata upload(
       @RequestParam("file") MultipartFile file,
@@ -67,7 +67,7 @@ public class FileUploadController {
    * @param associateId optional associated business entity ID applied to all files
    * @return list of metadata for each stored file
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).FILE_WRITE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).UPLOAD_FILE.roleCode)")
   @PostMapping("/batch")
   public List<FileMetadata> uploadBatch(
       @RequestParam("files") MultipartFile[] files,
@@ -89,7 +89,7 @@ public class FileUploadController {
    * @return the file content as a downloadable response
    * @throws IOException if the file resource cannot be read
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).FILE_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DOWNLOAD_FILE.roleCode)")
   @IgnoreResultWrapper
   @GetMapping("/{dateUrl}/{storedName}")
   public ResponseEntity<Resource> download(
@@ -131,7 +131,7 @@ public class FileUploadController {
    * @param storedName the UUID-based storage filename
    * @return {@code {"match": true/false, "storedMd5": "...", "currentMd5": "..."}}
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).FILE_READ.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).DOWNLOAD_FILE.roleCode)")
   @GetMapping("/{dateUrl}/{storedName}/verify")
   public Map<String, Object> verify(@PathVariable String dateUrl, @PathVariable String storedName) {
     boolean match = fileUploadService.verifyMd5(dateUrl, storedName);
@@ -146,7 +146,7 @@ public class FileUploadController {
    * @param dateUrl the date in URL format (e.g., "2026-06-03")
    * @param storedName the UUID-based storage filename
    */
-  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).FILE_DELETE.roleCode)")
+  @PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).REMOVE_FILE.roleCode)")
   @DeleteMapping("/{dateUrl}/{storedName}")
   public void delete(@PathVariable String dateUrl, @PathVariable String storedName) {
     fileUploadService.delete(dateUrl, storedName);

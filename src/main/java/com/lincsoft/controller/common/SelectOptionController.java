@@ -1,16 +1,12 @@
 package com.lincsoft.controller.common;
 
-import com.lincsoft.annotation.SelectOptionPermission;
 import com.lincsoft.common.SelectOption;
 import com.lincsoft.common.SelectOptionProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,9 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>To add support for a new entity type, simply create a new {@link SelectOptionProvider}
  * implementation annotated with {@code @Component}. No modification to this controller is required.
  *
- * <p>Permission control: Each provider can be annotated with {@link SelectOptionPermission} to
- * specify the required permission code. The controller will check permissions before returning the
- * options.
+ * <p>All endpoints require the {@code LIST_OPTIONS} permission.
  *
  * <p>Example: {@code GET /api/common/select-options?type=role}
  *
@@ -37,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/common/select-options")
+@PreAuthorize("hasRole(T(com.lincsoft.constant.RoleCodeEnums).LIST_OPTIONS.roleCode)")
 public class SelectOptionController {
 
   /** Registry of select option providers, keyed by type identifier. */
@@ -62,7 +57,6 @@ public class SelectOptionController {
    * @param type the entity type identifier (e.g., "role", "user")
    * @return list of select options with value and label
    * @throws IllegalArgumentException if the type is not supported
-   * @throws AccessDeniedException if the user lacks the required permission
    */
   @GetMapping
   public List<SelectOption> getSelectOptions(@RequestParam String type) {
@@ -70,43 +64,6 @@ public class SelectOptionController {
     if (provider == null) {
       throw new IllegalArgumentException("Unsupported select option type: " + type);
     }
-    checkPermission(provider);
     return provider.getOptions();
-  }
-
-  /**
-   * Checks if the current user has the required permission for the given provider.
-   *
-   * <p>If the provider is annotated with {@link SelectOptionPermission} and specifies a non-empty
-   * permission code, this method verifies that the current authenticated user has that permission.
-   *
-   * @param provider the select option provider to check permissions for
-   * @throws AccessDeniedException if the user lacks the required permission
-   */
-  private void checkPermission(SelectOptionProvider provider) {
-    SelectOptionPermission annotation =
-        provider.getClass().getAnnotation(SelectOptionPermission.class);
-
-    // No annotation or empty permission means public access
-    if (annotation == null || annotation.value().isEmpty()) {
-      return;
-    }
-
-    String requiredPermission = annotation.value();
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    // Check if user has the required permission
-    boolean hasPermission =
-        authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .anyMatch(
-                authority ->
-                    authority.equals("ROLE_ADMIN")
-                        || authority.equals(requiredPermission)
-                        || authority.equals("ROLE_" + requiredPermission));
-
-    if (!hasPermission) {
-      throw new AccessDeniedException("Access denied. Required permission: " + requiredPermission);
-    }
   }
 }

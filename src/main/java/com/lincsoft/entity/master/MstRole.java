@@ -1,5 +1,7 @@
 package com.lincsoft.entity.master;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.lincsoft.common.VersionedEntity;
 import lombok.Data;
@@ -22,5 +24,6 @@ public class MstRole extends VersionedEntity {
   private String roleCode;
 
   /** Role Description */
+  @TableField(updateStrategy = FieldStrategy.ALWAYS)
   private String description;
 }

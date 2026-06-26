@@ -1,7 +1,6 @@
 package com.lincsoft.services.common;
 
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
-import com.lincsoft.annotation.SelectOptionPermission;
 import com.lincsoft.common.SelectOption;
 import com.lincsoft.common.SelectOptionProvider;
 import com.lincsoft.entity.master.MstPosition;
@@ -18,13 +17,10 @@ import org.springframework.stereotype.Component;
  * non-deleted users are included, regardless of status, so log filters can match historical
  * records.
  *
- * <p>Requires {@code USER_READ} permission.
- *
  * @author 林创科技
  * @since 2026-06-16
  */
 @Component
-@SelectOptionPermission("USER_READ")
 @RequiredArgsConstructor
 public class UsernameSelectOptionProvider implements SelectOptionProvider {
 

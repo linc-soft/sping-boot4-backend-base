@@ -132,6 +132,114 @@ CREATE TABLE IF NOT EXISTS sys_sql_log
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'SQL execution log';
 
 -- ============================================================
+-- sys_resource table
+-- Frontend page/button permission resources (tree structure).
+--  type: 0=directory, 1=page, 2=button
+--  role_code: single value; NULL for directories (visibility via children).
+--             Pages/buttons check against user's resolved role_codes.
+--  resource_code: business code (e.g. user:read), unique.
+--  resource_name: i18n key resolved on the frontend.
+--  route_path: only for type=1 pages; NULL for directories/buttons.
+-- ============================================================
+DROP TABLE IF EXISTS sys_resource;
+CREATE TABLE IF NOT EXISTS sys_resource
+(
+  id            BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  resource_code VARCHAR(128) NOT NULL COMMENT 'Business code (unique, e.g. user:read)',
+  resource_name VARCHAR(128) NOT NULL COMMENT 'i18n key for display name',
+  type          TINYINT      NOT NULL COMMENT '0=directory, 1=page, 2=button',
+  parent_id     BIGINT       NOT NULL DEFAULT 0 COMMENT 'Parent resource ID (0 = top level)',
+  route_path    VARCHAR(255)          DEFAULT NULL COMMENT 'Route path (type=1 only)',
+  icon          VARCHAR(64)           DEFAULT NULL COMMENT 'Menu icon (mdi-*)',
+  sort_order    INT                   DEFAULT 0 COMMENT 'Sort order among siblings',
+  role_code     VARCHAR(64)           DEFAULT NULL COMMENT 'Role code for visibility (NULL for directories)',
+  status        VARCHAR(1)            DEFAULT '1' COMMENT 'Status (0 disabled / 1 enabled)',
+  create_by     VARCHAR(20) COMMENT 'Creator',
+  create_at     DATETIME              DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
+  update_by     VARCHAR(20) COMMENT 'Updater',
+  update_at     DATETIME              DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'updated time',
+  version       INT                   DEFAULT 0 COMMENT 'Optimistic lock version',
+  deleted       TINYINT(1)            DEFAULT 0 COMMENT 'Logical delete flag',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_resource_code (resource_code),
+  KEY idx_resource_parent_id (parent_id),
+  KEY idx_resource_type (type)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Frontend permission resource';
+
+-- ============================================================
+-- sys_resource seed data
+-- ============================================================
+-- Directories (type=0, role_code always NULL)
+INSERT INTO sys_resource (id, resource_code, resource_name, type, parent_id, route_path, icon, sort_order, role_code,
+                          status, create_by, update_by)
+VALUES (1, 'dir:master', 'nav.master', 0, 0, NULL, 'mdi-database-outline', 10, NULL, '1', 'system', 'system'),
+       (2, 'dir:logs', 'nav.logs', 0, 0, NULL, 'mdi-file-document-outline', 20, NULL, '1', 'system', 'system');
+
+-- Pages (type=1)
+INSERT INTO sys_resource (id, resource_code, resource_name, type, parent_id, route_path, icon, sort_order, role_code,
+                          status, create_by, update_by)
+VALUES (10, 'home', 'nav.home', 1, 0, '/', 'mdi-home', 1, NULL, '1', 'system', 'system'),
+       (11, 'user:read', 'nav.users', 1, 1, '/master/users', 'mdi-account-group', 11, 'LIST_USER', '1', 'system',
+        'system'),
+       (12, 'role:read', 'nav.roles', 1, 1, '/master/roles', 'mdi-shield-account-outline', 12, 'LIST_ROLE', '1',
+        'system', 'system'),
+       (13, 'dept:read', 'nav.departments', 1, 1, '/master/departments', 'mdi-office-building-outline', 13,
+        'LIST_DEPARTMENT', '1', 'system', 'system'),
+       (14, 'position:read', 'nav.positions', 1, 1, '/master/positions', 'mdi-badge-account-horizontal-outline', 14,
+        'LIST_POSITION', '1', 'system', 'system'),
+       (21, 'log:access:read', 'nav.accessLogs', 1, 2, '/logs', 'mdi-web', 21, 'LIST_LOG', '1', 'system', 'system'),
+       (22, 'log:error:read', 'nav.errorLogs', 1, 2, '/logs/error', 'mdi-alert-circle-outline', 22, 'LIST_LOG', '1',
+        'system', 'system'),
+       (23, 'log:operation:read', 'nav.operationLogs', 1, 2, '/logs/operation', 'mdi-cog-outline', 23, 'LIST_LOG', '1',
+        'system', 'system'),
+       (24, 'log:sql:read', 'nav.sqlLogs', 1, 2, '/logs/sql', 'mdi-database-search-outline', 24, 'LIST_LOG', '1',
+        'system', 'system'),
+       (25, 'log:trace:read', 'log.nav.trace', 1, 2, '/logs/trace/:traceId', NULL, 25, 'LIST_LOG', '1', 'system',
+        'system'),
+       (26, 'resource:read', 'nav.resources', 1, 1, '/master/resources', 'mdi-view-module-outline', 15, 'LIST_RESOURCE',
+        '1', 'system', 'system');
+
+-- Buttons (type=2)
+INSERT INTO sys_resource (id, resource_code, resource_name, type, parent_id, route_path, icon, sort_order, role_code,
+                          status, create_by, update_by)
+VALUES
+  -- User page buttons
+  (101, 'user:create', 'resource.user.create', 2, 11, NULL, NULL, 1, 'CREATE_USER', '1', 'system', 'system'),
+  (102, 'user:update', 'resource.user.update', 2, 11, NULL, NULL, 2, 'UPDATE_USER', '1', 'system', 'system'),
+  (103, 'user:delete', 'resource.user.delete', 2, 11, NULL, NULL, 3, 'DELETE_USER', '1', 'system', 'system'),
+  (104, 'user:export', 'resource.user.export', 2, 11, NULL, NULL, 4, 'EXPORT_USER', '1', 'system', 'system'),
+  (105, 'user:view', 'resource.user.view', 2, 11, NULL, NULL, 5, 'VIEW_USER', '1', 'system', 'system'),
+  -- Role page buttons
+  (111, 'role:create', 'resource.role.create', 2, 12, NULL, NULL, 1, 'CREATE_ROLE', '1', 'system', 'system'),
+  (112, 'role:update', 'resource.role.update', 2, 12, NULL, NULL, 2, 'UPDATE_ROLE', '1', 'system', 'system'),
+  (113, 'role:delete', 'resource.role.delete', 2, 12, NULL, NULL, 3, 'DELETE_ROLE', '1', 'system', 'system'),
+  (114, 'role:view', 'resource.role.view', 2, 12, NULL, NULL, 4, 'VIEW_ROLE', '1', 'system', 'system'),
+  -- Department page buttons
+  (121, 'dept:create', 'resource.dept.create', 2, 13, NULL, NULL, 1, 'CREATE_DEPARTMENT', '1', 'system', 'system'),
+  (122, 'dept:update', 'resource.dept.update', 2, 13, NULL, NULL, 2, 'UPDATE_DEPARTMENT', '1', 'system', 'system'),
+  (123, 'dept:delete', 'resource.dept.delete', 2, 13, NULL, NULL, 3, 'DELETE_DEPARTMENT', '1', 'system', 'system'),
+  (124, 'dept:view', 'resource.dept.view', 2, 13, NULL, NULL, 4, 'VIEW_DEPARTMENT', '1', 'system', 'system'),
+  -- Position page buttons
+  (131, 'position:create', 'resource.position.create', 2, 14, NULL, NULL, 1, 'CREATE_POSITION', '1', 'system',
+   'system'),
+  (132, 'position:update', 'resource.position.update', 2, 14, NULL, NULL, 2, 'UPDATE_POSITION', '1', 'system',
+   'system'),
+  (133, 'position:delete', 'resource.position.delete', 2, 14, NULL, NULL, 3, 'DELETE_POSITION', '1', 'system',
+   'system'),
+  (134, 'position:view', 'resource.position.view', 2, 14, NULL, NULL, 4, 'VIEW_POSITION', '1', 'system', 'system'),
+  -- Resource page buttons
+  (141, 'resource:update', 'resourceManagement.actions.edit', 2, 26, NULL, NULL, 1, 'UPDATE_RESOURCE', '1',
+   'system', 'system'),
+  -- Log page buttons (export)
+  (211, 'log:access:export', 'resource.log.export', 2, 21, NULL, NULL, 1, 'EXPORT_LOG', '1', 'system', 'system'),
+  (212, 'log:error:export', 'resource.log.export', 2, 22, NULL, NULL, 1, 'EXPORT_LOG', '1', 'system', 'system'),
+  (213, 'log:operation:export', 'resource.log.export', 2, 23, NULL, NULL, 1, 'EXPORT_LOG', '1', 'system', 'system'),
+  (214, 'log:sql:export', 'resource.log.export', 2, 24, NULL, NULL, 1, 'EXPORT_LOG', '1', 'system', 'system');
+
+
+-- ============================================================
 -- sys_file_upload table
 -- Records metadata of uploaded files
 -- ============================================================
