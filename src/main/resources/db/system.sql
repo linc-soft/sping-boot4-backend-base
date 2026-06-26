@@ -270,3 +270,33 @@ CREATE TABLE IF NOT EXISTS sys_file_upload
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT = 'File upload';
+
+-- ============================================================
+-- sys_export_task table
+-- Records metadata of async export tasks
+-- ============================================================
+DROP TABLE IF EXISTS sys_export_task;
+
+CREATE TABLE IF NOT EXISTS sys_export_task
+(
+  id             BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  task_id        VARCHAR(36)  NOT NULL COMMENT 'UUID task identifier',
+  type           VARCHAR(32)  NOT NULL COMMENT 'Export type (LOG_TRACE)',
+  status         VARCHAR(16)  NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/RUNNING/SUCCESS/FAILED/EXPIRED',
+  file_path      VARCHAR(512) DEFAULT NULL COMMENT 'Relative path from export directory',
+  file_name      VARCHAR(255) DEFAULT NULL COMMENT 'User-friendly download filename',
+  file_size      BIGINT       DEFAULT NULL COMMENT 'File size in bytes',
+  row_count      INT          DEFAULT NULL COMMENT 'Number of trace records exported',
+  completed_at   DATETIME     DEFAULT NULL COMMENT 'Task completion timestamp',
+  expire_at      DATETIME     DEFAULT NULL COMMENT 'File expiration timestamp',
+  error_message  VARCHAR(1000) DEFAULT NULL COMMENT 'Error message (truncated to 1000 chars)',
+  created_by     VARCHAR(64)  DEFAULT NULL COMMENT 'Creator username',
+  created_at     DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_export_task_id (task_id),
+  KEY idx_export_task_created_by (created_by),
+  KEY idx_export_task_status (status),
+  KEY idx_export_task_expire_at (expire_at)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Export task';

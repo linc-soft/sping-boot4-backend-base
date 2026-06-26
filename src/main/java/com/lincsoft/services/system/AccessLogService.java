@@ -9,8 +9,6 @@ import com.lincsoft.entity.system.SysAccessLog;
 import com.lincsoft.exception.BusinessException;
 import com.lincsoft.mapper.system.SysAccessLogMapper;
 import jakarta.annotation.PreDestroy;
-import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -94,62 +92,6 @@ public class AccessLogService {
     QueryWrapper<SysAccessLog> queryWrapper = new QueryWrapper<>();
     queryWrapper.eq("trace_id", traceId);
     return accessLogMapper.selectOne(queryWrapper);
-  }
-
-  /**
-   * Export access logs to CSV format.
-   *
-   * @param request Query conditions
-   * @return CSV data as byte array
-   */
-  public byte[] export(AccessLogPageRequest request) {
-    QueryWrapper<SysAccessLog> queryWrapper = buildQueryWrapper(request);
-    request.applySorting(
-        queryWrapper,
-        Set.of(
-            "id",
-            "trace_id",
-            "request_method",
-            "request_url",
-            "response_status",
-            "client_ip",
-            "user_agent",
-            "username",
-            "duration",
-            "create_time"),
-        "create_time");
-    // Limit export to 10000 records to avoid memory issues
-    queryWrapper.last("LIMIT 10000");
-    List<SysAccessLog> logs = accessLogMapper.selectList(queryWrapper);
-
-    StringBuilder csv = new StringBuilder();
-    csv.append("ID,TraceID,Username,Method,Path,StatusCode,Duration,ClientIP,CreatedAt\n");
-
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    for (SysAccessLog logEntity : logs) {
-      csv.append(escapeCsv(String.valueOf(logEntity.getId()))).append(",");
-      csv.append(escapeCsv(logEntity.getTraceId())).append(",");
-      csv.append(escapeCsv(logEntity.getUsername())).append(",");
-      csv.append(escapeCsv(logEntity.getRequestMethod())).append(",");
-      csv.append(escapeCsv(logEntity.getRequestUrl())).append(",");
-      csv.append(escapeCsv(String.valueOf(logEntity.getResponseStatus()))).append(",");
-      csv.append(escapeCsv(String.valueOf(logEntity.getDuration()))).append(",");
-      csv.append(escapeCsv(logEntity.getClientIp())).append(",");
-      csv.append(
-              escapeCsv(
-                  logEntity.getCreateTime() != null
-                      ? logEntity.getCreateTime().format(formatter)
-                      : ""))
-          .append("\n");
-    }
-
-    // Add BOM for UTF-8 to ensure Excel compatibility
-    byte[] bom = new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
-    byte[] csvBytes = csv.toString().getBytes(StandardCharsets.UTF_8);
-    byte[] result = new byte[bom.length + csvBytes.length];
-    System.arraycopy(bom, 0, result, 0, bom.length);
-    System.arraycopy(csvBytes, 0, result, bom.length, csvBytes.length);
-    return result;
   }
 
   // ==================== Write Operations ====================
@@ -304,12 +246,6 @@ public class AccessLogService {
     return queryWrapper;
   }
 
-  /**
-   * Drains up to {@code limit} entries from the buffer into a list.
-   *
-   * @param limit maximum number of entries to drain
-   * @return list of drained entries (maybe empty, never null)
-   */
   private List<SysAccessLog> drainBuffer(int limit) {
     List<SysAccessLog> batch = new ArrayList<>(limit);
     SysAccessLog entry;

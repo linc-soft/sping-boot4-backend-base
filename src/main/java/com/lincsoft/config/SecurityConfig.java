@@ -125,6 +125,7 @@ public class SecurityConfig {
         // Session Management: STATELESS mode (server-side session management disabled)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .securityContext(context -> context.requireExplicitSave(false))
         // Security Response Headers
         .headers(
             headers ->

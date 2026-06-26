@@ -143,6 +143,11 @@ app:
     batch-size: 100
     flush-interval-ms: 5000
     max-batches-per-flush: 20
+  # Export task settings
+  export:
+    directory: ${EXPORT_DIR:./exports}
+    ttl-hours: ${EXPORT_TTL_HOURS:24}
+    max-records: ${EXPORT_MAX_RECORDS:50000}
   # SQL log settings
   sql-log:
     enabled: true

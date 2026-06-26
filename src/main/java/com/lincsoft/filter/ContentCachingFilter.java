@@ -45,17 +45,23 @@ public class ContentCachingFilter extends OncePerRequestFilter {
   private static final String ACTUATOR_PATH_PREFIX = "/actuator";
 
   /**
-   * Excludes Actuator endpoints from content caching.
+   * Excludes Actuator endpoints and streaming download endpoints from content caching.
    *
    * <p>Actuator endpoints (health check, metrics, prometheus) do not need request/response body
    * caching. Excluding them avoids unnecessary overhead from Prometheus scraping every 15 seconds.
    *
+   * <p>Download endpoints that use {@code StreamingResponseBody} must be excluded because {@code
+   * ContentCachingResponseWrapper} buffers the entire response body in memory and attempts to copy
+   * it back after the stream is closed, causing {@code IOException: The response may not be written
+   * to once it has been closed}.
+   *
    * @param request the HTTP request
-   * @return {@code true} if the request path starts with "/actuator"
+   * @return {@code true} if the request should be skipped
    */
   @Override
   protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-    return request.getRequestURI().startsWith(ACTUATOR_PATH_PREFIX);
+    String uri = request.getRequestURI();
+    return uri.startsWith(ACTUATOR_PATH_PREFIX) || uri.endsWith("/download");
   }
 
   /**

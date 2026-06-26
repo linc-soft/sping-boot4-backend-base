@@ -123,6 +123,13 @@ public class AppProperties {
   private SqlLog sqlLog = new SqlLog();
 
   /**
+   * Export task configuration settings.
+   *
+   * <p>Defines export directory, TTL, and max record limit for async export tasks.
+   */
+  private Export export = new Export();
+
+  /**
    * Validates JWT secret key length on application startup.
    *
    * <p>The HS256 algorithm requires a minimum key length of 256 bits (32 bytes). This method
@@ -803,6 +810,40 @@ public class AppProperties {
         List.of(
             "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "jpg", "jpeg", "png",
             "gif", "bmp", "svg", "zip", "rar", "7z");
+  }
+
+  /**
+   * Export task configuration inner class.
+   *
+   * <p>Binds properties under the {@code app.export} prefix. Controls export directory, file TTL,
+   * and maximum record limit for async export tasks.
+   */
+  @Data
+  public static class Export {
+    /**
+     * Local directory for storing exported files.
+     *
+     * <p>Default: ./exports
+     */
+    private String directory = "./exports";
+
+    /**
+     * File expiration TTL in hours.
+     *
+     * <p>Exported files are automatically cleaned up after this duration.
+     *
+     * <p>Default: 24
+     */
+    private long ttlHours = 24;
+
+    /**
+     * Maximum number of access log records allowed in a single export.
+     *
+     * <p>Prevents excessive memory usage and long generation times for very large datasets.
+     *
+     * <p>Default: 50000
+     */
+    private int maxRecords = 50000;
   }
 
   /**
